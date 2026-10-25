@@ -101,7 +101,10 @@ This ROM builds on the work of others:
   (`1900285`, `d76d600`, `ffc26fd`, `2e678be`, `f70ecd0`, `83955b9`,
   `02ece9d`, `9a5933d`, `6616a8a`, `e3a93a0`, `431558e`); the Cityman Q6
   MI2S node, the removed WCD9330 speaker supplies and the ASM topology
-  fallback in the mmo kernel follow his kernel (`efb1ebf`, `1a51144`).
+  fallback in the mmo kernel follow his kernel (`efb1ebf`, `1a51144`), as
+  do the MSM8994 eMMC clock rates (`4bc7ab2`), the sensor and NFC includes
+  for cityman (`cd01dc9`, `386e7a0`; the sensor buses themselves are
+  EpicLPer's `7d96420fc1e`) and the nq-nci resume fix (`628c06f`).
 - **Google/LGE** (bullhead) and **Huawei/Google** (angler): the power
   script and its interactive tuning come from bullhead; the eight-core
   bring-up order (`boot_cpus=0-3`, A57 policy before cpu5-7) follows
