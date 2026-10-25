@@ -362,9 +362,10 @@ PRODUCT_PACKAGES += \
     sensors.cityman \
     android.hardware.sensors@1.0-impl
 
-# Shims
+# Shims: libcutils_shim comes from hardware/lineage/compat; install its
+# vendor variant for ATFWD-daemon, cnd and libcne.
 PRODUCT_PACKAGES += \
-    libcutils_shim
+    libcutils_shim.vendor
 
 # TimeKeep
 PRODUCT_PACKAGES += \
