@@ -76,10 +76,21 @@ This ROM builds on the work of others:
   `archienz/android_kernel_mmo_msm8994`): rear camera measurements on the
   Lumia 950 (CSI lane map `0x0423`, 24 MHz MCLK, CCI layout), used on the
   cityman camera branch.
+- **EpicLPer** (Android4Lumia950 kernel, talkman): the TAS2552/TAS2553
+  speaker amplifier driver and the Quaternary MI2S wiring the cityman audio
+  uses (mmo kernel `e4d0c025066`, `9bd1bb032d4`, `22039ccd1ea`,
+  `5b52570b88d`).
+- **shadowofleaf96** (`shadowofleaf96/android_device_msft_cityman`,
+  `shadowofleaf96/android_kernel_msft_cityman`): the cityman audio
+  bring-up this tree's audio is ported from. Mixer paths, speaker and call
+  routing, BT SCO and DMIC paths, the 16-bit input profiles, disabled
+  speaker protection and the Bluetooth Audio HAL come from his device tree
+  (`1900285`, `d76d600`, `ffc26fd`, `2e678be`, `f70ecd0`, `83955b9`,
+  `02ece9d`, `9a5933d`, `6616a8a`, `e3a93a0`, `431558e`); the Cityman Q6
+  MI2S node, the removed WCD9330 speaker supplies and the ASM topology
+  fallback in the mmo kernel follow his kernel (`efb1ebf`, `1a51144`).
 - **LineageOS** and **TheMuppets**: the Android 11 base and the reference
   vendor blobs.
 
 Work under evaluation for cityman, credited where it is used:
-**shadowofleaf96** (cityman trees, TAS2553 / QUAT_MI2S audio and call
-routing) and **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230
-driver).
+**hraj9258** (talkman rear camera with a kernel SMIA++ IMX230 driver).
