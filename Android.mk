@@ -36,6 +36,10 @@ ifneq ($(filter cityman, $(TARGET_DEVICE)),)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
+# GPS HAL: BOARD_USES_QCOM_HARDWARE hides hardware/qcom/gps and there is no
+# qcom-caf GPS tree for msm8994, so build the msm8994 one from here.
+include $(call all-makefiles-under,hardware/qcom/gps/msm8994)
+
 DM_LIBS := libdmengine.so libdmjavaplugin.so
 DM_SYMLINKS := $(addprefix $(TARGET_OUT)/priv-app/DMService/lib/arm/,$(notdir $(DM_LIBS)))
 $(DM_SYMLINKS): $(LOCAL_INSTALLED_MODULE)

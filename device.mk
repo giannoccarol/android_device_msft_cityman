@@ -91,8 +91,6 @@ PRODUCT_PACKAGES += \
      libqcomfm_jni \
      qcom.fmradio
 
-PRODUCT_PACKAGES += \
-    qmihal
     
 # Audio
 PRODUCT_PACKAGES += \
@@ -110,12 +108,10 @@ PRODUCT_PACKAGES += \
     audio.usb.default \
     audio.r_submix.default \
     libaudio-resampler \
-    dsm_ctrl \
     libqcomvoiceprocessing \
     libqcomvoiceprocessingdescriptors \
     libqcomvisualizer \
-    libqcompostprocbundle \
-    libvolumelistener
+    libqcompostprocbundle
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/audio/audio_effects.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_effects.xml \
@@ -145,32 +141,25 @@ PRODUCT_PACKAGES += \
 # Camera
 PRODUCT_PACKAGES += \
     camera.msm8992 \
-    libcamera \
     libmmcamera_interface \
-    libmmcamera_interface2 \
     libmmjpeg_interface \
     libqomx_core \
     mm-qcamera-app \
     android.hardware.camera.provider@2.4-impl \
     camera.device@1.0-impl \
-    camera.device@3.2-impl \
-    Snap
+    camera.device@3.2-impl
 
 PRODUCT_PACKAGES += \
-    vendor.qti.hardware.camera.device@1.0 \
-    vendor.qti.hardware.camera.device@1.0_vendor
+    vendor.qti.hardware.camera.device@1.0
 
 # Display
 PRODUCT_PACKAGES += \
     gralloc.msm8992 \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
-    android.hardware.graphics.composer@2.1-impl \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.graphics.mapper@2.0-impl \
-    android.hardware.graphics.mapper@2.0-service \
     hwcomposer.msm8992 \
-    libgenlock \
     memtrack.msm8992 \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service
@@ -209,8 +198,6 @@ PRODUCT_PACKAGES += \
 # GPS
 PRODUCT_PACKAGES += \
     libgps.utils \
-    libgnss \
-    liblocation_api \
     gps.msm8992
 
 PRODUCT_COPY_FILES += \
@@ -225,9 +212,7 @@ PRODUCT_PACKAGES += \
 # HIDL
 PRODUCT_PACKAGES += \
     libhidltransport \
-    libhidltransport.vendor \
-    libhwbinder \
-    libhwbinder.vendor
+    libhwbinder
 
 # IMS
 PRODUCT_PACKAGES += \
@@ -292,7 +277,6 @@ PRODUCT_PACKAGES += \
     libOmxCore \
     libmm-omxcore \
     libOmxVdec \
-    libOmxVdecHevc \
     libOmxVenc
 
 PRODUCT_COPY_FILES += \
@@ -362,10 +346,10 @@ PRODUCT_PACKAGES += \
     sensors.cityman \
     android.hardware.sensors@1.0-impl
 
-# Shims: libcutils_shim comes from hardware/lineage/compat; install its
-# vendor variant for ATFWD-daemon, cnd and libcne.
+# Shims: libcutils_shim comes from hardware/lineage/compat (no VNDK on
+# this device, so the core variant serves ATFWD-daemon, cnd and libcne).
 PRODUCT_PACKAGES += \
-    libcutils_shim.vendor
+    libcutils_shim
 
 # TimeKeep
 PRODUCT_PACKAGES += \
@@ -421,7 +405,6 @@ PRODUCT_PACKAGES += \
     libwpa_client \
     hostapd \
     wificond \
-    wifilogd \
     wpa_supplicant \
     wpa_supplicant.conf \
     cityman_wlan_mac
