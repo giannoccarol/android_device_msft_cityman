@@ -1,4 +1,4 @@
-# Talkman GNSS 1.0 HIDL
+# Cityman GNSS 1.0 HIDL
 
 AOSP `android.hardware.gnss@1.0-impl` copies NMEA with
 `hidl_string::setToExternal(nmea, length)`. CAF

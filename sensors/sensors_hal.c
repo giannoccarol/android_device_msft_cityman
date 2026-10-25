@@ -1,5 +1,5 @@
 /*
- * Talkman (Lumia 950 RM-1104) legacy sensors HAL.
+ * Cityman (Lumia 950 XL RM-1085) legacy sensors HAL, from the Talkman one.
  *
  *   /dev/i2c-4  AK09912 @ 0x0c, ZPA2326 @ 0x5c, ICM-20648 @ 0x68
  *   /dev/i2c-7  QPDS-T900 / APDS-9930 @ 0x39
@@ -10,7 +10,7 @@
  *
  * VINTF lists android.hardware.sensors@1.0 as passthrough, so
  * SensorService loads android.hardware.sensors@1.0-impl in-process
- * and that impl opens this module as sensors.talkman.
+ * and that impl opens this module as sensors.cityman.
  *
  * Mag/gyro leftover from the first bring-up: chip axes were published
  * raw. Speaker hard-iron is ~300 uT, so AOSP fusion rejects mag
@@ -26,7 +26,7 @@
  * whether the phone is moving.
  */
 
-#define LOG_TAG "TalkmanSensors"
+#define LOG_TAG "CitymanSensors"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -81,7 +81,7 @@
 #define ICM_REG_BANK_SEL 0x7f
 #define ICM_BANK0 0x00
 #define ICM_BANK2 0x20
-#define ICM_WHO_TALKMAN 0xab
+#define ICM_WHO_CITYMAN 0xab
 
 #define HALL_FRONT_GPIO 42
 #define HALL_BACK_GPIO 75
@@ -103,8 +103,8 @@
 #define AK_CNTL2_FUSE_ROM 0x1F
 #define AK_ASAX 0x60
 #define AK_SCALE_UT 0.15f
-#define CAL_PATH "/data/misc/talkman-sensors/cal.txt"
-#define CAL_PATH_ALT "/data/system/talkman-sensors-cal.txt"
+#define CAL_PATH "/data/misc/cityman-sensors/cal.txt"
+#define CAL_PATH_ALT "/data/system/cityman-sensors-cal.txt"
 #define MAG_SPAN_MIN 35.0f
 #define MAG_SPAN_WIDE 45.0f
 #define MAG_RADIUS_MIN 20.0f
@@ -1436,7 +1436,7 @@ static int imu_try_icm(float *ax, float *ay, float *az)
     if (i2c_read_regs(g_i2c4, IMU_ADDR, ICM_REG_WHO, &who, 1) != 0)
         return 0;
     i2c_read_regs(g_i2c4, IMU_ADDR, ICM_REG_PWR_MGMT_1, &pwr1, 1);
-    if (who != ICM_WHO_TALKMAN && pwr1 != 0x41)
+    if (who != ICM_WHO_CITYMAN && pwr1 != 0x41)
         return 0;
     if (!imu_icm_wake())
         return 0;
@@ -1990,8 +1990,8 @@ struct sensors_module_t HAL_MODULE_INFO_SYM = {
         .module_api_version = SENSORS_MODULE_API_VERSION_0_1,
         .hal_api_version = HARDWARE_HAL_API_VERSION,
         .id = SENSORS_HARDWARE_MODULE_ID,
-        .name = "Talkman I2C Sensors",
-        .author = "talkman",
+        .name = "Cityman I2C Sensors",
+        .author = "cityman",
         .methods = &g_methods,
     },
     .get_sensors_list = get_sensors_list,

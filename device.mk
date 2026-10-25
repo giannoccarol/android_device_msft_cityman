@@ -187,7 +187,7 @@ PRODUCT_PACKAGES += \
 
 # Dumpstate HAL
 PRODUCT_PACKAGES += \
-    android.hardware.dumpstate@1.0-service.talkman
+    android.hardware.dumpstate@1.0-service.cityman
 
 # For android_filesystem_config.h
 PRODUCT_PACKAGES += \
@@ -200,9 +200,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libtinyxml
 
-# GNSS HAL — talkman impl ignores CAF NMEA length (nmeaCb SIGABRT)
+# GNSS HAL — cityman impl ignores CAF NMEA length (nmeaCb SIGABRT)
 PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl.talkman \
+    android.hardware.gnss@1.0-impl.cityman \
     android.hardware.gnss@1.0-service
 
 # GPS
@@ -236,21 +236,21 @@ PRODUCT_PACKAGES += \
 
 # init
 PRODUCT_PACKAGES += \
-    init.talkman.rc \
-    init.talkman.usb.rc \
-    init.talkman.sensors.rc \
-    fstab.talkman \
-    ueventd.talkman.rc \
-    init.recovery.talkman.rc \
-    init.talkman.ramdump.rc \
-    init.talkman.diag.rc \
-    init.talkman.misc.rc
+    init.cityman.rc \
+    init.cityman.usb.rc \
+    init.cityman.sensors.rc \
+    fstab.cityman \
+    ueventd.cityman.rc \
+    init.recovery.cityman.rc \
+    init.cityman.ramdump.rc \
+    init.cityman.diag.rc \
+    init.cityman.misc.rc
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devwait.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devwait.sh \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh \
-    $(LOCAL_PATH)/rootdir/etc/fstab.talkman:$(TARGET_COPY_OUT_ROOT)/fstab.talkman \
-    $(LOCAL_PATH)/rootdir/etc/fstab.talkman:$(TARGET_COPY_OUT_RAMDISK)/fstab.talkman
+    $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_ROOT)/fstab.cityman \
+    $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_RAMDISK)/fstab.cityman
 #    $(LOCAL_PATH)/rootdir/etc/init.msm8992.sensor.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.msm8992.sensor.sh
 
 # Keylayout
@@ -267,14 +267,14 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/synaptics_rmi4_i2c.idc:$(TARGET_COPY_OUT_SYSTEM)/usr/idc/synaptics_rmi4_i2c.idc
 # Light HAL
 PRODUCT_PACKAGES += \
-    lights.talkman \
+    lights.cityman \
     lights.vts \
     android.hardware.light@2.0-impl \
     android.hardware.light@2.0-service
     
 # MBN
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/init.talkman.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.talkman.sh
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.sh
 
 # Media
 PRODUCT_PACKAGES += \
@@ -315,7 +315,7 @@ DEVICE_PACKAGE_OVERLAYS := \
 
 # Privapp Whitelist
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/privapp-permissions-talkman.xml:system/etc/permissions/privapp-permissions-talkman.xml
+    $(LOCAL_PATH)/configs/privapp-permissions-cityman.xml:system/etc/permissions/privapp-permissions-cityman.xml
 
 # Power HAL
 PRODUCT_PACKAGES += \
@@ -323,11 +323,11 @@ PRODUCT_PACKAGES += \
 
 # Power configuration file
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/init.talkman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.talkman.power.sh
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.power.sh
 
 # Qseecomd configuration file
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/init.talkman.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.talkman.qseecomd.sh
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.qseecomd.sh
 
 # RenderScript HAL
 PRODUCT_PACKAGES += \
@@ -354,7 +354,7 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 
 # Sensors — AP I2C HAL (not sensors.qcom / ADSP)
 PRODUCT_PACKAGES += \
-    sensors.talkman \
+    sensors.cityman \
     android.hardware.sensors@1.0-impl
 
 # Shims
@@ -368,7 +368,7 @@ PRODUCT_PACKAGES += \
 
 # Thermal HAL
 PRODUCT_PACKAGES += \
-    thermal.talkman 
+    thermal.cityman 
 
 # VNDK
 PRODUCT_EXTRA_VNDK_VERSIONS := 29
@@ -406,7 +406,7 @@ PRODUCT_PACKAGES += \
     wifilogd \
     wpa_supplicant \
     wpa_supplicant.conf \
-    talkman_wlan_mac
+    cityman_wlan_mac
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf \
@@ -416,7 +416,7 @@ PRODUCT_COPY_FILES += \
 
 # only include verity on user builds for LineageOS
 ifeq ($(TARGET_BUILD_VARIANT),user)
-   PRODUCT_COPY_FILES += $(LOCAL_PATH)/fstab-verity.talkman:root/fstab.talkman
+   PRODUCT_COPY_FILES += $(LOCAL_PATH)/fstab-verity.cityman:root/fstab.cityman
 
 # setup dm-verity configs
 PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/platform/soc.0/f9824900.sdhci/by-name/system

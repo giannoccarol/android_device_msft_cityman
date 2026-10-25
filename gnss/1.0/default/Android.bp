@@ -1,7 +1,7 @@
-// Talkman copy of hardware/interfaces/gnss/1.0/default.
+// Cityman copy of hardware/interfaces/gnss/1.0/default.
 // nmeaCb ignores CAF's off-by-one length so hidl_string does not abort.
 cc_library_shared {
-    name: "android.hardware.gnss@1.0-impl.talkman",
+    name: "android.hardware.gnss@1.0-impl.cityman",
     stem: "android.hardware.gnss@1.0-impl",
     overrides: ["android.hardware.gnss@1.0-impl"],
     defaults: ["hidl_defaults"],

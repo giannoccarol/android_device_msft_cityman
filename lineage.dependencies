@@ -1,14 +1,14 @@
 [
   {
-    "repository"  : "Android4Lumia950/android_kernel_mmo_msm8994",
+    "repository"  : "giannoccarol/android_kernel_mmo_msm8994",
     "target_path" : "kernel/mmo/msm8994",
-    "branch"      : "lineage-18.1-talkman",
+    "branch"      : "lineage-18.1-cityman-camera",
     "remote"      : "github"
   },
   {
-    "repository"  : "Android4Lumia950/android_vendor_msft_talkman",
-    "target_path" : "vendor/msft/talkman",
-    "branch"      : "lineage-18.1-talkman",
+    "repository"  : "giannoccarol/android_vendor_msft_cityman",
+    "target_path" : "vendor/msft/cityman",
+    "branch"      : "lineage-18.1-cityman",
     "remote"      : "github"
   },
   {

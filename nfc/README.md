@@ -1,6 +1,6 @@
-# Talkman NFC configs
+# Cityman NFC configs
 
-Kernel side lives in `android_kernel_mmo_msm8994` (`lineage-18.1-talkman`):
+Kernel side lives in `android_kernel_mmo_msm8994` (`lineage-18.1-cityman`):
 `nq-nci` binds the PN547 on I²C6 as `/dev/pn547`.
 
 These two files are the userspace half:

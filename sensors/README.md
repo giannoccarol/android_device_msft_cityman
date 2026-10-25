@@ -1,7 +1,7 @@
-# Talkman sensors HAL
+# Cityman sensors HAL
 
 Userspace I²C HAL for the buses enabled in
-`android_kernel_mmo_msm8994` (`lineage-18.1-talkman`).
+`android_kernel_mmo_msm8994` (`lineage-18.1-cityman`).
 
 | Sensor | Chip | Path |
 |---|---|---|
@@ -11,13 +11,13 @@ Userspace I²C HAL for the buses enabled in
 | Proximity / light | QPDS-T900 (APDS-9930) @ `0x39` | `/dev/i2c-7` |
 | Hall (front / back) | GPIO 42 / 75 | sysfs |
 
-`ro.hardware=talkman`, so this builds as `sensors.talkman.so`.
+`ro.hardware=cityman`, so this builds as `sensors.cityman.so`.
 VINTF already lists `android.hardware.sensors@1.0` as passthrough;
 `android.hardware.sensors@1.0-impl` wraps this module in-process.
 
 HAL 1.11 subtracts still-detected gyro bias and a magnetometer
 calibration (least-squares sphere hard-iron, then a symmetric 3×3
-soft-iron ellipsoid). Cal file is `/data/misc/talkman-sensors/cal.txt`
+soft-iron ellipsoid). Cal file is `/data/misc/cityman-sensors/cal.txt`
 (`v4`). Mag accuracy is field quality only, not motion.
 
 Do not enable `sensors.qcom` or the leftover `sensorhal/` tree.

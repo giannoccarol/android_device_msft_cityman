@@ -62,7 +62,7 @@ LOCAL_C_INCLUDES := \
 #HAL 1.0 Include paths
 LOCAL_C_INCLUDES += \
         frameworks/native/include/media/hardware \
-        device/msft/talkman/camera/QCamera2/HAL
+        device/msft/cityman/camera/QCamera2/HAL
 
 LOCAL_HEADER_LIBRARIES := display_headers generated_kernel_headers
 

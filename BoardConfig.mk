@@ -14,12 +14,13 @@
 # limitations under the License.
 #
 
-DEVICE_PATH := device/msft/talkman
+DEVICE_PATH := device/msft/cityman
 
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 
-TARGET_OTA_ASSERT_DEVICE := talkman,bullhead,angler
+# talkman: the current Lumia TWRP may still report the 950 codename.
+TARGET_OTA_ASSERT_DEVICE := cityman,talkman
 
 # Architecture
 TARGET_ARCH := arm64
@@ -52,15 +53,17 @@ BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
 BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_RAMDISK_OFFSET     := 0x02000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=talkman boot_cpus=0-5
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman boot_cpus=0-5
 BOARD_KERNEL_CMDLINE += lpm_levels.sleep_disabled=1 msm_poweroff.download_mode=0
 BOARD_KERNEL_CMDLINE += loop.max_part=7 androidboot.boot_devices=soc.0/f9824900.sdhci
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
-# Audio / NFC / sensor I2C live in android_kernel_mmo_msm8994
-# (lineage-18.1-talkman, mmo_defconfig). Talkman DT only.
+# Kernel: giannoccarol/android_kernel_mmo_msm8994, branch
+# lineage-18.1-cityman-camera (mmo_defconfig). Image.gz-dtb carries the
+# talkman and cityman DTBs; LK2ND selects cityman (androidboot.dtb_idx=1).
+# boot_cpus=0-5 is the verified setting; all eight cores are untested.
 TARGET_KERNEL_SOURCE := kernel/mmo/msm8994
 TARGET_KERNEL_CONFIG := mmo_defconfig
 TARGET_KERNEL_CLANG_COMPILE := false
@@ -169,7 +172,7 @@ TARGET_USES_NON_LEGACY_POWERHAL := true
 # Recovery
 TARGET_RECOVERY_UI_LIB := librecovery_ui_nanohub
 BOARD_SUPPRESS_SECURE_ERASE := true
-TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.talkman
+TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.cityman
 
 # Releasetools
 TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)
@@ -212,4 +215,4 @@ BOARD_NFC_CHIPSET := pn547
 BOARD_NFC_HAL_SUFFIX := msm8992
 BOARD_NFC_DEVICE := "/dev/pn547"
 
--include vendor/msft/talkman/BoardConfigVendor.mk
+-include vendor/msft/cityman/BoardConfigVendor.mk
