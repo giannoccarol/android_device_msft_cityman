@@ -62,7 +62,9 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
 # Kernel: giannoccarol/android_kernel_mmo_msm8994, branch
-# lineage-18.1-cityman-camera (mmo_defconfig). Image.gz-dtb carries the
+# lineage-18.1-cityman-rom (mmo_defconfig): lineage-18.1-cityman-next plus
+# the USB-C input current limit. Camera work stays on
+# lineage-18.1-cityman-camera. Image.gz-dtb carries the
 # talkman and cityman DTBs; LK2ND selects cityman (androidboot.dtb_idx=1).
 # boot_cpus=0-5 is the verified setting; all eight cores are untested.
 TARGET_KERNEL_SOURCE := kernel/mmo/msm8994

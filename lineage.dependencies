@@ -2,7 +2,7 @@
   {
     "repository"  : "giannoccarol/android_kernel_mmo_msm8994",
     "target_path" : "kernel/mmo/msm8994",
-    "branch"      : "lineage-18.1-cityman-camera",
+    "branch"      : "lineage-18.1-cityman-rom",
     "remote"      : "github"
   },
   {
