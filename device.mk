@@ -379,6 +379,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     thermal.cityman 
 
+# thermal-engine: the blob needs libqti-perfd-client.so to start, and
+# reads the cityman configuration given on its command line.
+PRODUCT_PACKAGES += \
+    libqti-perfd-client
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/thermal-engine-cityman.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermal-engine-cityman.conf
+
 # VNDK
 PRODUCT_EXTRA_VNDK_VERSIONS := 29
 

@@ -40,6 +40,14 @@ talkman and cityman DTBs; LK2ND picks cityman (`androidboot.dtb_idx=1`).
   at 95 C goes offline, the SoC resets at 115 C; BCL still takes cpu6/7
   offline on battery current peaks. The previous `boot_cpus=0-5` came from
   the MSM8992 trees (six cores). Eight cores are untested on the phone.
+- Thermal: the kernel (KTM) polls all eight CPU sensors and steps the A57
+  cluster down from 75 C until thermal-engine takes over. thermal-engine
+  (bullhead blob) starts with the open-source `libqti-perfd-client` stub
+  and reads `configs/thermal-engine-cityman.conf` (`-c`): A57, A53,
+  pop_mem, GPU and board (`msm_therm`) steps, battery charge current,
+  shutdown at 68 C on the board. If it stops or crashes, init hands the
+  polling back to the kernel (`msm_thermal` `enabled=1`). The thresholds
+  are a first conservative set, not yet measured on the phone.
 
 ## Firmware
 
@@ -101,6 +109,9 @@ This ROM builds on the work of others:
   `derveror/android_device_huawei_angler` (`7fc8940`), and
   `thermal-engine-angler.conf` is the reference for the cityman CPU
   thermal limits.
+- **EpicLPer** (Android4Lumia950 talkman, `f1e32adfeb3` on
+  `lineage-18.1-talkman-power`): the `libqti-perfd-client` stub that lets
+  thermal-engine start, also used by shadowofleaf96 (`67c6195`).
 - **LineageOS OnePlus 2** (`LineageOS/android_device_oneplus_oneplus2`
   `8e47d59`, `LineageOS/android_kernel_oneplus_msm8994` lineage-17.1):
   the same MSM8994 bring-up and the core_ctl settings evaluated for

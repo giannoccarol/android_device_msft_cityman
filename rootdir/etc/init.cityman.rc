@@ -392,13 +392,21 @@ on property:ro.boot.hardware.sku=LGH791F
 on property:ro.boot.hardware.sku=LGH798
     setprop ro.boot.wificountrycode 00
 
-service thermal-engine /vendor/bin/thermal-engine
+# thermal-engine can write msm_thermal enabled=0 ("KERNEL mitigation
+# disabled"), which stops the kernel's CPU sensor polling. Whenever it is
+# not running, give the polling back to the kernel: on a crash
+# (onrestart) and when it is stopped.
+service thermal-engine /vendor/bin/thermal-engine -c /vendor/etc/thermal-engine-cityman.conf
     class main
     user root
     socket thermal-send-client stream 0660 system system
     socket thermal-recv-client stream 0660 system system
     socket thermal-recv-passive-client stream 0660 system system
     group root radio system
+    onrestart write /sys/module/msm_thermal/parameters/enabled 1
+
+on property:init.svc.thermal-engine=stopped
+    write /sys/module/msm_thermal/parameters/enabled 1
 
 service loc_launcher /vendor/bin/loc_launcher
     #loc_launcher will start as root and set its uid to gps
