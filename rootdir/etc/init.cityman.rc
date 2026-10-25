@@ -330,12 +330,6 @@ service qmuxd /vendor/bin/qmuxd
     group radio audio bluetooth wakelock gps nfc
     setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
 
-service perfd /vendor/bin/perfd
-    class main
-    user root
-    group system
-    writepid /dev/cpuset/system-background/tasks
-
 service qti /vendor/bin/qti
     class main
     user radio
