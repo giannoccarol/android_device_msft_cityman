@@ -21,8 +21,11 @@ function get-set-forall() {
 ################################################################################
 
 # take the A57s offline when thermal hotplug is disabled
+# (cityman: MSM8994, four A57 cores; boot_cpus=0-3 starts only the A53s)
 write /sys/devices/system/cpu/cpu4/online 0
 write /sys/devices/system/cpu/cpu5/online 0
+write /sys/devices/system/cpu/cpu6/online 0
+write /sys/devices/system/cpu/cpu7/online 0
 
 # disable thermal bcl hotplug to switch governor
 write /sys/module/msm_thermal/core_control/enabled 0
@@ -40,7 +43,7 @@ restorecon -R /sys/devices/system/cpu
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 960000
 
 # Limit A57 max freq from msm_perf module in case CPU 4 is offline
-write /sys/module/msm_performance/parameters/cpu_max_freq "4:960000 5:960000"
+write /sys/module/msm_performance/parameters/cpu_max_freq "4:960000 5:960000 6:960000 7:960000"
 
 # Disable CPU retention
 write /sys/module/lpm_levels/system/a53/cpu0/retention/idle_enabled 0
@@ -49,6 +52,8 @@ write /sys/module/lpm_levels/system/a53/cpu2/retention/idle_enabled 0
 write /sys/module/lpm_levels/system/a53/cpu3/retention/idle_enabled 0
 write /sys/module/lpm_levels/system/a57/cpu4/retention/idle_enabled 0
 write /sys/module/lpm_levels/system/a57/cpu5/retention/idle_enabled 0
+write /sys/module/lpm_levels/system/a57/cpu6/retention/idle_enabled 0
+write /sys/module/lpm_levels/system/a57/cpu7/retention/idle_enabled 0
 
 # Disable L2 retention
 write /sys/module/lpm_levels/system/a53/a53-l2-retention/idle_enabled 0
@@ -92,9 +97,11 @@ copy /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_max_freq /sys/devices/system/c
 
 # plugin remaining A57s
 write /sys/devices/system/cpu/cpu5/online 1
+write /sys/devices/system/cpu/cpu6/online 1
+write /sys/devices/system/cpu/cpu7/online 1
 
 # Restore CPU 4 max freq from msm_performance
-write /sys/module/msm_performance/parameters/cpu_max_freq "4:4294967295 5:4294967295"
+write /sys/module/msm_performance/parameters/cpu_max_freq "4:4294967295 5:4294967295 6:4294967295 7:4294967295"
 
 # input boost configuration
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:960000"

@@ -54,7 +54,7 @@ BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
 BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
 BOARD_RAMDISK_OFFSET     := 0x02000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman boot_cpus=0-5
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman boot_cpus=0-3
 BOARD_KERNEL_CMDLINE += lpm_levels.sleep_disabled=1 msm_poweroff.download_mode=0
 BOARD_KERNEL_CMDLINE += loop.max_part=7 androidboot.boot_devices=soc.0/f9824900.sdhci
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
@@ -66,7 +66,9 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $
 # the USB-C input current limit. Camera work stays on
 # lineage-18.1-cityman-camera. Image.gz-dtb carries the
 # talkman and cityman DTBs; LK2ND selects cityman (androidboot.dtb_idx=1).
-# boot_cpus=0-5 is the verified setting; all eight cores are untested.
+# boot_cpus=0-3 starts only the A53 cluster; init.cityman.power.sh brings
+# cpu4-7 online after the A57 policy is set. The kernel carries the cityman
+# KTM limits (cityman-thermal.dtsi). Eight cores are untested on the phone.
 TARGET_KERNEL_SOURCE := kernel/mmo/msm8994
 TARGET_KERNEL_CONFIG := mmo_defconfig
 TARGET_KERNEL_CLANG_COMPILE := false

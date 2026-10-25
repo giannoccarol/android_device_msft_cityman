@@ -33,8 +33,13 @@ talkman and cityman DTBs; LK2ND picks cityman (`androidboot.dtb_idx=1`).
 - Camera: the vendor tree carries the angler 8.1 daemon stack
   (`CAMERA-CITYMAN.md`), but the ROM kernel has no Lumia camera nodes, so no
   camera is listed.
-- `boot_cpus=0-5` is kept from talkman: six of eight cores online, the
-  setting verified on this phone. All eight cores are untested.
+- CPU: all eight cores. `boot_cpus=0-3` starts the A53 cluster, then
+  `init.cityman.power.sh` sets the A57 policy and brings cpu4-7 online.
+  The kernel holds the A57 cluster without thermal-engine (which does not
+  start yet): an A57 core at 80 C caps the cluster at 1.248 GHz, a core
+  at 95 C goes offline, the SoC resets at 115 C; BCL still takes cpu6/7
+  offline on battery current peaks. The previous `boot_cpus=0-5` came from
+  the MSM8992 trees (six cores). Eight cores are untested on the phone.
 
 ## Firmware
 
@@ -89,6 +94,17 @@ This ROM builds on the work of others:
   `02ece9d`, `9a5933d`, `6616a8a`, `e3a93a0`, `431558e`); the Cityman Q6
   MI2S node, the removed WCD9330 speaker supplies and the ASM topology
   fallback in the mmo kernel follow his kernel (`efb1ebf`, `1a51144`).
+- **Google/LGE** (bullhead) and **Huawei/Google** (angler): the power
+  script and its interactive tuning come from bullhead; the eight-core
+  bring-up order (`boot_cpus=0-3`, A57 policy before cpu5-7) follows
+  angler's stock OPM7 script as kept in
+  `derveror/android_device_huawei_angler` (`7fc8940`), and
+  `thermal-engine-angler.conf` is the reference for the cityman CPU
+  thermal limits.
+- **LineageOS OnePlus 2** (`LineageOS/android_device_oneplus_oneplus2`
+  `8e47d59`, `LineageOS/android_kernel_oneplus_msm8994` lineage-17.1):
+  the same MSM8994 bring-up and the core_ctl settings evaluated for
+  cityman.
 - **LineageOS** and **TheMuppets**: the Android 11 base and the reference
   vendor blobs.
 
