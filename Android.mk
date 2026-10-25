@@ -40,6 +40,11 @@ include $(call all-makefiles-under,$(LOCAL_PATH))
 # qcom-caf GPS tree for msm8994, so build the msm8994 one from here.
 include $(call all-makefiles-under,hardware/qcom/gps/msm8994)
 
+# Audio HAL: the generic hardware/qcom/audio, the one the 18.1 ROM and its
+# speaker/call audio run with (BOARD_USES_QCOM_HARDWARE hides it; the
+# qcom-caf msm8994 audio project is left out of the manifest).
+include hardware/qcom/audio/Android.mk
+
 DM_LIBS := libdmengine.so libdmjavaplugin.so
 DM_SYMLINKS := $(addprefix $(TARGET_OUT)/priv-app/DMService/lib/arm/,$(notdir $(DM_LIBS)))
 $(DM_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
