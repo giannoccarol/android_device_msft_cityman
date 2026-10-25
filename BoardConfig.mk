@@ -20,7 +20,8 @@ BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 
 # talkman: the current Lumia TWRP may still report the 950 codename.
-TARGET_OTA_ASSERT_DEVICE := cityman,talkman
+# angler: the Android4Lumia950 TWRP 3.7.0_9-0 is built from the Nexus 6P tree.
+TARGET_OTA_ASSERT_DEVICE := cityman,talkman,angler
 
 # Architecture
 TARGET_ARCH := arm64
