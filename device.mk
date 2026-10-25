@@ -338,10 +338,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.cityman.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.qseecomd.sh
 
-# RenderScript HAL
-PRODUCT_PACKAGES += \
-    android.hardware.renderscript@1.0-impl
-
 # Ril
 PRODUCT_PACKAGES += \
     telephony-ext \
@@ -386,6 +382,10 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine-cityman.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermal-engine-cityman.conf
+
+# VINTF: the 3.10 kernel cannot meet the framework matrix kernel
+# requirements; do not enforce them when building OTA packages.
+PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
 
 # VNDK
 PRODUCT_EXTRA_VNDK_VERSIONS := 29

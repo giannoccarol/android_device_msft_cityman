@@ -18,6 +18,8 @@ DEVICE_PATH := device/msft/cityman
 
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
+# Android 12+: the vendor tree copies ELF blobs with PRODUCT_COPY_FILES.
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
 # talkman: the current Lumia TWRP may still report the 950 codename.
 # angler: the Android4Lumia950 TWRP 3.7.0_9-0 is built from the Nexus 6P tree.
@@ -62,9 +64,9 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
 # Kernel: giannoccarol/android_kernel_mmo_msm8994, branch
-# lineage-18.1-cityman-rom (mmo_defconfig): lineage-18.1-cityman-next plus
-# the USB-C input current limit. Camera work stays on
-# lineage-18.1-cityman-camera. Image.gz-dtb carries the
+# lineage-20-cityman (mmo_defconfig): Android4Lumia950 lineage-21.0 with
+# the eBPF/cgroup/PSI backports, plus lineage-18.1-cityman-rom. Camera
+# work stays on lineage-18.1-cityman-camera. Image.gz-dtb carries the
 # talkman and cityman DTBs; LK2ND selects cityman (androidboot.dtb_idx=1).
 # boot_cpus=0-3 starts only the A53 cluster; init.cityman.power.sh brings
 # cpu4-7 online after the A57 policy is set. The kernel carries the cityman
@@ -98,7 +100,6 @@ TARGET_USES_64_BIT_BINDER := true
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_QCOM := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth
 BOARD_HAS_QCA_BT_ROME := true
 WCNSS_FILTER_USES_SIBS := true
 
@@ -122,7 +123,6 @@ TARGET_USES_HWC2 := true
 TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x2000U | 0x02000000U
 TARGET_DISABLE_POSTRENDER_CLEANUP := true
 HAVE_ADRENO_SOURCE:= false
-OVERRIDE_RS_DRIVER:= libRSDriver_adreno.so
 
 # Dexpreopt (Enable dex-preoptimization to speed up first boot sequence)
 ifeq ($(HOST_OS),linux)

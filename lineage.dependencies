@@ -2,25 +2,19 @@
   {
     "repository"  : "giannoccarol/android_kernel_mmo_msm8994",
     "target_path" : "kernel/mmo/msm8994",
-    "branch"      : "lineage-18.1-cityman-rom",
+    "branch"      : "lineage-20-cityman",
     "remote"      : "github"
   },
   {
     "repository"  : "giannoccarol/android_vendor_msft_cityman",
     "target_path" : "vendor/msft/cityman",
-    "branch"      : "lineage-18.1-cityman",
-    "remote"      : "github"
-  },
-  {
-    "repository"  : "lakgarg/packages_apps_GoogleCamera",
-    "target_path" : "packages/apps/GoogleCamera",
-    "branch"      : "master",
+    "branch"      : "lineage-20-cityman",
     "remote"      : "github"
   },
   {
     "repository"  : "LineageOS/android_hardware_sony_timekeep",
     "target_path" : "hardware/sony/timekeep",
-    "branch"      : "lineage-18.1",
+    "branch"      : "lineage-20",
     "remote"      : "github"
   }
 ]
