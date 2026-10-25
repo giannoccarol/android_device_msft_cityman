@@ -32,18 +32,31 @@ talkman and cityman DTBs; LK2ND picks cityman (`androidboot.dtb_idx=1`).
 - `boot_cpus=0-5` is kept from talkman: six of eight cores online, the
   setting verified on this phone. All eight cores are untested.
 
-## Not in these repositories
+## Firmware
 
-Install these from the phone's own files or the project's local copies:
+The vendor tree ships the firmware, as the other Lumia vendor trees do:
 
-- Wi-Fi: `qwlan30.bin` (Android SGMT), the Lumia `bdwlan30.bin` board
-  calibration and `wlan/qca_cld/WCNSS_qcom_cfg.ini`.
+- Wi-Fi: `qwlan30.bin` (Android SGMT), the cityman `bdwlan30.bin` board file
+  and `wlan/qca_cld/WCNSS_qcom_cfg.ini`.
 - Bluetooth: `nvm_tlv_3.*.bin`, `rampatch_tlv_3.*.tlv`.
-- ADSP firmware for calls: still being changed; see
+- ADSP for calls: the split of the Cityman `qcadsp8994.mbn`; see
   `kernel/mmo/msm8994/Documentation/arm64/cityman-adsp.txt`.
+
+`bdwlan30.bin` and the Bluetooth files match
+`Android4Lumia950/firmware-microsoft-cityman`. Per-device data (MAC
+addresses, EFS) stays in `persist` and the modem partitions, which the ROM
+does not write.
+
+## Install
+
+From the Android4Lumia950 layout (installer `cityman-temp`, TWRP 3.7.0_9-0):
+wipe data in TWRP (the ROM is signed with different keys from the talkman
+one), then `adb sideload` the zip. That TWRP reports `angler`, which the
+package accepts.
 
 ## Not verified
 
-No ROM has been built from this tree yet. The AP sensors HAL added to the
-talkman tree after the installed ROM, and the qcom sensors blobs listed in
-the vendor tree, have not been tried on cityman.
+The first ROM from this tree (25/10/2026) boots on one phone; its features
+are still being checked. The AP sensors HAL added to the talkman tree after
+the installed ROM, and the qcom sensors blobs listed in the vendor tree,
+have not been tried on cityman.
