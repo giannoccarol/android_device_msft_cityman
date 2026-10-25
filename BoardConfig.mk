@@ -53,6 +53,10 @@ BOARD_USES_QCOM_HARDWARE := true
 # memfd_create is backported in the 3.10 kernel.
 TARGET_HAS_MEMFD_BACKPORT := true
 
+# Keep the device copy of dataservices (rmnetctl), the one LTE data runs
+# with on the 3.10 kernel, instead of vendor/qcom/opensource/dataservices.
+USE_DEVICE_SPECIFIC_DATASERVICES := true
+
 WITH_DEXPREOPT := true
 DONT_DEXPREOPT_PREBUILTS := true
 
