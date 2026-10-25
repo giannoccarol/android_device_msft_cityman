@@ -143,8 +143,8 @@
 
         </module>
 
-        <!-- A2dp Audio HAL -->
-        <xi:include href="a2dp_audio_policy_configuration.xml"/>
+        <!-- Bluetooth Audio HAL (A2DP and hearing aids) -->
+        <xi:include href="bluetooth_audio_policy_configuration.xml"/>
 
         <!-- Usb Audio HAL -->
         <xi:include href="usb_audio_policy_configuration.xml"/>
