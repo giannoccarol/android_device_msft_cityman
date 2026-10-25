@@ -60,3 +60,22 @@ The first ROM from this tree (25/10/2026) boots on one phone; its features
 are still being checked. The AP sensors HAL added to the talkman tree after
 the installed ROM, and the qcom sensors blobs listed in the vendor tree,
 have not been tried on cityman.
+
+## Credits
+
+This ROM builds on the work of others:
+
+- **Android4Lumia950** (djokcho, EpicLPer, j0sh1x and the community): the
+  talkman device, vendor and kernel trees, the installer, TWRP and the
+  `firmware-microsoft-cityman` files this ROM ships.
+- **archienz** (`archienz/android_device_msft_talkman`,
+  `archienz/android_kernel_mmo_msm8994`): rear camera measurements on the
+  Lumia 950 (CSI lane map `0x0423`, 24 MHz MCLK, CCI layout), used by the
+  cityman camera kernel.
+- **LineageOS** and **TheMuppets**: the Android 11 base and the reference
+  vendor blobs.
+
+Work under evaluation for cityman, credited where it is used:
+**shadowofleaf96** (cityman trees, TAS2553 / QUAT_MI2S audio and call
+routing) and **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230
+driver).
