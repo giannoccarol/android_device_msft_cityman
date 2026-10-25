@@ -428,3 +428,8 @@ endif
 
 $(call inherit-product-if-exists, hardware/qcom/msm8994/msm8992.mk)
 $(call inherit-product-if-exists, vendor/qcom/gpu/msm8994/msm8994-gpu-vendor.mk)
+
+# The prebuilt LG/Qualcomm apps (DCMO, DMConfigUpdate, HiddenMenu,
+# LifeTimerService, datastatusnotification) list com.qualcomm.qcrilhook in
+# their manifests but not in the build files; Android 13 checks that.
+PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true

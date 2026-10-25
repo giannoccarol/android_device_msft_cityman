@@ -39,6 +39,8 @@ LOCAL_SRC_FILES += \
         HAL/QCameraThermalAdapter.cpp
 
 LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-unused-label -Wno-unused-parameter
+# Clang 14 (Android 13) flags the boolean | chains of the 2015 HAL.
+LOCAL_CFLAGS += -Wno-bitwise-instead-of-logical
 LOCAL_CFLAGS += -DHAS_MULTIMEDIA_HINTS
 LOCAL_CFLAGS += -DENABLE_MODEL_INFO_EXIF
 
