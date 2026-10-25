@@ -44,6 +44,7 @@ ro.product.first_api_level=23
 dalvik.vm.boot-dex2oat-threads=4
 dalvik.vm.dex2oat-threads=4
 dalvik.vm.image-dex2oat-threads=4
+dalvik.vm.dex2oat-cpu-set=0,1,2,3
 ro.hwui.texture_cache_size=56
 ro.hwui.layer_cache_size=32
 ro.hwui.r_buffer_cache_size=8
