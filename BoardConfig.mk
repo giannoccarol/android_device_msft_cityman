@@ -46,6 +46,13 @@ TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
 TARGET_BOARD_PLATFORM := msm8992
 
+# Qualcomm support: vendor/lineage maps msm8992 to hardware/qcom-caf/msm8994
+# (display, audio, media), as on the MSM8992 libra LineageOS 20 tree.
+BOARD_USES_QCOM_HARDWARE := true
+
+# memfd_create is backported in the 3.10 kernel.
+TARGET_HAS_MEMFD_BACKPORT := true
+
 WITH_DEXPREOPT := true
 DONT_DEXPREOPT_PREBUILTS := true
 

@@ -137,3 +137,7 @@ persist.sys.isolated_storage=false
 # Wifi
 wifi.interface=wlan0
 wifi.supplicant_scan_interval=15
+
+# eBPF: start without it, as the other 3.10 ports on LineageOS-UL do.
+# The lineage-20-cityman kernel has eBPF; flip this once the system boots.
+ro.kernel.ebpf.supported=false
