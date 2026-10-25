@@ -234,6 +234,14 @@ PRODUCT_PACKAGES += \
     ims_ext_common.xml \
     com.android.ims.rcsmanager
 
+# Cityman RIL helpers, built from kernel/mmo/msm8994/tools/cityman-ril
+# (the build finds that Android.mk; do not include it again here).
+# The init preloads are in rootdir/etc/init.cityman.rc.
+PRODUCT_PACKAGES += \
+    cityman-uim-bootstrap \
+    libcityman_ds_target \
+    libcityman_ril_init
+
 # init
 PRODUCT_PACKAGES += \
     init.cityman.rc \

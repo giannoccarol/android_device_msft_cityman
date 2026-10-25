@@ -322,10 +322,13 @@ on property:wc_transport.start_hci=false
     stop start_hci_filter
 
 # QMUX must be in multiple groups to support external process connections
+# Cityman data services must see the msm8994 platform; the shim changes
+# only ro.board.platform for these processes (kernel tools/cityman-ril).
 service qmuxd /vendor/bin/qmuxd
     class main
     user root
     group radio audio bluetooth wakelock gps nfc
+    setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
 
 service perfd /vendor/bin/perfd
     class main
@@ -347,6 +350,18 @@ service sensors /vendor/bin/sensors.qcom
 service netmgrd /vendor/bin/netmgrd
     class main
     group radio system wakelock
+    setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
+
+# Same service as hardware/ril rild.legacy.rc plus the Cityman preloads.
+# This file is imported by init.rc and parsed before /vendor/etc/init, so
+# this definition wins and the later copy is ignored as a duplicate.
+# libcityman_ril_init only skips the absent LG NV service wait.
+service ril-daemon /vendor/bin/hw/rild
+    class main
+    user radio
+    group radio cache inet misc audio log readproc wakelock
+    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+    setenv LD_PRELOAD /vendor/lib64/libcityman_ril_init.so:/vendor/lib64/libcityman_ds_target.so
 
 service per_mgr /vendor/bin/pm-service
     class core
