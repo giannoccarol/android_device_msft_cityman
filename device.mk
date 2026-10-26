@@ -374,10 +374,19 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     thermal.cityman 
 
-# thermal-engine: the blob needs libqti-perfd-client.so to start, and
-# reads the cityman configuration given on its command line.
-PRODUCT_PACKAGES += \
-    libqti-perfd-client
+# thermal-engine needs libqti-perfd-client.so to start, and reads the
+# cityman configuration given on its command line. The vendor tree now ships
+# the MSM8994 perfd with its client library (OnePlus 2 blobs), so the power
+# HAL and thermal-engine reach a real daemon. The open-source stub in
+# libqti-perfd-client/ stays as a fallback: add it back here (and drop the
+# vendor copies) if perfd does not run.
+
+# perfd reads the minimum frequencies and the core_ctl range.
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.min_freq_0=384000 \
+    ro.min_freq_4=384000 \
+    ro.core_ctl_min_cpu=0 \
+    ro.core_ctl_max_cpu=4
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine-cityman.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermal-engine-cityman.conf

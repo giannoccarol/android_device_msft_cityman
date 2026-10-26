@@ -60,6 +60,7 @@ on property:sys.boot_completed=1
     write /sys/block/mmcblk0/queue/iostats 1
 
     restart cameraserver
+    start perfd
 
 on init
 
@@ -283,6 +284,9 @@ on post-fs-data
     mkdir /data/misc/perfd 0755 root system
     chmod 2755 /data/misc/perfd
     rm /data/misc/perfd/default_values
+    mkdir /data/system/perfd 0770 root system
+    rm /data/system/perfd/default_values
+    chmod 2770 /data/system/perfd
 
 
     # Create directory used by sensor subsystem
@@ -390,6 +394,16 @@ on property:ro.boot.hardware.sku=LGH791F
 
 on property:ro.boot.hardware.sku=LGH798
     setprop ro.boot.wificountrycode 00
+
+# MSM8994 perf daemon (OnePlus 2 blob): serves the perf locks of the QTI
+# power HAL, thermal-engine and the camera stack. Started after boot, when
+# init.cityman.power.sh has set the governors and core_ctl.
+service perfd /vendor/bin/perfd
+    class main
+    user root
+    group root system readproc
+    disabled
+    writepid /dev/cpuset/system-background/tasks
 
 # thermal-engine can write msm_thermal enabled=0 ("KERNEL mitigation
 # disabled"), which stops the kernel's CPU sensor polling. Whenever it is
