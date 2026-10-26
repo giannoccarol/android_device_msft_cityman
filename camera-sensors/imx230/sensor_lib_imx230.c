@@ -101,8 +101,11 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
                                .sensor_mount_angle = 270},
         .is_flash_supported = 0,
     },
-    /* RAW Bayer, CSI, 10-bit. GRBG order is checked against the consumer. */
-    .output = {0, 1, 1, 2},
+    /* RAW Bayer, CSI, GRBG. raw_depth uses the CSI decode numbering
+     * (CSI_DECODE_10BIT = 2), as the angler IMX377 descriptor does: the
+     * daemon derives the output fourcc from it and must find the same
+     * format on the RAW10 CID, otherwise the stream has no primary CID. */
+    .output = {0, 1, CSI_DECODE_10BIT, 2},
     .output_registers = {0x034c, 0x034e, 0x0342, 0x0340},
     .exposure_registers = {0x0202, 0x0204, 8},
     .aec = {1.0f, 8.0f, 8.0f, MAX_LINES},

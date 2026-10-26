@@ -28,7 +28,7 @@ int run_tests(void)
     REQUIRE(d->modes.count == 1 && d->resolutions.count == 1 && d->csi.count == 1);
     REQUIRE(d->slave.slave_addr == 0x20 && d->slave.sensor_id_info.sensor_id == 0x0230);
     REQUIRE(d->start.reg_setting[0].reg_data == 1 && d->stop.reg_setting[0].reg_data == 0);
-    REQUIRE(d->output.raw_depth == 1 && d->streams.entries[0].cid[0].decode_format == CSI_DECODE_10BIT);
+    REQUIRE(d->output.raw_depth == CSI_DECODE_10BIT && d->streams.entries[0].cid[0].decode_format == CSI_DECODE_10BIT);
     REQUIRE(d->exposure.calculate(1.0f, 1, 0) < 0);
     REQUIRE(d->exposure.calculate(0.0f, 1, &e) < 0);
     REQUIRE(d->exposure.calculate(-1.0f, 1, &e) < 0);
