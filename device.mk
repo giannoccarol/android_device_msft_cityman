@@ -184,6 +184,37 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.enable_gl_backpressure=1 \
     debug.sf.latch_unsignaled=1
 
+# Performance tuning taken from the LineageOS 20 OnePlus 2 port (MSM8994,
+# same msm8994 CAF display HAL): more layers on the MDP, no SurfaceFlinger
+# composition prediction or transaction tracing, SystemUI compiled with
+# speed, quieter logs.
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.sf.enable_transaction_tracing=false \
+    debug.sf.predict_hwc_composition_strategy=0 \
+    dev.pm.dyn_samplingrate=1 \
+    persist.hwc.mdpcomp.maxpermixer=5 \
+    persist.hwc.ptor.enable=true \
+    persist.hwc.pubypass=true \
+    persist.mdpcomp_perfhint=50 \
+    persist.metadata_dynfps.disable=true \
+    vidc.dec.120fps.enabled=1 \
+    dalvik.vm.systemuicompilerfilter=speed \
+    dalvik.vm.heapstartsize=16m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=2m \
+    dalvik.vm.heapmaxfree=8m \
+    persist.log.tag.AnalyticsService=S \
+    persist.log.tag.KernelCpuUidActiveTimeReader=S \
+    persist.log.tag.Tracer=S \
+    persist.log.tag.NearbySharing=S \
+    persist.log.tag.IntervalStats=S \
+    persist.log.tag.CompatibilityChangeReporter=S \
+    persist.log.tag.SQLiteLog=S \
+    persist.log.tag.wificond=S \
+    persist.log.tag.TrafficStats=S \
+    persist.log.tag.ContrastColorUtil=S \
+    persist.log.tag.OpenGLRenderer=S
+
 # DRM
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
