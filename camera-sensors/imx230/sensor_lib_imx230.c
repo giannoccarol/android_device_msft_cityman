@@ -3,6 +3,9 @@
 #include "profile.h"
 #ifdef CITYMAN_CAMERA_NUBIA24
 #include "nubia24_registers.generated.h"
+#elif defined(CITYMAN_CAMERA_LUMIA20)
+#include "smia_registers.h"
+#include "lumia20_registers.generated.h"
 #else
 #include "smia_registers.h"
 #endif

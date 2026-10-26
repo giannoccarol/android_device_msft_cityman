@@ -26,6 +26,16 @@ case "$profile" in
         sha256sum "$inputs/libmmcamera_imx230.so" > "$inputs/SHA256SUMS"
         args+=("CITYMAN_CAMERA_NUBIA_SENSOR_BLOB=$inputs/libmmcamera_imx230.so")
         ;;
+    lumia20)
+        dcc=${CITYMAN_CAMERA_LUMIA20_DCC:?supply the pinned private 0AEACA05.dcc}
+        inputs=out/cityman-camera-inputs
+        mkdir -p "$inputs"
+        python3 "$here/../../camera-sensors/imx230/generate-lumia20.py" "$dcc" \
+            "$inputs/lumia20_registers.generated.h"
+        install -m 600 "$dcc" "$inputs/0AEACA05.dcc"
+        sha256sum "$inputs/0AEACA05.dcc" > "$inputs/SHA256SUMS"
+        args+=("CITYMAN_CAMERA_LUMIA20_DCC=$inputs/0AEACA05.dcc")
+        ;;
     *) echo "Unsupported sensor profile: $profile" >&2; exit 1 ;;
 esac
 source build/envsetup.sh >/dev/null

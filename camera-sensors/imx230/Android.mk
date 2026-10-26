@@ -19,6 +19,18 @@ $(cityman_sensor_header): PRIVATE_GENERATOR := $(LOCAL_PATH)/generate-nubia24.py
 $(cityman_sensor_header): $(CITYMAN_CAMERA_NUBIA_SENSOR_BLOB) $(LOCAL_PATH)/generate-nubia24.py \
         $(LOCAL_PATH)/inspect-nubia-registers.py $(LOCAL_PATH)/smia_registers.h
 	python3 $(PRIVATE_GENERATOR) "$(PRIVATE_BLOB)" "$@"
+else ifeq ($(cityman_sensor_profile),lumia20)
+ifeq ($(strip $(CITYMAN_CAMERA_LUMIA20_DCC)),)
+$(error lumia20 requires CITYMAN_CAMERA_LUMIA20_DCC pointing to the pinned private 0AEACA05.dcc)
+endif
+LOCAL_CFLAGS += -DCITYMAN_CAMERA_LUMIA20
+cityman_sensor_header := $(call local-generated-sources-dir)/lumia20_registers.generated.h
+LOCAL_GENERATED_SOURCES += $(cityman_sensor_header)
+LOCAL_C_INCLUDES += $(dir $(cityman_sensor_header))
+$(cityman_sensor_header): PRIVATE_DCC := $(CITYMAN_CAMERA_LUMIA20_DCC)
+$(cityman_sensor_header): PRIVATE_GENERATOR := $(LOCAL_PATH)/generate-lumia20.py
+$(cityman_sensor_header): $(CITYMAN_CAMERA_LUMIA20_DCC) $(LOCAL_PATH)/generate-lumia20.py
+	python3 $(PRIVATE_GENERATOR) "$(PRIVATE_DCC)" "$@"
 else ifneq ($(cityman_sensor_profile),smia9)
 $(error Unsupported CITYMAN_CAMERA_SENSOR_PROFILE=$(cityman_sensor_profile))
 endif
