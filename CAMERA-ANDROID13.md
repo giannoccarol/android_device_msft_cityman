@@ -35,8 +35,19 @@ establish a specific commercial part number or a working front camera.
 
 ## Validation and phone tests
 
-Kernel and HAL compilation are recorded in the kernel camera report and private
-build logs. No flash, service restart or sensor write is part of this preparation.
+Kernel compilation passed (source `d62fca264ee`, image hash in the kernel report).
+The HAL and its three requested interface/JPEG modules also passed an isolated
+Android 13 build, using device `261de03`, kernel `d62fca264ee`, vendor `8e70346`.
+The private build folder is `android-cityman/camera-a13-hal-20261026`; its
+`source-commits.txt`, `build.log` and `camera.SHA256SUMS` identify the inputs
+and outputs. Later changes only improve the build wrapper and documentation.
+
+The initial wrapper lacked a writable compiler cache; that was fixed with a
+private `/ccache` mount before the successful build. The output hash list was
+then corrected to use the source JPEG interface's actual vendor install path.
+Neither repair changes camera product code or binaries.
+
+No flash, service restart or sensor write is part of this preparation.
 The owner is handling Android 13 reboot problems independently.
 
 When the matching sensor module exists, the first hardware acceptance is a real

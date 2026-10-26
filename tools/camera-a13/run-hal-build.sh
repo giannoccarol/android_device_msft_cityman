@@ -17,7 +17,8 @@ docker run --rm --network none -i \
     --mount "type=bind,src=$output/vendor,dst=/src/vendor/msft/cityman,readonly" \
     --mount "type=bind,src=$output/out,dst=/src/out" \
     --mount "type=bind,src=$output/ccache,dst=/ccache" \
-    -e JOBS="$jobs" --name "los20-camera-hal-$$" los18-build bash -c '
+    -e JOBS="$jobs" --hostname cityman-camera-build \
+    --name "los20-camera-hal-$$" los18-build bash -c '
         set -eo pipefail
         cd /src
         source build/envsetup.sh >/dev/null
@@ -27,5 +28,5 @@ docker run --rm --network none -i \
 (
     cd "$output/out/target/product/cityman"
     sha256sum system/lib/hw/camera.msm8992.so system/lib/libmmcamera_interface.so \
-        system/lib/libmmjpeg_interface.so system/lib/libqomx_core.so
+        vendor/lib/libmmjpeg_interface.so system/lib/libqomx_core.so
 ) > "$output/camera.SHA256SUMS"
