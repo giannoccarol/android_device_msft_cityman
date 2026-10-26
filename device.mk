@@ -153,7 +153,7 @@ ifeq ($(CITYMAN_CAMERA_SMIA_EXPERIMENTAL),true)
 PRODUCT_PACKAGES += libmmcamera_imx230
 endif
 PRODUCT_PACKAGES += \
-    libsensor_vendor \
+    libsensor_camera_shim \
     camera.msm8992 \
     libmmcamera_interface \
     libmmjpeg_interface \

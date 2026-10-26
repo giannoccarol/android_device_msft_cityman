@@ -33,3 +33,12 @@ LOCAL_PROPRIETARY_MODULE := true
 LOCAL_VENDOR_MODULE := true
 LOCAL_CFLAGS_arm64 := -DLIBSHIMS_64BIT
 include $(BUILD_SHARED_LIBRARY)
+
+# SensorManager::createEventQueue(String8, int) for liboemcamera.so
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := sensor_camera_shim.cpp
+LOCAL_MODULE := libsensor_camera_shim
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_SHARED_LIBRARIES := libsensor libutils
+LOCAL_32_BIT_ONLY := true
+include $(BUILD_SHARED_LIBRARY)
