@@ -34,6 +34,30 @@ IMX377 chromatix remain provisional ISP tuning, not Lumia calibration.
 
 ## Build the modules in isolation
 
+### Recorded verification and handoff, 2026-10-26
+
+Both profiles passed the ARM32 behavioral tests and the real angler consumer
+tests under QEMU, including capability geometry, register/power translation,
+all selected CSID pointers and the zero-mode negative control. The unchanged
+`smia9` standalone binary still has SHA-256
+`5c4fa185e3a354f85cc138e6a6c0dd086828994dd2eb5ba8b13b1800a7a6135c`;
+the new standalone `nubia24` test binary is
+`4f6905d019e4c23a6774f4e947f5307a0a8a827114aa0a564e0e2501e0f28228`.
+These are freestanding test shared objects, not Android production artifacts.
+Shell syntax checks and the existing Parcel patch's reverse/applicability
+check on the current Android 13 tree passed.
+
+An isolated Android build was started from device `cab103b`, kernel
+`037f8741269`, vendor `257aae2` in
+`android-cityman/camera-a13-nubia24-20261026`, then stopped at the owner's
+request so their main agent can build the combined changes. It did not finish;
+there is no verified Android-built `nubia24` artifact or ROM ZIP from this
+session. No new profile was installed and no phone operation was performed.
+
+For integration, merge the device/kernel/vendor `lineage-20-cityman-camera`
+heads, retain/apply the included Parcel patch, and explicitly select `nubia24`
+with the pinned private sensor input. A merge alone leaves `smia9` as default.
+
 Supply the local sensor ELF with SHA-256
 `a3f4a7347533fdf04c389d5c328bf22c91cad96901b2629512ca53dc0744490c`.
 `generate-nubia24.py` validates it and produces only private register data.

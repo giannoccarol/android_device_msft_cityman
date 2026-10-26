@@ -4,6 +4,13 @@ This is a new sensor plugin, not the missing hraj9258 source file. It is built
 from C and register programs; no input sensor binary is patched or copied into
 the output. No Qualcomm proprietary/confidential SDK header is included.
 
+The default `smia9` programs remain the pinned public reference below. A separate
+opt-in `nubia24` diagnostic profile now generates private register data from a
+hash-pinned local Nubia input; it reuses this source plugin and angler interface,
+without importing the old executable code or sensor descriptor. Its matching
+clock/PLL/CSI configuration, tests, build steps and limits are documented in
+[`NUBIA24.md`](NUBIA24.md). Neither profile has delivered a verified image.
+
 The owner requested an equivalent module with a verified interface on
 2026-10-26. The separately specified `angler_sensor_abi.h` describes the external
 plugin boundary only. Kernel records come directly from the matching GPL
