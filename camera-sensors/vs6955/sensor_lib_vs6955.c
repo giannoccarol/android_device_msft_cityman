@@ -25,12 +25,33 @@
 #define COUNT(a) (sizeof(a) / sizeof((a)[0]))
 #define SETTING(a, type, wait) { .reg_setting = (a), .size = COUNT(a), \
     .addr_type = MSM_CAMERA_I2C_WORD_ADDR, .data_type = (type), .delay = (wait) }
+/* Explicit size: the CCI queue cannot take the 805-entry init as one table. */
+#define SETTING_N(a, n, type, wait) { .reg_setting = (a), .size = (n), \
+    .addr_type = MSM_CAMERA_I2C_WORD_ADDR, .data_type = (type), .delay = (wait) }
 #define POWER(type, value, config, wait) { .seq_type = (type), .seq_val = (value), \
     .config_val = (config), .delay = (wait) }
 
 static struct msm_camera_i2c_reg_array reset[]     = {{0x0103, 1, 0}};
-static struct msm_camera_i2c_reg_array stream_on[] = {{0x0100, 1, 0}};
-static struct msm_camera_i2c_reg_array stream_off[]= {{0x0100, 0, 0}};
+/* Windows driver stream-on: lane mode, mode select, output enable. */
+static struct msm_camera_i2c_reg_array stream_on[] = {
+    /* MIPI PLL: EXTCLK 9.6 MHz * 52 / 1 = 499.2 Mbps per lane. */
+    {0x030c, 0, 0}, {0x030d, 1, 0},
+    {0x030e, 0, 0}, {0x030f, 52, 0},
+    {0x0310, 1, 0},
+    /* The DCC has no frame length or exposure: seed both before streaming. */
+    {0x0104, 1, 0},
+    {0x0340, 0x04, 0}, {0x0341, 0xba, 0},   /* 1210 lines @ 99.84 MHz = 30 fps */
+    {0x0202, 0x03, 0}, {0x0203, 0xe8, 0},   /* 1000 lines */
+    {0x0204, 0x00, 0}, {0x0205, 0x00, 0},   /* 1x gain */
+    {0x0104, 0, 0},
+    {0x0114, 1, 0},   /* two MIPI lanes */
+    {0x0100, 1, 0},
+    {0x0138, 1, 0},
+};
+static struct msm_camera_i2c_reg_array stream_off[]= {
+    {0x0138, 0, 0},
+    {0x0100, 0, 0},
+};
 static struct msm_camera_i2c_reg_array hold_on[]   = {{0x0104, 1, 0}};
 static struct msm_camera_i2c_reg_array hold_off[]  = {{0x0104, 0, 0}};
 
@@ -38,9 +59,9 @@ static struct msm_camera_i2c_reg_array hold_off[]  = {{0x0104, 0, 0}};
  * Frame length and pixel clocks still have to be derived/measured. */
 #define VS6955_LINE_LENGTH 2750u
 #define VS6955_MCLK        9600000u
-#define VS6955_FRAME_LINES  1125u
-#define VS6955_VT_CLOCK     92812500u
-#define VS6955_OUTPUT_CLOCK 92812500u
+#define VS6955_FRAME_LINES  1210u
+#define VS6955_VT_CLOCK     99840000u
+#define VS6955_OUTPUT_CLOCK 99840000u
 #define VS6955_MAX_FPS      30.0f
 #define VS6955_MAX_LINES    (65535u - 8u)
 
@@ -111,7 +132,7 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
                 POWER(SENSOR_VREG, CAM_VANA, 0, 1),
                 POWER(SENSOR_VREG, CAM_VIO, 0, 1),
                 POWER(SENSOR_GPIO, SENSOR_GPIO_RESET, GPIO_OUT_LOW, 1),
-                POWER(SENSOR_GPIO, SENSOR_GPIO_STANDBY, GPIO_OUT_LOW, 1),
+                POWER(SENSOR_GPIO, SENSOR_GPIO_STANDBY, GPIO_OUT_HIGH, 1),
                 POWER(SENSOR_CLK, SENSOR_CAM_MCLK, VS6955_MCLK, 5),
                 POWER(SENSOR_GPIO, SENSOR_GPIO_RESET, GPIO_OUT_HIGH, 30),
             }, .size = 6,
@@ -127,8 +148,8 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
                                .position = FRONT_CAMERA_B, .sensor_mount_angle = 90},
         .is_flash_supported = 0,
     },
-    /* TODO: bayer_order from a captured frame; raw_depth 1 = 10 bit. */
-    .output = {0, 1, 1, 1},
+    /* GBRG matches the angler front reference; confirm on a captured frame. */
+    .output = {0, 1, 1, 3},
     .output_registers = {0x034c, 0x034e, 0x0342, 0x0340},
     .exposure_registers = {VS6955_REG_COARSE, VS6955_REG_GAIN, 8},
     .aec = {1.0f, 8.0f, 8.0f, 65527u},
@@ -150,31 +171,44 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
         SETTING(vs6955_init, MSM_CAMERA_I2C_BYTE_DATA, 0),
     }, .count = 2},
     .resolutions = {.entries = {SETTING(vs6955_mode2_1296x972, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 1},
-    .resolution_actions = {{0, 1, 2, 3}, 4},
+    /* Same action order as the angler front sensor. */
+    .resolution_actions = {{0, 2, 4, 5, 6, 3, 1}, 7},
     .modes = {.entries = {
-        /* TODO: frame_length/clocks unknown; line 2750 from the DCC. */
-        {.width = 2592, .height = 1944, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
-         .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 1,
-         .minimum_fps = 30.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
-        {.width = 2592, .height = 1456, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
-         .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 1,
-         .minimum_fps = 30.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
+        /* Binned mode only: it matches the single generated resolution table. */
         {.width = 1296, .height = 972, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
          .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 2,
-         .minimum_fps = 30.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
-        {.width = 1296, .height = 728, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
-         .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 2,
-         .minimum_fps = 30.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
-    }, .count = 4},
-    /* TODO: lane_assign and settle_cnt are unknown; 0x0000 is a placeholder. */
+         .minimum_fps = 15.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
+    }, .count = 1},
+    /* CSI configuration copied from the angler front (2 lanes, CSIPHY2/CSID2). */
     .csi = {.entries = {{
-        .csid = {.lane_cnt = 2, .lane_assign = 0x3210, .phy_sel = 0,
-                 .lut_params = {.num_cid = 1, .vc_cfg_a = {{0, CSI_RAW10, CSI_DECODE_10BIT}}}},
-        .phy = {.lane_cnt = 2, .settle_cnt = 27, .lane_mask = 0x3, .csid_core = 2},
+        .csid = {.lane_cnt = 2, .lane_assign = 0x0423, .phy_sel = 2,
+                 .lut_params = {.num_cid = 2, .vc_cfg_a = {
+                     {0, CSI_RAW10, CSI_DECODE_10BIT},
+                     {1, CSI_EMBED_DATA, CSI_DECODE_8BIT}}}},
+        .phy = {.lane_cnt = 2, .settle_cnt = 19, .lane_mask = 0x7, .csid_core = 2},
     }}, .count = 1},
-    .crops = {.count = 0},
-    /* No proprietary tuning is shipped here; keep empty. */
-    .tuning = {.count = 0},
+    .crops = {.count = 1},
+    /*
+     * The daemon loads these during sensor start.  An empty list leaves the
+     * chromatix pointer null and the daemon faults at zero+0xc084 before it
+     * can enumerate either camera.  These are the angler front (imx179)
+     * binned-mode seeds, ABI-compatible with this daemon; they are not
+     * VS6955 calibration.
+     */
+    .tuning = {.entries = {{.names = {
+        "libchromatix_imx179_liteon_common.so",
+        "libchromatix_imx179_liteon_preview.so",
+        "libchromatix_imx179_liteon_preview.so",
+        "libchromatix_imx179_liteon_video_binning.so",
+        "libchromatix_imx179_liteon_liveshot.so",
+        "libchromatix_imx179_liteon_cpp_preview.so",
+        "libchromatix_imx179_liteon_cpp_preview.so",
+        "libchromatix_imx179_liteon_cpp_preview.so",
+        "libchromatix_imx179_liteon_cpp_video.so",
+        0,
+        "libchromatix_imx179_liteon_cpp_liveshot.so",
+        "libchromatix_imx179_liteon_postproc.so",
+    }}}, .count = 1},
     .exposure = {vs6955_calculate_exposure, vs6955_fill_exposure, 0, 0},
     .exposure_table_capacity = 8, .initial_frame_skip = 2,
 };
