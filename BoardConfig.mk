@@ -75,9 +75,9 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
 # Kernel: giannoccarol/android_kernel_mmo_msm8994, branch
-# lineage-20-cityman (mmo_defconfig): Android4Lumia950 lineage-21.0 with
-# the eBPF/cgroup/PSI backports, plus lineage-18.1-cityman-rom. Camera
-# work stays on lineage-18.1-cityman-camera. Image.gz-dtb carries the
+# lineage-20-cityman-camera (mmo_defconfig), based on lineage-20-cityman.
+# Camera changes are integrated selectively on the Android 13 baseline.
+# Image.gz-dtb carries the
 # talkman and cityman DTBs; LK2ND selects cityman (androidboot.dtb_idx=1).
 # boot_cpus=0-3 starts only the A53 cluster; init.cityman.power.sh brings
 # cpu4-7 online after the A57 policy is set. The kernel carries the cityman
