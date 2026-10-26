@@ -92,6 +92,13 @@ PRODUCT_PACKAGES += \
      qcom.fmradio
 
     
+# Audio tools (userdebug)
+PRODUCT_PACKAGES_DEBUG += \
+    tinycap \
+    tinymix \
+    tinypcminfo \
+    tinyplay
+
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \

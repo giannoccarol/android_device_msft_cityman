@@ -39,6 +39,19 @@ $(WLAN_MAC_SYMLINK):
 	@ln -sf /persist/wlan_mac.bin $@
 ALL_DEFAULT_INSTALLED_MODULES += $(WLAN_MAC_SYMLINK)
 
+# The qcom-caf libbt-vendor loads the ROME 3.2 patch and NVM from
+# /bt_firmware/image/btfw32.tlv and btnv32.bin. /bt_firmware links to
+# /vendor/bt_firmware (BoardConfig.mk); point the two names at the
+# firmware already in /vendor/firmware.
+BT_FW_DIR := $(TARGET_OUT_VENDOR)/bt_firmware/image
+$(BT_FW_DIR)/btfw32.tlv:
+	@mkdir -p $(dir $@)
+	@ln -sf /vendor/firmware/rampatch_tlv_3.2.tlv $@
+$(BT_FW_DIR)/btnv32.bin:
+	@mkdir -p $(dir $@)
+	@ln -sf /vendor/firmware/nvm_tlv_3.2.bin $@
+ALL_DEFAULT_INSTALLED_MODULES += $(BT_FW_DIR)/btfw32.tlv $(BT_FW_DIR)/btnv32.bin
+
 ifneq ($(filter cityman, $(TARGET_DEVICE)),)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))

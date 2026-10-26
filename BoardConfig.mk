@@ -172,6 +172,7 @@ TARGET_COPY_OUT_VENDOR := vendor
 
 BOARD_USES_SECURE_SERVICES := true
 BOARD_ROOT_EXTRA_FOLDERS := persist firmware
+BOARD_ROOT_EXTRA_SYMLINKS := /vendor/bt_firmware:/bt_firmware
 
 # Netd
 TARGET_OMIT_NETD_TETHER_FTP_HELPER := true
