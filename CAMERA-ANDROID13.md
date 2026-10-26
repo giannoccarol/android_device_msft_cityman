@@ -39,6 +39,58 @@ establish a specific commercial part number or a working front camera.
 
 ## Validation and phone tests
 
+### Latest main-branch hardware results (2026-10-26 evening)
+
+The owner merged the camera work into `lineage-20-cityman` and tested the
+Android 13 v8/v9 builds. The camera worktrees now include device `1f2df92`,
+vendor `257aae2` and kernel `037f8741269`. This includes the 32-bit hwbinder
+provider, `libsensor_vendor` compatibility dependency and the single-rild fix.
+The temporary raw_depth change to 2 was reverted: 1 remains correct for the
+sensor output descriptor; CSI's decode enum separately remains 2 for RAW10.
+
+The source sensor probes and Android lists the rear camera. The owner's
+framework parcel fix permits session configuration and stream start. A saved
+kernel log records about 300,000 CSI packets in 5.3 seconds, but header ECC
+counter 0xffff0000 and no ISPIF/VFE SOF; no preview or image is verified.
+Changing settle from 22 to 27 did not fix it. The current MCLK is 9.6 MHz,
+matching EXTCLK 0x0999 and the pinned SMIA mode. A clock-only change to 24 MHz
+would also alter the PLL outputs; it is not an equivalent configuration.
+
+`camera-sensors/imx230/inspect-nubia-registers.py` now extracts the old private
+Nubia reference offline, validating its SHA-256, ARM32 ELF LOAD mappings and
+relative relocations for the pointer-based register records. It finds the
+413-write init and nine mode tables. Mode 0 has 173 writes, 5344x4016 output,
+line length 6024 and frame length 4150, matching the old A11 log's counts and
+geometry. This does not reconstruct dynamic exposure writes or prove that
+every static write reached the sensor during the old session.
+
+The reference writes EXTCLK 0x1800 and explicit D-PHY timing at 0x080a--0x0819;
+the SMIA programs do not write that timing range. This is a comparison target,
+not proof that missing writes cause the ECC errors. The different clock/link
+profiles prevent blindly copying those values. Keep one variable at a time:
+first establish a coherent sensor clock/PLL/D-PHY program, then evaluate ECC,
+ISPIF/VFE SOF and actual delivered frames. Preserve the Android 13 HAL/daemon
+interface while comparing sensor programming.
+
+```sh
+python3 camera-sensors/imx230/inspect-nubia-registers.py PRIVATE_NUBIA_SO \
+  > PRIVATE_OUTPUT/nubia-vs-smia.json
+```
+
+The JSON contains extracted vendor register data and stays outside Git; no
+vendor table is incorporated into the GPL production source. Original logs
+and comparison output are in the surrounding project, respectively
+`dumps/a13-v8cam-20261026`, `dumps/trial-nubia-hal-v6-153433`, and
+`builds/camera-mipi-comparison-20261026`. ADB reappeared after the offline
+comparison: a read-only check confirmed kernel `g037f8741`, production module
+SHA-256 `849a6f2365f3b6fad30859c771694bb9ddab93fa8a4f76b31730eba9c40a14bd`,
+running daemon/provider, and one camera. The current kernel log also reports
+300,748 packets with ECC 0xffff0000 and CRC 0. CameraService's dump timed out;
+the partial output is preserved. No services were restarted or phone files
+changed during this check.
+
+### Earlier isolated preparation
+
 Kernel compilation passed (source `d62fca264ee`, image hash in the kernel report).
 The HAL and its three requested interface/JPEG modules also passed an isolated
 Android 13 build, using device `261de03`, kernel `d62fca264ee`, vendor `8e70346`.
@@ -98,3 +150,8 @@ Flash, autofocus/OIS, full resolution and front capture need separate evidence.
 - hraj9258, SMIA++ mode/clock work, kernel `talkman-cam-clean`
   `6ab0e0e9018d6185b642fa86de8b1c61cbd2701b`:
   https://github.com/hraj9258/android_kernel_mmo_msm8994/tree/talkman-cam-clean
+- TheMuppets, private comparison input for the Nubia NX510J IMX230 programming,
+  `proprietary_vendor_zte` branch `cm-13.0`, commit `010f45bac6a3`:
+  https://github.com/TheMuppets/proprietary_vendor_zte . Input SHA-256
+  `a3f4a7347533fdf04c389d5c328bf22c91cad96901b2629512ca53dc0744490c`.
+  The inspection tool is new code; the vendor programs remain private outputs.
