@@ -182,3 +182,7 @@
 /persist/wlan_mac\.bin             u:object_r:persist_wifi_file:s0
 /persist/sensorcal\.json           u:object_r:persist_sensortool_file:s0
 /persist/calibration(/.*)?         u:object_r:persist_camera_file:s0
+
+# Bluetooth firmware names expected by the qcom-caf libbt-vendor
+/bt_firmware                       u:object_r:rootfs:s0
+/vendor/bt_firmware(/.*)?          u:object_r:vendor_firmware_file:s0
