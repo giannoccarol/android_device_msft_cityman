@@ -1,0 +1,12 @@
+diff --git a/arch/arm64/boot/dts/mmo/common/camera-cityman.dtsi b/arch/arm64/boot/dts/mmo/common/camera-cityman.dtsi
+--- a/arch/arm64/boot/dts/mmo/common/camera-cityman.dtsi
++++ b/arch/arm64/boot/dts/mmo/common/camera-cityman.dtsi
+@@ -159,7 +159,7 @@
+ 		qcom,sensor-position = <1>;
+ 		qcom,sensor-mode = <0>;
+ 		qcom,cci-master = <0>;
+-		status = "disabled";
++		status = "ok";
+ 		clocks = <&clock_mmss clk_mclk2_clk_src>,
+ 			 <&clock_mmss clk_camss_mclk2_clk>;
+ 		clock-names = "cam_src_clk", "cam_clk";
