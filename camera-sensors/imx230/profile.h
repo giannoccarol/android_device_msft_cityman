@@ -21,13 +21,16 @@
 #define PROFILE_NAME "lumia20"
 #define PROFILE_WIDTH 5344u
 #define PROFILE_HEIGHT 3744u
-#define PROFILE_FRAME_LINES 3744u
+/* The DCC has no frame length (0x0340/41). 3744 equals the output height and
+ * leaves no vertical blanking; 3952 adds 208 lines (nubia24 keeps 134) and
+ * gives exactly 20 fps: 476.16 MHz / (6024 * 3952). */
+#define PROFILE_FRAME_LINES 3952u
 #define PROFILE_LINE_PIXELS 6024u
 #define PROFILE_MCLK 9600000u
 #define PROFILE_VT_CLOCK 476160000u
 #define PROFILE_OUTPUT_CLOCK 476160000u
 #define PROFILE_MIN_FPS 5.0f
-#define PROFILE_MAX_FPS 21.11f
+#define PROFILE_MAX_FPS 20.0f
 #define PROFILE_BINNING 1
 #define PROFILE_SETTLE 22
 #define PROFILE_CIDS 1
