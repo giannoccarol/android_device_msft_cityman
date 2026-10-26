@@ -455,10 +455,14 @@ service ss_ramdump /vendor/bin/subsystem_ramdump
     group root system
     disabled
 
+# The prebuilt cnd aborts every few seconds on Android 13 (stack corruption
+# in libcne CneCom::sendUnsolicitedMsg) and crash_dump runs each time. It is
+# not needed for Wi-Fi, LTE data or calls here; keep it off.
 service cnd /vendor/bin/cnd
     class late_start
     socket cnd stream 660 root inet
     group root wakelock
+    disabled
 
 service imsqmidaemon /vendor/bin/imsqmidaemon
     class main
