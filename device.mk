@@ -152,6 +152,11 @@ PRODUCT_PACKAGES += \
 ifeq ($(CITYMAN_CAMERA_SMIA_EXPERIMENTAL),true)
 PRODUCT_PACKAGES += libmmcamera_imx230
 endif
+# Front VS6955CA probe module. Requires the private 0A214000.dcc and a kernel
+# with qcom,camera@1 enabled; off by default.
+ifeq ($(CITYMAN_CAMERA_FRONT_VS6955),true)
+PRODUCT_PACKAGES += libmmcamera_vs6955
+endif
 PRODUCT_PACKAGES += \
     libsensor_camera_shim \
     camera.msm8992 \
