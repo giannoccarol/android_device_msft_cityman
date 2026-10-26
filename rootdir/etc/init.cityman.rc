@@ -349,11 +349,13 @@ service netmgrd /vendor/bin/netmgrd
     group radio system wakelock
     setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
 
-# Same service as hardware/ril rild.legacy.rc plus the Cityman preloads.
-# This file is imported by init.rc and parsed before /vendor/etc/init, so
-# this definition wins and the later copy is ignored as a duplicate.
+# Same service as hardware/ril rild.rc plus the Cityman preloads. Android 13
+# builds rild with PRODUCT_COMPATIBLE_PROPERTY, so /vendor/etc/init/rild.rc
+# names it vendor.ril-daemon and this name must match. This file is imported
+# by init.rc and parsed before /vendor/etc/init, so this definition wins and
+# the later copy is ignored as a duplicate.
 # libcityman_ril_init only skips the absent LG NV service wait.
-service ril-daemon /vendor/bin/hw/rild
+service vendor.ril-daemon /vendor/bin/hw/rild
     class main
     user radio
     group radio cache inet misc audio log readproc wakelock
