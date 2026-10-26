@@ -93,12 +93,36 @@ def smia_programs(header):
     return result
 
 
+def mode_metadata(elf, modes):
+    # This pinned older ABI uses 48-byte output records, not angler's 56.
+    # Cross-check every record against its independent register program.
+    start, stride = 0x761c, 48
+    result = []
+    for i, mode in enumerate(modes):
+        fields = elf.unpack("<4HIIH2xffI", start + i * stride)
+        width, height, line, frame, vt, output, binning, minimum, maximum, kind = fields
+        actual = summary(mode["entries"])
+        if (width, height, line, frame) != tuple(actual[k] for k in
+                ("width", "height", "line_length", "frame_length")):
+            raise ValueError("Output metadata disagrees with mode register geometry")
+        if vt != 600000000 or output != 568000000 or not 0 < minimum <= maximum <= 121:
+            raise ValueError("Unexpected output clock/FPS metadata")
+        result.append({"mode": i, "record_offset": start + i * stride,
+                       "width": width, "height": height, "line_length": line,
+                       "frame_length": frame, "vt_pixel_clock_hz": vt,
+                       "output_pixel_clock_hz": output, "binning_factor": binning,
+                       "advertised_minimum_fps": minimum, "advertised_maximum_fps": maximum,
+                       "fps_from_vt_and_geometry": vt / (line * frame), "kind": kind})
+    return result
+
+
 def inspect(blob, header):
     data = blob.read_bytes()
     digest = hashlib.sha256(data).hexdigest()
     if digest != FIXTURE_SHA256:
         raise ValueError("Unexpected Nubia fixture SHA-256")
-    programs = Elf(data).programs()
+    elf = Elf(data)
+    programs = elf.programs()
     if len(programs) != 10 or programs[0]["count"] != 413:
         raise ValueError("Expected one init and nine mode records")
     init = programs[0]
@@ -108,6 +132,7 @@ def inspect(blob, header):
     if [summary(p["entries"])["width"] for p in modes] != [
             5344, 4272, 2672, 2136, 2136, 2672, 1316, 2136, 5344]:
         raise ValueError("Unexpected mode geometry/order")
+    metadata = mode_metadata(elf, modes)
     source = smia_programs(header.read_text())
     sr = {a: v for a, v, _ in source}
     # Mode 0 has the 173 writes and 5344x4016 geometry reported in A11 logs.
@@ -124,7 +149,8 @@ def inspect(blob, header):
     return {"status": "offline private fixture comparison; no hardware writes",
             "fixture_sha256": digest,
             "smia_header_sha256": hashlib.sha256(header.read_bytes()).hexdigest(),
-            "programs": programs, "smia_mode_summary": summary(source),
+            "programs": programs, "mode_metadata": metadata,
+            "smia_mode_summary": summary(source),
             "differences": differences,
             "dphy_timing": [{"address": f"0x{a:04x}", "nubia": reference.get(a), "smia": sr.get(a)}
                             for a in timing],

@@ -72,6 +72,20 @@ first establish a coherent sensor clock/PLL/D-PHY program, then evaluate ECC,
 ISPIF/VFE SOF and actual delivered frames. Preserve the Android 13 HAL/daemon
 interface while comparing sensor programming.
 
+The inspector also decodes the pinned Nubia output metadata (48-byte records,
+not angler's 56-byte layout) and cross-checks all nine geometries against the
+separate register programs. Mode 0 declares VT clock 600 MHz, output clock
+568 MHz, binning 1 and maximum 24 fps; VT/(6024*4150) gives 24.000384 fps.
+The A11 log independently confirms output clock 568 MHz and mode index 0.
+Its receiver configuration uses settle 27, lane mask 0x1f, assignment 0x0423,
+and three CIDs: 0/RAW10 (0x2b), 1/PDAF (0x36), 3/embedded (0x12). The A11 ISP
+allocation selected hardware ID 0, while the current A13 run selected VFE1.
+This route difference is recorded separately; it does not establish the cause
+of transmitter/header ECC errors. Keep declared output clock distinct from VT
+clock when creating any matching angler descriptor. Preserve advertised FPS
+and calculated FPS separately: some vendor modes have slightly different
+advertised maxima from their VT/frame/line calculation.
+
 ```sh
 python3 camera-sensors/imx230/inspect-nubia-registers.py PRIVATE_NUBIA_SO \
   > PRIVATE_OUTPUT/nubia-vs-smia.json
