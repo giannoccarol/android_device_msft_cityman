@@ -12,7 +12,7 @@
  * The generic SMIA++ driver contains AF code, but this module does not
  * use it. Do not add an actuator.
  *
- * TODO before enabling: bayer order, CSI lane assignment/settle, vt and
+ * TODO before enabling: bayer order, vt and
  * output pixel clocks, frame length, exposure/gain model validation,
  * per-unit calibration (OTP) and tuning.
  *
@@ -179,13 +179,19 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
          .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 2,
          .minimum_fps = 15.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
     }, .count = 1},
-    /* CSI configuration copied from the angler front (2 lanes, CSIPHY2/CSID2). */
+    /*
+     * CSIPHY2/CSID2, 2 lanes. PHY lane 1 is the clock lane, so the data
+     * lanes are PHY 0 and 2 (lane_mask 0x7) and CSID lanes 0/1 read PHY 0/2
+     * (lane_assign 0x4320). Measured on the phone: settle 8-20 gives a clean
+     * link (CSID2 ecc 0, crc 0); 26 and above gives no packets, and 0x4302
+     * (swapped lanes) gives ECC errors. 14 is the middle of the window.
+     */
     .csi = {.entries = {{
-        .csid = {.lane_cnt = 2, .lane_assign = 0x0423, .phy_sel = 2,
+        .csid = {.lane_cnt = 2, .lane_assign = 0x4320, .phy_sel = 2,
                  .lut_params = {.num_cid = 2, .vc_cfg_a = {
                      {0, CSI_RAW10, CSI_DECODE_10BIT},
                      {1, CSI_EMBED_DATA, CSI_DECODE_8BIT}}}},
-        .phy = {.lane_cnt = 2, .settle_cnt = 19, .lane_mask = 0x7, .csid_core = 2},
+        .phy = {.lane_cnt = 2, .settle_cnt = 14, .lane_mask = 0x7, .csid_core = 2},
     }}, .count = 1},
     .crops = {.count = 1},
     /*
