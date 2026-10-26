@@ -12,8 +12,10 @@ builds in the meantime; fetching these branch names from GitHub will not work.
 The camera kernel starts at Android 13 commit `5827d9a6f12` and brings in the
 angler camera driver plus Cityman wiring. The vendor keeps the complete angler
 MSM8994/VFE 4.6 daemon set. It removes the old IMX377-derived IMX230 probe module.
-A matching Lumia sensor library has not yet been supplied or implemented.
-Consequently this baseline is not expected to expose a working camera.
+A new source IMX230 SMIA++ library now lives in `camera-sensors/imx230`.
+It passes ARM32 behavioral and actual angler consumer interoperability tests,
+including the Android-built shared object. Installation remains opt-in through
+`CITYMAN_CAMERA_SMIA_EXPERIMENTAL=true`; no working-camera claim is made yet.
 
 ## Sensor integration boundary
 
@@ -23,11 +25,13 @@ metadata, output geometry, exposure callbacks and start/stop sequence must be
 implemented together in a module matching the selected angler sensor ABI.
 Selecting a different name for an IMX377 binary does not provide that module.
 
-The published kernel references `senslib/sensor_lib_imx230.c`, but that file is
-not present in the inspected public kernel or device branches. The kernel's
-mode programs alone cannot supply the missing userspace contract. The owner
-has no separate package/link. Do not turn this unknown into another binary
-layout patch or a global ISP-register override.
+The published kernel references `senslib/sensor_lib_imx230.c`, but that original
+file was not found. The owner requested a new equivalent source module with a
+verified interface. `camera-sensors/imx230/ABI.md` documents the independently
+specified plugin boundary, GPL kernel records, pinned official angler fixtures
+and tests. It does not import confidential sensor SDK headers or edit a sensor
+binary. Ordinary pointer-based register tables carry the sensor programs;
+MAX_I2C_REG_SET=12 applies to a different inline register record.
 
 Front Ducati stays disabled in the kernel until its own sensor programming and
 library exist. Module ID 0x2140 and die ID 0x03bb are measurements; they do not
@@ -49,6 +53,32 @@ Neither repair changes camera product code or binaries.
 
 No flash, service restart or sensor write is part of this preparation.
 The owner is handling Android 13 reboot problems independently.
+
+### Source module and updated baseline
+
+The kernel and device camera branches were merged with the owner's current
+`lineage-20-cityman`: kernel through `85514ba37fc` (including audio calibration
+changes) and device through `fb0314c` (including Bluetooth/Wi-Fi/audio changes).
+The source-module build used device `4b6259b`, kernel `dbef37116b8` and vendor
+`8e70346`, with the main ROM tree mounted read-only and a private output.
+
+- Kernel `dbef37116b8` rebuilt successfully; Image.gz-dtb SHA-256
+  `7ffa4d330e39624897bbadbfbd1b67c16fa8a7691b3c1695c7123d7b69a625de`.
+- Android-built `vendor/lib/libmmcamera_imx230.so` SHA-256
+  `849a6f2365f3b6fad30859c771694bb9ddab93fa8a4f76b31730eba9c40a14bd`.
+- Actual angler consumer loaded that Android shared object under QEMU, read
+  2496x1872 capabilities/GRBG10, translated I2C/power/CSI records, and rejected
+  a zero-mode negative control. Android packed relocations were decoded by the
+  offline fixture loader; no alternate production ELF was substituted.
+- Separate ARM32 tests exercise exposure/gain limits, invalid inputs, group
+  hold/release and register-buffer canaries. The register header regenerates
+  exactly from the pinned public SMIA++ source.
+
+Only build/test wrappers and documentation changed after those source snapshots.
+The new library remains an experimental sensor implementation: actual image
+delivery, analog programming at the unchanged 0x20 address, shared VIO ownership,
+tuning, optical metadata and repeated power/stream cycles need hardware tests.
+Existing angler IMX377 chromatix are an ISP seed, not Lumia colour calibration.
 
 When the matching sensor module exists, the first hardware acceptance is a real
 image delivered through the HAL, then repeatable preview/open/close and a saved

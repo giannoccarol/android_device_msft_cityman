@@ -62,6 +62,22 @@ python3 generate-registers.py KERNEL_REPO --check
 
 All fixture binaries, executables, generated logs and outputs stay outside Git.
 
+### Recorded result (2026-10-26)
+
+The module passed both tests, then compiled with the Android 13 platform clang
+in an isolated build. The actual Android-installed shared object (SHA-256
+`849a6f2365f3b6fad30859c771694bb9ddab93fa8a4f76b31730eba9c40a14bd`)
+also passed the consumer test, including a deliberately zero-mode descriptor
+that the original consumer rejected. The fixture loader understands standard
+ARM REL, Android APS2 REL and RELR so the production binary is tested directly.
+These wire formats are documented in AOSP bionic's
+`linker/linker_reloc_iterators.h` and `libc/include/elf.h`.
+
+Build input revisions: device `4b6259b`, kernel `dbef37116b8`, vendor `8e70346`.
+Private evidence is under `builds/smia-module-a13-20261026` in the surrounding
+project and `android-cityman/camera-a13-hal-20261026` in the parent workspace.
+These results do not imply a phone preview or photo.
+
 ## Sensor behavior
 
 The first profile is DCC mode 4: 2496x1872 uncompressed RAW10, four CSI lanes,
