@@ -68,6 +68,11 @@ on init
     write /sys/block/zram0/max_comp_streams 4
 
     write /proc/sys/vm/page-cluster 0
+    write /proc/sys/vm/swappiness 100
+
+    # A firmware request that ueventd misses would block for 60 s (the
+    # modem PIL then retries the segment); fail it sooner.
+    write /sys/class/firmware/timeout 15
 
 on fs
     mount_all /vendor/etc/fstab.cityman --early

@@ -28,6 +28,15 @@ tree (`LineageOS-UL/android`, `lineage-20.0`) with the local manifest
 - The LineageOS projects that build against the LineageOS-UL forks are
   pinned to their 2025-04-05 state (see the manifest); the security patch
   level is 2025-03.
+- Performance (from the LineageOS 20 OnePlus 2 port, same SoC): the vendor
+  tree ships the MSM8994 `perfd` with its client library, so QTI power HAL
+  hints, display-off core limits and thermal-engine profiles reach a real
+  daemon (the open-source `libqti-perfd-client` stub is no longer
+  installed); core_ctl takes the A57s offline while idle (needs the kernel
+  `CONFIG_MSM_CORE_CTL`); the power script adds the HMP scheduler, CPU
+  bandwidth, GPU governor and CPU/L2 retention settings; SurfaceFlinger
+  color management is off, more layers go to the MDP, SystemUI is compiled
+  with `speed`. Not yet verified on the phone.
 
 ## Sources
 
@@ -67,8 +76,8 @@ talkman and cityman DTBs; LK2ND picks cityman (`androidboot.dtb_idx=1`).
   the MSM8992 trees (six cores). Eight cores are untested on the phone.
 - Thermal: the kernel (KTM) polls all eight CPU sensors and steps the A57
   cluster down from 75 C until thermal-engine takes over. thermal-engine
-  (bullhead blob) starts with the open-source `libqti-perfd-client` stub
-  and reads `configs/thermal-engine-cityman.conf` (`-c`): A57, A53,
+  (bullhead blob) starts with the OnePlus 2 `libqti-perfd-client`
+  (`perfd` client) and reads `configs/thermal-engine-cityman.conf` (`-c`): A57, A53,
   pop_mem, GPU and board (`msm_therm`) steps, battery charge current,
   shutdown at 68 C on the board. If it stops or crashes, init hands the
   polling back to the kernel (`msm_thermal` `enabled=1`). The thresholds
@@ -144,6 +153,12 @@ This ROM builds on the work of others:
   `8e47d59`, `LineageOS/android_kernel_oneplus_msm8994` lineage-17.1):
   the same MSM8994 bring-up and the core_ctl settings evaluated for
   cityman.
+- **mukul2259** and **_undead** (LineageOS 20 for OnePlus 2,
+  `mukul2259/experimental_device_oneplus_oneplus2` `6cdfa90`,
+  `LineageOS-OP2`): the core_ctl, HMP scheduler, CPU bandwidth, GPU,
+  retention, HWC, ART and log properties used on Android 13, and the
+  `perfd` setup. **davigamer987** (`davigamer987/vendor_oneplus_oneplus2`
+  `1abfce3`): the OnePlus 2 `perfd` blobs.
 - **LineageOS** and **TheMuppets**: the Android 11 base and the reference
   vendor blobs.
 - **LineageOS-UL** (`LineageOS-UL/android` and its forks): the Android 13
