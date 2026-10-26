@@ -79,22 +79,76 @@ static uint32_t imported(const char *name, unsigned int type)
     if (type == 1) return (uint32_t)zero_data;
     return (uint32_t)unexpected_import;
 }
+static void relocation(uint8_t *memory, uint32_t offset, uint32_t info,
+                       struct elf_symbol *symbols, const char *strings)
+{
+    uint32_t *place = (void *)(memory + offset);
+    uint32_t type = info & 255;
+    struct elf_symbol *s = &symbols[info >> 8];
+    uint32_t value;
+    if (type == 0) return;
+    if (type == 23) { *place += (uint32_t)memory; return; }
+    value = s->section ? (uint32_t)memory + s->value : imported(strings + s->name, s->info & 15);
+    if (type == 21 || type == 22) *place = value;
+    else if (type == 2) *place += value;
+    else finish(91);
+}
 static void relocate(uint8_t *memory, uint32_t rel, uint32_t size,
                      struct elf_symbol *symbols, const char *strings)
 {
     uint32_t i;
     struct elf_rel *entries = (void *)(memory + rel);
     for (i = 0; i < size / sizeof(*entries); i++) {
-        uint32_t *place = (void *)(memory + entries[i].offset);
-        uint32_t type = entries[i].info & 255;
-        struct elf_symbol *s = &symbols[entries[i].info >> 8];
-        uint32_t value;
-        if (type == 0) continue;
-        if (type == 23) { *place += (uint32_t)memory; continue; }
-        value = s->section ? (uint32_t)memory + s->value : imported(strings + s->name, s->info & 15);
-        if (type == 21 || type == 22) *place = value;
-        else if (type == 2) *place += value;
-        else finish(91);
+        relocation(memory, entries[i].offset, entries[i].info, symbols, strings);
+    }
+}
+/* Android ELF wire formats, also defined by AOSP bionic's relocation iterator.
+ * Keep the test loader compatible with the actual Android 13 linker output.
+ */
+static uint32_t sleb(const uint8_t **cursor, const uint8_t *end)
+{
+    uint32_t value = 0, shift = 0, byte;
+    do {
+        if (*cursor == end || shift > 28) finish(98);
+        byte = *(*cursor)++;
+        value |= (byte & 127u) << shift;
+        shift += 7;
+    } while (byte & 128);
+    if ((byte & 64) && shift < 32) value |= ~0u << shift;
+    return value;
+}
+static void packed_rel(uint8_t *memory, uint32_t address, uint32_t size,
+                       struct elf_symbol *symbols, const char *strings)
+{
+    const uint8_t *p = memory + address, *end = p + size;
+    uint32_t remaining, offset;
+    if (size < 4 || p[0] != 'A' || p[1] != 'P' || p[2] != 'S' || p[3] != '2') finish(98);
+    p += 4; remaining = sleb(&p, end); offset = sleb(&p, end);
+    while (remaining) {
+        uint32_t count = sleb(&p, end), flags = sleb(&p, end), delta = 0, info = 0, i;
+        if (!count || count > remaining || (flags & ~3u)) finish(98);
+        if (flags & 2) delta = sleb(&p, end);
+        if (flags & 1) info = sleb(&p, end);
+        for (i = 0; i < count; i++) {
+            offset += (flags & 2) ? delta : sleb(&p, end);
+            if (!(flags & 1)) info = sleb(&p, end);
+            relocation(memory, offset, info, symbols, strings);
+        }
+        remaining -= count;
+    }
+}
+static void relative_bitmap(uint8_t *memory, uint32_t address, uint32_t size)
+{
+    uint32_t *entries = (void *)(memory + address), *where = 0, i, bit;
+    for (i = 0; i < size / 4; i++) {
+        if (!(entries[i] & 1)) {
+            where = (void *)(memory + entries[i]); *where++ += (uint32_t)memory;
+        } else {
+            if (!where) finish(99);
+            for (bit = 1; bit < 32; bit++)
+                if (entries[i] & (1u << bit)) where[bit - 1] += (uint32_t)memory;
+            where += 31;
+        }
     }
 }
 static void load(const uint8_t *file, uint8_t *memory, uint32_t capacity)
@@ -104,6 +158,7 @@ static void load(const uint8_t *file, uint8_t *memory, uint32_t capacity)
     struct elf_symbol *symbols = 0;
     const char *strings = 0;
     uint32_t rel = 0, rel_size = 0, plt = 0, plt_size = 0, i;
+    uint32_t packed = 0, packed_size = 0, bitmap = 0, bitmap_size = 0;
     register uint32_t r0 __asm__("r0") = (uint32_t)memory;
     register uint32_t r1 __asm__("r1") = capacity;
     register uint32_t r2 __asm__("r2") = 7;
@@ -128,11 +183,17 @@ static void load(const uint8_t *file, uint8_t *memory, uint32_t capacity)
         case 18: rel_size = dynamic->value; break;
         case 23: plt = dynamic->value; break;
         case 2: plt_size = dynamic->value; break;
+        case 0x6000000f: packed = dynamic->value; break;
+        case 0x60000010: packed_size = dynamic->value; break;
+        case 36: case 0x6fffe000: bitmap = dynamic->value; break;
+        case 35: case 0x6fffe001: bitmap_size = dynamic->value; break;
         }
     }
     if (!symbols || !strings) finish(96);
     relocate(memory, rel, rel_size, symbols, strings);
     relocate(memory, plt, plt_size, symbols, strings);
+    if (packed_size) packed_rel(memory, packed, packed_size, symbols, strings);
+    if (bitmap_size) relative_bitmap(memory, bitmap, bitmap_size);
 }
 static uint32_t symbol(const uint8_t *file, const char *name)
 {
