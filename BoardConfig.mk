@@ -111,6 +111,9 @@ TARGET_USES_64_BIT_BINDER := true
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_QCOM := true
+# The prebuilt wcnss_filter uses the wc_transport.* properties without
+# the vendor. prefix, like init.cityman.rc.
+QCOM_BT_USE_OLD_WCNSS_FILTER := true
 BOARD_HAS_QCA_BT_ROME := true
 WCNSS_FILTER_USES_SIBS := true
 
@@ -172,6 +175,7 @@ TARGET_COPY_OUT_VENDOR := vendor
 
 BOARD_USES_SECURE_SERVICES := true
 BOARD_ROOT_EXTRA_FOLDERS := persist firmware
+BOARD_ROOT_EXTRA_SYMLINKS := /vendor/bt_firmware:/bt_firmware
 
 # Netd
 TARGET_OMIT_NETD_TETHER_FTP_HELPER := true
