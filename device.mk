@@ -140,6 +140,11 @@ PRODUCT_PACKAGES += \
     charger_res_images
 
 # Camera
+# Enable in a dedicated camera image after offline ABI checks and phone-test
+# coordination. The module can always be built explicitly with m.
+ifeq ($(CITYMAN_CAMERA_SMIA_EXPERIMENTAL),true)
+PRODUCT_PACKAGES += libmmcamera_imx230
+endif
 PRODUCT_PACKAGES += \
     camera.msm8992 \
     libmmcamera_interface \
