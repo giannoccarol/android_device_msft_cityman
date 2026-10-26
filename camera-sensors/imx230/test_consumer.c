@@ -247,8 +247,8 @@ int run_tests(void)
     if (((uint8_t *)output)[0x30] != 1 || output[0x34 / 4] != PROFILE_WIDTH || output[0x38 / 4] != PROFILE_HEIGHT) return 103;
     if (output[0x6a8 / 4] != 0x5a5a5a5a) return 104;
     if (!output[0x19c / 4] || output[0x3e4 / 4] != 5344 || output[0x3e8 / 4] != 4016) return 105;
-    /* BA10: kernel's SGRBG10 fourcc, from the actual angler conversion helper. */
-    if (fourcc(0, descriptor->output.bayer_order, CSI_DECODE_10BIT) != 0x30314142u) return 106;
+    /* GB10: kernel's SGBRG10 fourcc, from the actual angler conversion helper. */
+    if (fourcc(0, descriptor->output.bayer_order, CSI_DECODE_10BIT) != 0x30314247u) return 106;
     register_setting = (void *)(consumer_memory + symbol(_binary_consumer_so_start, "translate_sensor_reg_setting"));
     for (i = 0; i < descriptor->init.count; i++) {
         struct msm_camera_i2c_reg_setting *source = &descriptor->init.entries[i];

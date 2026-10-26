@@ -28,9 +28,10 @@ libraries. It does not reproduce unlogged dynamic writes from the A11 session.
 The CID1/CID3 entries configure the receiver to recognize the auxiliary packet
 types seen in the old log; the plugin still exposes one RAW image stream.
 No PDAF algorithm, embedded-data parser, AF/OIS or flash support is advertised.
-GRBG remains the Cityman SMIA choice; the Nubia module's different Bayer enum
-is not substituted for a measurement of the Lumia module. Existing angler
-IMX377 chromatix remain provisional ISP tuning, not Lumia calibration.
+GBRG is the Cityman choice after the on-device Bayer comparison; the Nubia
+module's different Bayer enum is not substituted for that measurement.
+Existing angler IMX377 chromatix remain provisional ISP tuning, not Lumia
+calibration.
 
 ## Build the modules in isolation
 

@@ -50,7 +50,7 @@ ELFs in memory without their constructors. It executes the original angler
 capability function first on the official IMX377 descriptor (control), then on
 the candidate. Original angler conversion functions also verify its register
 records, power-up description and CSID records against the GPL kernel types.
-The actual fourcc conversion proves Bayer enum 2 produces GRBG10 (`BA10`).
+The actual fourcc conversion proves Bayer enum 3 produces GBRG10 (`GB10`).
 The test caught and removed an unsupported I2C-mux power step; ordinary clock,
 GPIO and regulator steps pass the original translation.
 
