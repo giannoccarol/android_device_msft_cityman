@@ -185,4 +185,4 @@
 
 # Bluetooth firmware names expected by the qcom-caf libbt-vendor
 /bt_firmware                       u:object_r:rootfs:s0
-/vendor/bt_firmware(/.*)?          u:object_r:vendor_firmware_file:s0
+/vendor/bt_firmware(/.*)?          u:object_r:vendor_file:s0
