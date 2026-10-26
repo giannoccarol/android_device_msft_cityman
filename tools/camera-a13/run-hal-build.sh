@@ -23,10 +23,17 @@ docker run --rm --network none -i \
         cd /src
         source build/envsetup.sh >/dev/null
         lunch lineage_cityman-userdebug
-        m -j"$JOBS" camera.msm8992 libmmcamera_interface libmmjpeg_interface libqomx_core
+        modules=(camera.msm8992 libmmcamera_interface libmmjpeg_interface libqomx_core)
+        if [[ -f device/msft/cityman/camera-sensors/imx230/Android.mk ]]; then
+            modules+=(libmmcamera_imx230)
+        fi
+        m -j"$JOBS" "${modules[@]}"
     ' 2>&1 | tee "$output/build.log"
 (
     cd "$output/out/target/product/cityman"
     sha256sum system/lib/hw/camera.msm8992.so system/lib/libmmcamera_interface.so \
         vendor/lib/libmmjpeg_interface.so system/lib/libqomx_core.so
+    if [[ -f "$output/device/camera-sensors/imx230/Android.mk" ]]; then
+        sha256sum vendor/lib/libmmcamera_imx230.so
+    fi
 ) > "$output/camera.SHA256SUMS"
