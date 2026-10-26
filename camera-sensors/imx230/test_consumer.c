@@ -208,5 +208,9 @@ int run_tests(void)
     if (translated_csid.lane_assign != 0x0423 || translated_csid.lane_cnt != 4 ||
         translated_csid.lut_params.num_cid != 1 || translated_csid.lut_params.vc_cfg[0] != cid ||
         cid[0].dt != CSI_RAW10 || cid[0].decode_format != CSI_DECODE_10BIT) return 110;
+    /* Negative control: the real consumer must reject a descriptor with no modes. */
+    descriptor->modes.count = 0;
+    if (!caps(context, output)) return 111;
+    descriptor->modes.count = 1;
     return 0;
 }
