@@ -4,6 +4,7 @@
  * Every unsupported imported function terminates the test immediately.
  */
 #include "angler_sensor_abi.h"
+#include "profile.h"
 
 struct elf_header {
     uint8_t ident[16]; uint16_t type, machine;
@@ -243,7 +244,7 @@ int run_tests(void)
     context[1] = (uint32_t)descriptor;
     output[0x6a8 / 4] = 0x5a5a5a5a;
     if (caps(context, output)) return 102;
-    if (((uint8_t *)output)[0x30] != 1 || output[0x34 / 4] != 2496 || output[0x38 / 4] != 1872) return 103;
+    if (((uint8_t *)output)[0x30] != 1 || output[0x34 / 4] != PROFILE_WIDTH || output[0x38 / 4] != PROFILE_HEIGHT) return 103;
     if (output[0x6a8 / 4] != 0x5a5a5a5a) return 104;
     if (!output[0x19c / 4] || output[0x3e4 / 4] != 5344 || output[0x3e8 / 4] != 4016) return 105;
     /* BA10: kernel's SGRBG10 fourcc, from the actual angler conversion helper. */
@@ -267,8 +268,13 @@ int run_tests(void)
     csid_info = (void *)(consumer_memory + symbol(_binary_consumer_so_start, "translate_sensor_csid_params"));
     csid_info(&translated_csid, &descriptor->csi.entries[0].csid, cid);
     if (translated_csid.lane_assign != 0x0423 || translated_csid.lane_cnt != 4 ||
-        translated_csid.lut_params.num_cid != 1 || translated_csid.lut_params.vc_cfg[0] != cid ||
+        translated_csid.lut_params.num_cid != PROFILE_CIDS || translated_csid.lut_params.vc_cfg[0] != cid ||
         cid[0].dt != CSI_RAW10 || cid[0].decode_format != CSI_DECODE_10BIT) return 110;
+    for (i = 0; i < PROFILE_CIDS; i++) {
+        const struct msm_camera_csid_vc_cfg *source = &descriptor->csi.entries[0].csid.lut_params.vc_cfg_a[i];
+        if (translated_csid.lut_params.vc_cfg[i] != &cid[i] || cid[i].cid != source->cid ||
+            cid[i].dt != source->dt || cid[i].decode_format != source->decode_format) return 112;
+    }
     /* Negative control: the real consumer must reject a descriptor with no modes. */
     descriptor->modes.count = 0;
     if (!caps(context, output)) return 111;

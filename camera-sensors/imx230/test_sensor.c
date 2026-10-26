@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /* Freestanding ARM32 behavioral tests; run under qemu-arm, never on a phone. */
 #include "angler_sensor_abi.h"
+#include "profile.h"
 #define REQUIRE(c) do { if (!(c)) return __LINE__; } while (0)
 
 static uint32_t read_word(struct msm_camera_i2c_reg_array *r, unsigned int n, uint16_t address)
@@ -56,19 +57,40 @@ int run_tests(void)
     REQUIRE(read_word(buffer.r, out.size, 0x0202) == 65527);
     REQUIRE(read_word(buffer.r, out.size, 0x0204) == 448);
     REQUIRE(d->exposure.fill(0, 0x100, 3000, 2550, 0, 0, &out) == 0);
-    REQUIRE(read_word(buffer.r, out.size, 0x0340) == 3008);
+    REQUIRE(read_word(buffer.r, out.size, 0x0340) == (PROFILE_FRAME_LINES > 3008 ? PROFILE_FRAME_LINES : 3008));
     REQUIRE(d->exposure.fill(0, 0x100, 0, 0, 0, 1, &out) < 0);
     for (i = 0; i < d->init.count; i++)
         for (j = 0; j < d->init.entries[i].size; j++) {
             uint16_t a = d->init.entries[i].reg_setting[j].reg_addr;
             REQUIRE(a != 0 && a != 0x0100 && a != 0x0107);
         }
-    REQUIRE(d->init.entries[2].size > 12 && d->resolutions.entries[0].size > 12);
+    REQUIRE(d->init.entries[d->init.count - 1].size > 12 && d->resolutions.entries[0].size > 12);
     out = d->resolutions.entries[0];
-    REQUIRE(read_word(out.reg_setting, out.size, 0x034c) == 2496);
-    REQUIRE(read_word(out.reg_setting, out.size, 0x034e) == 1872);
+    REQUIRE(read_word(out.reg_setting, out.size, 0x034c) == PROFILE_WIDTH);
+    REQUIRE(read_word(out.reg_setting, out.size, 0x034e) == PROFILE_HEIGHT);
     REQUIRE(read_word(out.reg_setting, out.size, 0x0112) == 0x0a0a);
     REQUIRE(read_word(out.reg_setting, out.size, 0x0340) == d->modes.entries[0].frame_length);
+    REQUIRE(read_word(out.reg_setting, out.size, 0x0342) == PROFILE_LINE_PIXELS);
+    REQUIRE(PROFILE_MCLK / read_word(out.reg_setting, out.size, 0x0304) *
+            read_word(out.reg_setting, out.size, 0x0306) /
+            (read_word(out.reg_setting, out.size, 0x0302) *
+             read_word(out.reg_setting, out.size, 0x0300)) * 4 == PROFILE_VT_CLOCK);
+    REQUIRE(PROFILE_MCLK / read_word(out.reg_setting, out.size, 0x030c) *
+            read_word(out.reg_setting, out.size, 0x030e) /
+            (read_word(out.reg_setting, out.size, 0x030a) *
+             read_word(out.reg_setting, out.size, 0x0308)) * 4 == PROFILE_OUTPUT_CLOCK);
+    REQUIRE(read_word(out.reg_setting, out.size, 0x0820) == PROFILE_OUTPUT_CLOCK / 100000);
+    REQUIRE(d->csi.entries[0].phy.settle_cnt == PROFILE_SETTLE);
+    REQUIRE(d->csi.entries[0].csid.lut_params.num_cid == PROFILE_CIDS);
+    REQUIRE(d->slave.power_setting_array.power_setting_a[5].config_val == PROFILE_MCLK);
+    out = d->init.entries[d->init.count - 1];
+    REQUIRE(read_word(out.reg_setting, out.size, 0x0136) == (PROFILE_MCLK / 1000 * 256) / 1000);
+#ifdef CITYMAN_CAMERA_NUBIA24
+    REQUIRE(out.size == 413 && d->resolutions.entries[0].size == 173);
+    out = d->resolutions.entries[0];
+    REQUIRE(read_word(out.reg_setting, out.size, 0x080a) == 0x00a7);
+    REQUIRE(read_word(out.reg_setting, out.size, 0x0816) == 0x017f);
+#endif
     for (i = 0; i < d->slave.power_setting_array.size; i++)
         REQUIRE(d->slave.power_setting_array.power_setting_a[i].seq_type != SENSOR_VREG ||
                 d->slave.power_setting_array.power_setting_a[i].seq_val != CAM_VIO);

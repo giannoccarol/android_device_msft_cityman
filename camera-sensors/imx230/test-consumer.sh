@@ -6,6 +6,12 @@ compiler=${2:?supply ARM GCC prefix}
 vendor=$(realpath "${3:?supply the official angler vendor/lib directory}")
 out=$(realpath -m "${4:?supply a private output directory}")
 mkdir -p "$out"
+profile_flags=()
+case "${CITYMAN_CAMERA_SENSOR_PROFILE:-smia9}" in
+    smia9) ;;
+    nubia24) profile_flags+=(-DCITYMAN_CAMERA_NUBIA24) ;;
+    *) echo 'Unsupported sensor profile' >&2; exit 1 ;;
+esac
 check_hash() {
     [[ $(sha256sum "$1" | cut -d' ' -f1) == "$2" ]] || { echo "Unexpected fixture: $1" >&2; exit 1; }
 }
@@ -28,7 +34,7 @@ fi
 "${compiler}gcc" -std=gnu11 -Wall -Wextra -Werror -O2 -nostdinc -ffreestanding -fno-builtin \
     -fno-stack-protector -fno-unwind-tables -fno-asynchronous-unwind-tables \
     -mcpu=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=softfp -I"$kernel/include" \
-    -nostdlib -static -Wl,-e,_start "$here/sensor_lib_imx230.c" "$here/test_consumer.c" \
+    "${profile_flags[@]}" -nostdlib -static -Wl,-e,_start "$here/test_consumer.c" \
     "$here/test_start.S" "$out/consumer.o" "$out/reference.o" "$out/candidate.o" -o "$out/test_consumer"
 qemu-arm -cpu max "$out/test_consumer"
-echo 'Real angler consumer: loaded candidate .so, capabilities, GRBG10, I2C, power and CSI tests passed'
+echo "Real angler consumer: ${CITYMAN_CAMERA_SENSOR_PROFILE:-smia9}, loaded .so, capabilities, GRBG10, I2C, power and CSI passed"

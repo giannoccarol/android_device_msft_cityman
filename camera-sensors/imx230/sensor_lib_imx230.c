@@ -1,9 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 #include "angler_sensor_abi.h"
+#include "profile.h"
+#ifdef CITYMAN_CAMERA_NUBIA24
+#include "nubia24_registers.generated.h"
+#else
 #include "smia_registers.h"
+#endif
 
-#define FRAME_LINES 2550u
-#define LINE_PIXELS 6024u
+#define FRAME_LINES PROFILE_FRAME_LINES
+#define LINE_PIXELS PROFILE_LINE_PIXELS
 #define MAX_LINES (65535u - 8u)
 #define SETTING(a, type, wait) { .reg_setting = (a), .size = COUNT(a), \
     .addr_type = MSM_CAMERA_I2C_WORD_ADDR, .data_type = (type), .delay = (wait) }
@@ -11,10 +16,12 @@
     .config_val = (config), .delay = (wait) }
 
 static struct msm_camera_i2c_reg_array reset[] = {{0x0103, 1, 0}};
+#ifndef CITYMAN_CAMERA_NUBIA24
 static struct msm_camera_i2c_reg_array prologue[] = {
     {0x0130, 0x0280, 0}, {0x0132, 0x0133, 0}, {0x0134, 0x01cd, 0},
     {0x0136, 0x0999, 0},
 };
+#endif
 static struct msm_camera_i2c_reg_array stream_on[] = {{0x0100, 1, 0}};
 static struct msm_camera_i2c_reg_array stream_off[] = {{0x0100, 0, 0}};
 static struct msm_camera_i2c_reg_array hold_on[] = {{0x0104, 1, 0}};
@@ -85,7 +92,7 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
                 POWER(SENSOR_VREG, CAM_VDIG, 0, 1),
                 POWER(SENSOR_GPIO, SENSOR_GPIO_STANDBY, GPIO_OUT_LOW, 1),
                 POWER(SENSOR_GPIO, SENSOR_GPIO_RESET, GPIO_OUT_LOW, 1),
-                POWER(SENSOR_CLK, SENSOR_CAM_MCLK, 9600000, 25),
+                POWER(SENSOR_CLK, SENSOR_CAM_MCLK, PROFILE_MCLK, 25),
                 POWER(SENSOR_GPIO, SENSOR_GPIO_RESET, GPIO_OUT_HIGH, 30),
             }, .size = 7,
             .power_down_setting_a = {
@@ -121,18 +128,27 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
     .group_off = SETTING(hold_off, MSM_CAMERA_I2C_BYTE_DATA, 0),
     .init = {.entries = {
         SETTING(reset, MSM_CAMERA_I2C_BYTE_DATA, 20),
+#ifdef CITYMAN_CAMERA_NUBIA24
+        SETTING(nubia24_init, MSM_CAMERA_I2C_BYTE_DATA, 0),
+    }, .count = 2},
+#else
         SETTING(prologue, MSM_CAMERA_I2C_WORD_DATA, 0),
         SETTING(smia_idle, MSM_CAMERA_I2C_BYTE_DATA, 0),
     }, .count = 3},
-    .resolutions = {.entries = {SETTING(smia_mode4, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 1},
+#endif
+    .resolutions = {.entries = {SETTING(PROFILE_MODE, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 1},
     .resolution_actions = {{0, 2, 6, 3, 4, 5, 1}, 7},
-    .modes = {.entries = {{.width = 2496, .height = 1872, .line_length = LINE_PIXELS,
-        .frame_length = FRAME_LINES, .vt_pixel_clock = 460800000, .output_pixel_clock = 460800000,
-        .binning_factor = 2, .minimum_fps = 15.0f, .maximum_fps = 29.99766f, .kind = 1}}, .count = 1},
+    .modes = {.entries = {{.width = PROFILE_WIDTH, .height = PROFILE_HEIGHT, .line_length = LINE_PIXELS,
+        .frame_length = FRAME_LINES, .vt_pixel_clock = PROFILE_VT_CLOCK, .output_pixel_clock = PROFILE_OUTPUT_CLOCK,
+        .binning_factor = PROFILE_BINNING, .minimum_fps = PROFILE_MIN_FPS, .maximum_fps = PROFILE_MAX_FPS, .kind = 1}}, .count = 1},
     .csi = {.entries = {{
         .csid = {.lane_cnt = 4, .lane_assign = 0x0423, .phy_sel = 0,
-                 .lut_params = {.num_cid = 1, .vc_cfg_a = {{0, CSI_RAW10, CSI_DECODE_10BIT}}}},
-        .phy = {.lane_cnt = 4, .settle_cnt = 22, .lane_mask = 0x1f, .csid_core = 0},
+                 .lut_params = {.num_cid = PROFILE_CIDS, .vc_cfg_a = {{0, CSI_RAW10, CSI_DECODE_10BIT},
+#ifdef CITYMAN_CAMERA_NUBIA24
+                     {1, 0x36, CSI_DECODE_10BIT}, {3, CSI_EMBED_DATA, CSI_DECODE_8BIT},
+#endif
+                 }}},
+        .phy = {.lane_cnt = 4, .settle_cnt = PROFILE_SETTLE, .lane_mask = 0x1f, .csid_core = 0},
     }}, .count = 1},
     .crops = {.count = 1},
     /* ABI-compatible ISP seed only; these are not IMX230/Lumia calibrations. */

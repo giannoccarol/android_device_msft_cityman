@@ -19,6 +19,14 @@ including the Android-built shared object. Installation remains opt-in through
 
 ## Sensor integration boundary
 
+The next diagnostic build can select a coherent `nubia24` transmitter profile
+without replacing the Android 13 HAL/daemon. It generates private reference
+register data from a pinned local input and changes MCLK, PLL programs,
+geometry/clock metadata and CSID together. See
+[`camera-sensors/imx230/NUBIA24.md`](camera-sensors/imx230/NUBIA24.md) for build,
+framework prerequisites, first-probe clock caching and rollback instructions.
+The default remains `smia9`; neither profile has a verified delivered image.
+
 The next rear mode is the SMIA++ uncompressed RAW10 2496x1872 program published
 by hraj9258. It uses a 9.6 MHz external clock, four lanes and CSI0. Its sensor
 metadata, output geometry, exposure callbacks and start/stop sequence must be
