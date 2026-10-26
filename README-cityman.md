@@ -1,8 +1,33 @@
-# Lumia 950 XL (cityman), LineageOS 18.1
+# Lumia 950 XL (cityman), LineageOS 18.1 and 20
 
 This tree comes from the Android4Lumia950 talkman (Lumia 950) tree, renamed
 for the 950 XL. The phone it was checked against runs the talkman ROM of
 2026-05-22 plus the cityman kernel and the changes below, applied by hand.
+
+## LineageOS 20 (Android 13), branch lineage-20-cityman
+
+This branch builds LineageOS 20 for cityman on top of the LineageOS-UL
+tree (`LineageOS-UL/android`, `lineage-20.0`) with the local manifest
+`lineageos-20/cityman_a13_manifest.xml` of `talkman-manifests`
+(branch `lineage-20-cityman`). The first build booted to the launcher on
+2026-10-26; the hardware is still being checked.
+
+- Kernel: `android_kernel_mmo_msm8994` `lineage-20-cityman`, which is the
+  Android4Lumia950 `lineage-21.0` kernel (eBPF, cgroup2, memcg, cpusets,
+  PSI, pidfd and fscrypt backports, userspace kernel version spoof) merged
+  with `lineage-18.1-cityman-rom`, plus fixes found while bringing it up
+  on cityman: the dentry name snapshot in `vfs_rename2`, the ext4
+  `i_extra_isize` growth that deadlocked `/data`, the performance governor
+  at boot (the MBA needs it to authenticate the modem image in time) and
+  `cpu-boost`.
+- HALs: display and media from `hardware/qcom-caf/msm8994`
+  (`BOARD_USES_QCOM_HARDWARE`), audio from the generic `hardware/qcom/audio`
+  as on 18.1, GPS from `hardware/qcom/gps/msm8994`.
+- First-boot choices: no eBPF (`ro.kernel.ebpf.supported=false`), no
+  encryption, SELinux permissive.
+- The LineageOS projects that build against the LineageOS-UL forks are
+  pinned to their 2025-04-05 state (see the manifest); the security patch
+  level is 2025-03.
 
 ## Sources
 
@@ -121,6 +146,19 @@ This ROM builds on the work of others:
   cityman.
 - **LineageOS** and **TheMuppets**: the Android 11 base and the reference
   vendor blobs.
+- **LineageOS-UL** (`LineageOS-UL/android` and its forks): the Android 13
+  base with the no-eBPF, cgroup v1 freezer and legacy fixes that let it
+  run on a 3.10 kernel, and the msm8994 display HAL.
+- **ximi-libra-test** (`ximi-libra-test/android_device_xiaomi_libra`
+  `lineage-20-rev`, backslashxx, rik0612c and contributors): the MSM8992
+  LineageOS 20 tree whose layout this branch follows (qcom-caf HALs,
+  Bluetooth profile properties, APCF off, `vendor.rild.libpath`, ELF
+  prebuilts) and the wpa_supplicant format patch kept in
+  `talkman-manifests`.
+- **Android4Lumia950 `lineage-21.0` kernel** (j0sh1x, with backports by
+  Yaroslav Zviezda/acroreiser, Derek and mukul2259): the eBPF, cgroup,
+  PSI and fscrypt backports and the kernel version spoof this branch's
+  kernel is based on.
 
 Work under evaluation for cityman, credited where it is used:
 **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230 driver).
