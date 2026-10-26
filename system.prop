@@ -29,7 +29,7 @@ bluetooth.le.disable_apcf_extended_features=1
 bluetooth.enable_timeout_ms=12000
 
 # Camera
-persist.camera.eis.enable=1
+persist.camera.eis.enable=0
 persist.camera.is_type=4
 persist.camera.tnr.preview=0
 persist.camera.tnr.video=0
