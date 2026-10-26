@@ -27,10 +27,17 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := cityman_wlan_mac
-wlan_mac_path := $(TARGET_OUT_ETC)/firmware/wlan/qca_cld/wlan_mac.bin
-LOCAL_POST_INSTALL_CMD := $(hide) mkdir -p $(dir $(wlan_mac_path)) && ln -sf /persist/wlan_mac.bin $(wlan_mac_path)
-wlan_mac_path :=
 include $(BUILD_PHONY_PACKAGE)
+
+# qcacld reads the WLAN MAC from wlan/qca_cld/wlan_mac.bin: the Lumia
+# platform data has none, and without the file the driver resets the chip
+# in a loop. Link it to the per-device file in /persist. Android 13 no
+# longer runs LOCAL_POST_INSTALL_CMD for phony packages, so use a rule.
+WLAN_MAC_SYMLINK := $(TARGET_OUT_ETC)/firmware/wlan/qca_cld/wlan_mac.bin
+$(WLAN_MAC_SYMLINK):
+	@mkdir -p $(dir $@)
+	@ln -sf /persist/wlan_mac.bin $@
+ALL_DEFAULT_INSTALLED_MODULES += $(WLAN_MAC_SYMLINK)
 
 ifneq ($(filter cityman, $(TARGET_DEVICE)),)
 
