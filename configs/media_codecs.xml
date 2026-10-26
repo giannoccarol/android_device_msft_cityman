@@ -216,6 +216,11 @@ Only the three quirks included above are recognized at this point:
             <Feature name="secure-playback" required="true" />
             <Limit name="concurrent-instances" max="2" />
         </MediaCodec>
+        <!-- Android 13: MSM8994 has no VP9 or AV1 hardware decoder. Keep the
+             Codec2 software ones (defined earlier by the media.swcodec APEX)
+             out of the list, so players such as YouTube use the hardware AVC
+             decoder instead of decoding VP9/AV1 on the CPU. -->
+        <MediaCodec name="c2.android.vp9.decoder" update="true" enabled="false" />
+        <MediaCodec name="c2.android.av1.decoder" update="true" enabled="false" />
     </Decoders>
-    <Include href="media_codecs_google_video.xml" />
 </MediaCodecs>
