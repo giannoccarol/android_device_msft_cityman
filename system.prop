@@ -21,6 +21,11 @@ ro.audio.flinger_standbytime_ms=300
 
 # Bluetooth
 qcom.bluetooth.soc=rome
+# The qcom-caf libbt-vendor of LineageOS 20 reads the vendor. name; without
+# it the stack falls back to the SMD/WCNSS SoC type instead of Rome (UART).
+vendor.qcom.bluetooth.soc=rome
+# QCA Rome needs the APCF extended features off on Android 13 (libra).
+bluetooth.le.disable_apcf_extended_features=1
 bluetooth.enable_timeout_ms=12000
 
 # Camera
