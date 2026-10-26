@@ -390,7 +390,6 @@
     </path>
 
     <path name="deep-buffer-playback speaker">
-        <path name="deep-buffer-playback" />
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia1" value="1" />
     </path>
 
@@ -458,7 +457,6 @@
     </path>
 
     <path name="low-latency-playback speaker">
-        <path name="low-latency-playback" />
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia5" value="1" />
     </path>
 
@@ -511,7 +509,6 @@
     </path>
 
     <path name="audio-ull-playback speaker">
-        <path name="audio-ull-playback" />
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia3" value="1" />
     </path>
 
@@ -563,7 +560,6 @@
     </path>
 
     <path name="compress-offload-playback speaker">
-        <path name="compress-offload-playback" />
         <ctl name="QUAT_MI2S_RX Audio Mixer MultiMedia4" value="1" />
     </path>
 
@@ -1689,13 +1685,9 @@
         <ctl name="TAS2552 Mute" value="0" />
         <ctl name="TAS2552 Input Channel Mux" value="Right" />
         <path name="speaker-gain-default" />
-        <!-- Front Earpiece for Left Channel (Dual Stereo Speakers) -->
-        <ctl name="SLIM RX1 MUX" value="AIF1_PB" />
-        <ctl name="SLIM_0_RX Channels" value="Two" />
-        <ctl name="RX1 MIX1 INP1" value="RX1" />
-        <ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
-        <ctl name="DAC1 Switch" value="1" />
-        <ctl name="RX1 Digital Volume" value="84" />
+        <!-- The front earpiece (left channel on SLIMBUS_0_RX) is left out:
+             the Cityman ADSP refuses to start SLIMBUS_0_RX, and that also
+             stops the loudspeaker stream. -->
     </path>
 
     <path name="speaker-reverse">
@@ -1703,13 +1695,7 @@
         <ctl name="TAS2552 Mute" value="0" />
         <ctl name="TAS2552 Input Channel Mux" value="Left" />
         <path name="speaker-gain-default" />
-        <!-- Front Earpiece for Right Channel (Reverse Stereo) -->
-        <ctl name="SLIM RX1 MUX" value="AIF1_PB" />
-        <ctl name="SLIM_0_RX Channels" value="Two" />
-        <ctl name="RX1 MIX1 INP1" value="RX2" />
-        <ctl name="CLASS_H_DSM MUX" value="DSM_HPHL_RX1" />
-        <ctl name="DAC1 Switch" value="1" />
-        <ctl name="RX1 Digital Volume" value="84" />
+        <!-- No front earpiece: see "speaker". -->
     </path>
 
     <path name="speaker-liquid">
