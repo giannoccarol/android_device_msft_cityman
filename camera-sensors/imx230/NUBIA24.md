@@ -105,6 +105,12 @@ CSID lane/DT/decode configuration, ECC/CRC, ISPIF/VFE SOF and HAL buffer deliver
 Accept a real preview, then repeatable open/close and a saved image. Packet
 counts, enumeration or passing offline tests alone do not establish success.
 
+`tools/camera-a13/collect-camera.sh ADB_SERIAL NEW_PRIVATE_OUTPUT` collects
+bounded read-only logs, installed plugin hash, available debug clock readings
+and camera-service state. It neither opens an app nor restarts any service.
+Run it before and after a coordinated test, with separate private directories.
+An idle/unavailable debug clock reading does not verify the active sensor clock.
+
 ## Credits
 
 - TheMuppets, `proprietary_vendor_zte`, `cm-13.0`, commit `010f45bac6a3`:
