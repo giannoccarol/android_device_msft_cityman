@@ -451,7 +451,11 @@ service charger /charger
     critical
     seclabel u:r:charger:s0
 
+# libcamera_delayfree keeps freed blocks mapped for a while: the angler AF port
+# reads a message after the AF thread may have freed it (fatal with scudo).
+# LD_PRELOAD needs the daemon without file capabilities (see config.fs).
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
+    setenv LD_PRELOAD libcamera_delayfree.so
     class main
     user camera
     group camera system inet input graphics

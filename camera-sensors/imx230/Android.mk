@@ -34,6 +34,12 @@ $(cityman_sensor_header): $(CITYMAN_CAMERA_LUMIA20_DCC) $(LOCAL_PATH)/generate-l
 else ifneq ($(cityman_sensor_profile),smia9)
 $(error Unsupported CITYMAN_CAMERA_SENSOR_PROFILE=$(cityman_sensor_profile))
 endif
+ifeq ($(CITYMAN_CAMERA_AF),true)
+# The default name pairs with camera-sensors/carrera-af. For a bind-mount test
+# over the vendor driver library, CITYMAN_CAMERA_AF_NAME=lc898212xd.
+LOCAL_CFLAGS += -DCITYMAN_CAMERA_AF \
+    -DCITYMAN_CAMERA_AF_NAME=\"$(or $(CITYMAN_CAMERA_AF_NAME),carrera)\"
+endif
 LOCAL_VENDOR_MODULE := true
 LOCAL_32_BIT_ONLY := true
 include $(BUILD_SHARED_LIBRARY)

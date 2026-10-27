@@ -151,6 +151,19 @@ PRODUCT_PACKAGES += \
 # coordination. The module can always be built explicitly with m.
 ifeq ($(CITYMAN_CAMERA_SMIA_EXPERIMENTAL),true)
 PRODUCT_PACKAGES += libmmcamera_imx230
+# Rear AF through the Carrera AF/OIS controller (needs a kernel with actuator0
+# enabled). The infinity/macro codes come from the module NVM; the defaults
+# are those of the reference phone (NVM map 0x42: INF 909, MACRO 1178) until
+# an EEPROM library calibrates each module at run time.
+CITYMAN_CAMERA_AF ?= true
+CITYMAN_CAMERA_AF_INF_CODE ?= 909
+CITYMAN_CAMERA_AF_MACRO_CODE ?= 1178
+ifeq ($(CITYMAN_CAMERA_AF),true)
+PRODUCT_PACKAGES += \
+    libactuator_carrera \
+    libactuator_carrera_camera \
+    libactuator_carrera_camcorder
+endif
 endif
 # Front VS6955CA probe module. Requires the private 0A214000.dcc and a kernel
 # with qcom,camera@1 enabled; off by default.
@@ -158,6 +171,7 @@ ifeq ($(CITYMAN_CAMERA_FRONT_VS6955),true)
 PRODUCT_PACKAGES += libmmcamera_vs6955
 endif
 PRODUCT_PACKAGES += \
+    libcamera_delayfree \
     libsensor_camera_shim \
     camera.msm8992 \
     libmmcamera_interface \

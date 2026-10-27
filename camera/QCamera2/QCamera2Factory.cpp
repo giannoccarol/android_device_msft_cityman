@@ -30,6 +30,7 @@
 #define LOG_TAG "QCamera2Factory"
 //#define LOG_NDEBUG 0
 
+#include <signal.h>
 #include <stdlib.h>
 #include <utils/Log.h>
 #include <utils/Errors.h>
@@ -58,6 +59,11 @@ QCamera2Factory *gQCamera2Factory = NULL;
  *==========================================================================*/
 QCamera2Factory::QCamera2Factory()
 {
+    /* The provider talks to mm-qcamera-daemon over sockets and pipes. When the
+     * daemon closes a session first, a write must fail with EPIPE instead of
+     * killing the whole camera provider with SIGPIPE. */
+    signal(SIGPIPE, SIG_IGN);
+
     mHalDescriptors = NULL;
     mCallbacks = NULL;
     mNumOfCameras = get_num_of_cameras();

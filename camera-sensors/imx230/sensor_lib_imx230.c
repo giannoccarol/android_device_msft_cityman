@@ -116,6 +116,10 @@ __attribute__((visibility("default")))
 struct angler_sensor_descriptor cityman_imx230_descriptor = {
     .slave = {
         .sensor_name = "imx230", .camera_id = CAMERA_0, .slave_addr = 0x20,
+#ifdef CITYMAN_CAMERA_AF
+        /* AF/OIS controller of the Carrera module; kernel node actuator0. */
+        .actuator_name = CITYMAN_CAMERA_AF_NAME,
+#endif
         .i2c_freq_mode = I2C_STANDARD_MODE, .addr_type = MSM_CAMERA_I2C_WORD_ADDR,
         .sensor_id_info = { .sensor_id_reg_addr = 0x0016, .sensor_id = 0x0230 },
         .power_setting_array = {
@@ -148,9 +152,16 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
     .exposure_registers = {0x0202, 0x0204, 8},
     .aec = {1.0f, 8.0f, 8.0f, MAX_LINES},
     .exposure_start_delay = 1, .exposure_update_delay = 2,
-    /* Optical metadata is provisional until verified against the Cityman DCC. */
+    /*
+     * f/1.9 matches the EXIF of stock Lumia 950 photos (same Carrera module).
+     * Focal length is still provisional: stock EXIF leaves it at 0.
+     */
     .lens = {.focal_length = 4.26f, .pixel_pitch = 1.12f, .f_number = 1.9f,
              .sensing_method = 1, .crop_factor = 1.0f,
+#ifdef CITYMAN_CAMERA_AF
+             /* Provisional (metres): replace with the NVM macro distance. */
+             .minimum_focus_distance = 0.1f,
+#endif
              .physical_width = 5.98528f, .physical_height = 4.49792f},
     .active_array = {5344, 4016, 0, 0, 0, 0},
     .white_level = 1023, .black_level = {64, 64, 64, 64},
