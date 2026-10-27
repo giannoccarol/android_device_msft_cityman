@@ -159,7 +159,10 @@ int mm_camera_socket_sendmsg(
       }
     }
 
-    return sendmsg(fd, &(msgh), 0);
+    /* If mm-qcamera-daemon has already closed this socket (fast close and
+     * reopen from CameraX), a plain sendmsg() raises SIGPIPE and kills the
+     * camera provider; report EPIPE to the caller instead. */
+    return sendmsg(fd, &(msgh), MSG_NOSIGNAL);
 }
 
 /*===========================================================================
