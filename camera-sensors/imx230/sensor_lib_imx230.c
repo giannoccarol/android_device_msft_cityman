@@ -20,9 +20,35 @@
 
 static struct msm_camera_i2c_reg_array reset[] = {{0x0103, 1, 0}};
 #ifndef CITYMAN_CAMERA_NUBIA24
+/*
+ * smia_idle (the Lumia common init) makes the sensor reorder its MIPI lanes
+ * (0x50b8..0x50bb = 2, 1, 3, 0): on Windows that is the lane routing. On
+ * Android the CSID already reorders them (lane_assign 0x0423), so the two
+ * permutations stacked and every packet header failed ECC (CSID ecc
+ * 0xffff0000, no SOF; the smia9 errors at 9.6 MHz had the same cause).
+ * Put the sensor lanes back in natural order; nubia24 never sets them.
+ */
+static struct msm_camera_i2c_reg_array lane_order[] = {
+    {0x50b8, 0x00, 0}, {0x50b9, 0x01, 0}, {0x50ba, 0x02, 0}, {0x50bb, 0x03, 0},
+};
 static struct msm_camera_i2c_reg_array prologue[] = {
     {0x0130, 0x0280, 0}, {0x0132, 0x0133, 0}, {0x0134, 0x01cd, 0},
     {0x0136, 0x0999, 0},
+};
+#endif
+#ifdef CITYMAN_CAMERA_LUMIA20
+/*
+ * The Lumia DCC mode tables set PLL, geometry and link rate but no frame
+ * length, exposure or gains: the Windows driver writes them at run time.
+ * smia9 and nubia24 set them in their own tables. Seed the public smia9
+ * values with the lumia20 frame length (3952 lines) before streaming.
+ */
+static struct msm_camera_i2c_reg_array lumia20_frame[] = {
+    {0x0340, PROFILE_FRAME_LINES >> 8, 0}, {0x0341, PROFILE_FRAME_LINES & 0xff, 0},
+    {0x0202, 0x04, 0}, {0x0203, 0xb0, 0},
+    {0x0204, 0x00, 0}, {0x0205, 0x00, 0},
+    {0x020e, 0x01, 0}, {0x020f, 0x00, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
+    {0x0212, 0x01, 0}, {0x0213, 0x00, 0}, {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
 };
 #endif
 static struct msm_camera_i2c_reg_array stream_on[] = {{0x0100, 1, 0}};
@@ -137,7 +163,13 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
 #else
         SETTING(prologue, MSM_CAMERA_I2C_WORD_DATA, 0),
         SETTING(smia_idle, MSM_CAMERA_I2C_BYTE_DATA, 0),
-    }, .count = 3},
+        SETTING(lane_order, MSM_CAMERA_I2C_BYTE_DATA, 0),
+#ifdef CITYMAN_CAMERA_LUMIA20
+        SETTING(lumia20_frame, MSM_CAMERA_I2C_BYTE_DATA, 0),
+    }, .count = 5},
+#else
+    }, .count = 4},
+#endif
 #endif
     .resolutions = {.entries = {SETTING(PROFILE_MODE, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 1},
     .resolution_actions = {{0, 2, 6, 3, 4, 5, 1}, 7},
