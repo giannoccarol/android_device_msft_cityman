@@ -174,8 +174,13 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
     /* Same action order as the angler front sensor. */
     .resolution_actions = {{0, 2, 4, 5, 6, 3, 1}, 7},
     .modes = {.entries = {
-        /* Binned mode only: it matches the single generated resolution table. */
-        {.width = 1296, .height = 972, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
+        /*
+         * Binned mode only: it matches the single generated resolution table.
+         * The table asks for 1296x972, but the sensor sends 1304-pixel lines:
+         * with 1296 declared the VFE reports camif error 0x518 (= 1304) and
+         * never sees SOF. Declare 1304 and crop 4 pixels per side below.
+         */
+        {.width = 1304, .height = 972, .line_length = VS6955_LINE_LENGTH, .frame_length = VS6955_FRAME_LINES,
          .vt_pixel_clock = VS6955_VT_CLOCK, .output_pixel_clock = VS6955_OUTPUT_CLOCK, .binning_factor = 2,
          .minimum_fps = 15.0f, .maximum_fps = VS6955_MAX_FPS, .kind = 1},
     }, .count = 1},
@@ -193,7 +198,8 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
                      {1, CSI_EMBED_DATA, CSI_DECODE_8BIT}}}},
         .phy = {.lane_cnt = 2, .settle_cnt = 14, .lane_mask = 0x7, .csid_core = 2},
     }}, .count = 1},
-    .crops = {.count = 1},
+    /* CAMIF keeps pixels 4..1299 of the 1304-pixel lines: 1296 useful. */
+    .crops = {.entries = {{.top = 0, .bottom = 0, .left = 4, .right = 4}}, .count = 1},
     /*
      * The daemon loads these during sensor start.  An empty list leaves the
      * chromatix pointer null and the daemon faults at zero+0xc084 before it
