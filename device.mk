@@ -171,6 +171,7 @@ ifeq ($(CITYMAN_CAMERA_FRONT_VS6955),true)
 PRODUCT_PACKAGES += libmmcamera_vs6955
 endif
 PRODUCT_PACKAGES += \
+    libcamera_delayfree \
     libsensor_camera_shim \
     camera.msm8992 \
     libmmcamera_interface \

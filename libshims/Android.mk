@@ -42,3 +42,12 @@ LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_SHARED_LIBRARIES := libsensor libutils
 LOCAL_32_BIT_ONLY := true
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libcamera_delayfree
+LOCAL_SRC_FILES := camera_delayfree.c
+LOCAL_SHARED_LIBRARIES := libdl
+LOCAL_CFLAGS := -Wall -Werror
+LOCAL_VENDOR_MODULE := true
+LOCAL_32_BIT_ONLY := true
+include $(BUILD_SHARED_LIBRARY)

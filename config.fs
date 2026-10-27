@@ -7,7 +7,7 @@ caps: BLOCK_SUSPEND
 mode: 0700
 user: AID_CAMERA
 group: AID_SHELL
-caps: SYS_NICE
+caps: 0
 [persist/]
 mode: 0771
 user: AID_SYSTEM
