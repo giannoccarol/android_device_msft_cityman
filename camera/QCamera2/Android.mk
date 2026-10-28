@@ -41,6 +41,8 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS := -Wall -Wextra -Werror -Wno-unused-label -Wno-unused-parameter
 LOCAL_CFLAGS += -DHAS_MULTIMEDIA_HINTS
 LOCAL_CFLAGS += -DENABLE_MODEL_INFO_EXIF
+# Legacy QCamera2 uses String8::string() and String8::isEmpty().
+LOCAL_CFLAGS += -DENABLE_STRING8_OBSOLETE_METHODS
 
 ifeq ($(TARGET_USES_AOSP),true)
 LOCAL_CFLAGS += -DVANILLA_HAL
@@ -53,18 +55,19 @@ LOCAL_C_INCLUDES := \
         $(LOCAL_PATH)/stack/common \
         frameworks/native/include/media/hardware \
         frameworks/native/include/media/openmax \
-        hardware/qcom/media/msm8974/libstagefrighthw \
+        hardware/qcom-caf/msm8994/media/libstagefrighthw \
         system/media/camera/include \
         $(LOCAL_PATH)/../mm-image-codec/qexif \
         $(LOCAL_PATH)/../mm-image-codec/qomx_core \
         $(LOCAL_PATH)/util \
+        frameworks/native/libs/nativewindow/include \
 
 #HAL 1.0 Include paths
 LOCAL_C_INCLUDES += \
         frameworks/native/include/media/hardware \
         device/msft/cityman/camera/QCamera2/HAL
 
-LOCAL_HEADER_LIBRARIES := display_headers generated_kernel_headers
+LOCAL_HEADER_LIBRARIES := display_headers generated_kernel_headers media_plugin_headers
 
 #LOCAL_STATIC_LIBRARIES := libqcamera2_util
 LOCAL_C_INCLUDES += \
@@ -74,9 +77,17 @@ ifeq ($(call is-board-platform-in-list, msm8992),true)
 LOCAL_CFLAGS += -DOPTIMIZE_BUF_COUNT
 endif
 
-LOCAL_SHARED_LIBRARIES := libcamera_client liblog libhardware libutils libcutils libdl libsync
+# Only the metadata and camera1 parameter classes are needed from the framework.
+# Compile them into the vendor HAL: libcamera_client is a system library.
+LOCAL_SRC_FILES += \
+        ../../../../../frameworks/av/camera/CameraMetadata.cpp \
+        ../../../../../frameworks/av/camera/CameraParameters.cpp \
+        ../../../../../frameworks/av/camera/VendorTagDescriptor.cpp
+LOCAL_C_INCLUDES += frameworks/av/camera/include system/media/private/camera/include
+
+LOCAL_SHARED_LIBRARIES := libbinder liblog libhardware libutils libcutils libdl libsync
 LOCAL_SHARED_LIBRARIES += libmmcamera_interface libmmjpeg_interface libui libcamera_metadata
-LOCAL_SHARED_LIBRARIES += libqdMetaData libstagefrighthw
+LOCAL_SHARED_LIBRARIES += libqdMetaData libnativewindow
 
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE := camera.$(TARGET_BOARD_PLATFORM)
