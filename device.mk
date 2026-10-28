@@ -103,7 +103,14 @@ PRODUCT_PACKAGES_DEBUG += \
 # hardware/qcom/audio HAL (Android.mk), so its caf namespace is not exported.
 PRODUCT_SOONG_NAMESPACES += \
     hardware/qcom-caf/msm8994/display \
-    hardware/qcom-caf/msm8994/media
+    hardware/qcom-caf/msm8994/media \
+    hardware/qcom-caf/bt/libbt-vendor
+
+# The msm8994 qcom-caf display HALs are named after msm8994; the board is msm8992.
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.hardware.gralloc=msm8994 \
+    ro.hardware.hwcomposer=msm8994 \
+    ro.hardware.memtrack=msm8994
 
 # Audio
 PRODUCT_PACKAGES += \
@@ -194,13 +201,13 @@ PRODUCT_PACKAGES += \
 
 # Display
 PRODUCT_PACKAGES += \
-    gralloc.msm8992 \
+    gralloc.msm8994 \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.graphics.mapper@2.0-impl \
-    hwcomposer.msm8992 \
-    memtrack.msm8992 \
+    hwcomposer.msm8994 \
+    memtrack.msm8994 \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service
 
@@ -334,7 +341,6 @@ PRODUCT_COPY_FILES += \
 # Light HAL
 PRODUCT_PACKAGES += \
     lights.cityman \
-    lights.vts \
     android.hardware.light@2.0-impl \
     android.hardware.light@2.0-service
     
@@ -458,12 +464,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/prebuilts/vndk-v29/arm64/libprotobuf-cpp-lite.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libprotobuf-cpp-lite-v29.so \
     $(LOCAL_PATH)/prebuilts/vndk-v29/arm64/libcutils.so:$(TARGET_COPY_OUT_SYSTEM)/lib64/libcutils-v29.so
 
-# VTS {Library used for VTS profiling (only for userdebug and eng builds)}
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-PRODUCT_PACKAGES += \
-    libvts_profiling \
-    libvts_multidevice_proto
-endif
 
 # USB HAL
 PRODUCT_PACKAGES += \
