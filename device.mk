@@ -396,7 +396,7 @@ PRODUCT_PACKAGES += \
     qti_telephony_utils.xml \
     librmnetctl \
     rmnetcli \
-    libaudioclient_shim \
+    libaudioclient_shim_cityman \
     slim_shim
 
 PRODUCT_BOOT_JARS += \

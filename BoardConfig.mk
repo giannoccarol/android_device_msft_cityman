@@ -203,7 +203,7 @@ TARGET_LD_SHIM_LIBS := \
     /vendor/bin/ATFWD-daemon|libcutils_shim.so \
     /vendor/bin/cnd|libcutils_shim.so \
     /vendor/lib64/libcne.so|libcutils_shim.so \
-    /system/vendor/lib64/libril-qc-qmi-1.so|libaudioclient_shim.so \
+    /system/vendor/lib64/libril-qc-qmi-1.so|libaudioclient_shim_cityman.so \
     /vendor/lib/liboemcamera.so|libsensor_camera_shim.so
 #    /vendor/bin/slim_daemon|/vendor/lib64/slim_shim.so
 
