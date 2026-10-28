@@ -208,8 +208,6 @@ TARGET_LD_SHIM_LIBS := \
 #    /vendor/bin/slim_daemon|/vendor/lib64/slim_shim.so
 
 
-# Testing related defines
-BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/bullhead-setup.sh
 
 # Telephony
 TARGET_USES_ALTERNATIVE_MANUAL_NETWORK_SELECT := true
