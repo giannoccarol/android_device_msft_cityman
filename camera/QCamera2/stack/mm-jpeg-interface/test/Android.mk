@@ -26,6 +26,7 @@ LOCAL_C_INCLUDES += $(OMX_CORE_DIR)/qexif
 LOCAL_C_INCLUDES += $(OMX_CORE_DIR)/qomx_core
 
 LOCAL_C_INCLUDES+= $(kernel_includes)
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
 
 LOCAL_SRC_FILES := mm_jpeg_test.c
@@ -66,6 +67,7 @@ LOCAL_C_INCLUDES += $(OMX_CORE_DIR)/qexif
 LOCAL_C_INCLUDES += $(OMX_CORE_DIR)/qomx_core
 
 LOCAL_C_INCLUDES+= $(kernel_includes)
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
 
 LOCAL_SRC_FILES := mm_jpegdec_test.c

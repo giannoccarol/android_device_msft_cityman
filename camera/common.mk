@@ -1,7 +1,4 @@
+# Kernel UAPI headers come from the generated_kernel_headers header library
+# (LineageOS 21+ no longer exposes KERNEL_OBJ/usr to Android.mk modules).
 common_deps :=
 kernel_includes :=
-
-ifeq ($(TARGET_COMPILE_WITH_MSM_KERNEL),true)
-    common_deps += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
-    kernel_includes += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-endif
