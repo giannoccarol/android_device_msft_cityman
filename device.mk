@@ -99,6 +99,12 @@ PRODUCT_PACKAGES_DEBUG += \
     tinypcminfo \
     tinyplay
 
+# Soong namespaces of the msm8994 qcom-caf HALs. Audio stays on the generic
+# hardware/qcom/audio HAL (Android.mk), so its caf namespace is not exported.
+PRODUCT_SOONG_NAMESPACES += \
+    hardware/qcom-caf/msm8994/display \
+    hardware/qcom-caf/msm8994/media
+
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
