@@ -446,13 +446,11 @@ PRODUCT_COPY_FILES += \
 # requirements; do not enforce them when building OTA packages.
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
 
-# VNDK
-PRODUCT_EXTRA_VNDK_VERSIONS := 29
-
+# VNDK v29 libraries for the vendor blobs (no VNDK snapshots since Android 15)
 PRODUCT_COPY_FILES += \
-    prebuilts/vndk/v29/arm/arch-arm-armv7-a-neon/shared/vndk-core/libprotobuf-cpp-lite.so:$(TARGET_COPY_OUT_VENDOR)/lib/libprotobuf-cpp-lite-v29.so \
-    prebuilts/vndk/v29/arm64/arch-arm64-armv8-a/shared/vndk-core/libprotobuf-cpp-lite.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libprotobuf-cpp-lite-v29.so \
-    prebuilts/vndk/v29/arm64/arch-arm64-armv8-a/shared/vndk-sp/libcutils.so:$(TARGET_COPY_OUT_SYSTEM)/lib64/libcutils-v29.so
+    $(LOCAL_PATH)/prebuilts/vndk-v29/arm/libprotobuf-cpp-lite.so:$(TARGET_COPY_OUT_VENDOR)/lib/libprotobuf-cpp-lite-v29.so \
+    $(LOCAL_PATH)/prebuilts/vndk-v29/arm64/libprotobuf-cpp-lite.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libprotobuf-cpp-lite-v29.so \
+    $(LOCAL_PATH)/prebuilts/vndk-v29/arm64/libcutils.so:$(TARGET_COPY_OUT_SYSTEM)/lib64/libcutils-v29.so
 
 # VTS {Library used for VTS profiling (only for userdebug and eng builds)}
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
