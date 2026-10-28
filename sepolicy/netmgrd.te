@@ -77,3 +77,10 @@ wakelock_use(netmgrd)
 
 dontaudit netmgrd servicemanager:binder call;
 dontaudit netmgrd dnsresolver_service:service_manager find;
+
+# netmgrd attaches the netd BPF programs when it brings up rmnet data
+# interfaces (denials seen on Android 13 with real eBPF, 28/10/2026).
+allow netmgrd bpfloader:bpf prog_run;
+allow netmgrd fs_bpf:dir search;
+allow netmgrd fs_bpf_netd_shared:dir search;
+allow netmgrd fs_bpf_netd_shared:file read;
