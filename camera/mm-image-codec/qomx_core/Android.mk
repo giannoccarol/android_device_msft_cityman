@@ -25,4 +25,5 @@ LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := liblog libcutils libdl
 
 LOCAL_32_BIT_ONLY := true
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_SHARED_LIBRARY)

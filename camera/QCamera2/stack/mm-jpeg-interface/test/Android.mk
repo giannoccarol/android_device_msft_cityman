@@ -35,6 +35,7 @@ LOCAL_MODULE           := mm-jpeg-interface-test
 LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := libcutils libdl libmmjpeg_interface liblog
 
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_EXECUTABLE)
 
 
@@ -74,6 +75,7 @@ LOCAL_MODULE           := mm-jpegdec-interface-test
 LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := libcutils libdl libmmjpeg_interface liblog
 
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_EXECUTABLE)
 
 LOCAL_PATH := $(OLD_LOCAL_PATH)
