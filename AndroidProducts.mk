@@ -18,5 +18,5 @@ PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/lineage_cityman.mk
 
 COMMON_LUNCH_CHOICES := \
-    lineage_cityman-userdebug \
-    lineage_cityman-eng
+    lineage_cityman-bp4a-userdebug \
+    lineage_cityman-bp4a-eng
