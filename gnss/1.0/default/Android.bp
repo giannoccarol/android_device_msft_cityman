@@ -2,7 +2,7 @@
 // nmeaCb ignores CAF's off-by-one length so hidl_string does not abort.
 cc_library_shared {
     name: "android.hardware.gnss@1.0-impl.cityman",
-    stem: "android.hardware.gnss@1.0-impl",
+    stem: "android.hardware.gnss@1.0-impl-cityman",
     overrides: ["android.hardware.gnss@1.0-impl"],
     defaults: ["hidl_defaults"],
     vendor: true,
