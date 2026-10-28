@@ -238,7 +238,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
     android.hardware.drm@1.0-service \
-    android.hardware.drm@1.2-service.clearkey
+    android.hardware.drm-service.clearkey
 
 # Dumpstate HAL
 PRODUCT_PACKAGES += \
@@ -469,13 +469,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.oem_unlock_supported=1
 
-# Vibrator HAL
+# Vibrator HAL: AIDL adapter over the legacy timed_output module
 PRODUCT_PACKAGES += \
-    android.hardware.vibrator@1.0-impl
+    android.hardware.vibrator-service.legacy \
+    vibrator.default
 
 # Wi-Fi
 PRODUCT_PACKAGES += \
-    android.hardware.wifi@1.0-service \
+    android.hardware.wifi-service-lazy \
     libwpa_client \
     hostapd \
     wificond \
