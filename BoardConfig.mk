@@ -97,7 +97,6 @@ TARGET_KERNEL_HEADER_ARCH := arm64
 #endif
 
 # APEX
-TARGET_FLATTEN_APEX := true
 
 # Audio
 BOARD_USES_ALSA_AUDIO := true

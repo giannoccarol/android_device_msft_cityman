@@ -148,9 +148,6 @@ persist.sys.isolated_storage=false
 wifi.interface=wlan0
 wifi.supplicant_scan_interval=15
 
-# eBPF: start without it, as the other 3.10 ports on LineageOS-UL do.
-# The lineage-20-cityman kernel has eBPF; flip this once the system boots.
-ro.kernel.ebpf.supported=false
 
 # ACDB: the loader does not find the files on its own, list them. The
 # Cityman files match the Cityman ADSP firmware.
