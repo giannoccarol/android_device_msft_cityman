@@ -37,7 +37,6 @@ PRODUCT_AAPT_PREBUILT_DPI := xxxhdpi xxhdpi xhdpi hdpi
 
 # Dexpreopt
 WITH_DEXPREOPT := true
-WITH_DEXPREOPT_PIC := true
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -86,11 +85,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/ld.config.txt:$(TARGET_COPY_OUT_SYSTEM)/etc/swcodec/ld.config.txt
 
-# FM
-PRODUCT_PACKAGES += \
-     FM2 \
-     libqcomfm_jni \
-     qcom.fmradio
 
     
 # Audio tools (userdebug)
@@ -231,7 +225,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.mdpcomp_perfhint=50 \
     persist.metadata_dynfps.disable=true \
     vidc.dec.120fps.enabled=1 \
-    dalvik.vm.systemuicompilerfilter=speed \
     dalvik.vm.heapstartsize=16m \
     dalvik.vm.heaptargetutilization=0.75 \
     dalvik.vm.heapminfree=2m \
@@ -462,6 +455,15 @@ PRODUCT_COPY_FILES += \
 # VINTF: the 3.10 kernel cannot meet the framework matrix kernel
 # requirements; do not enforce them when building OTA packages.
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
+
+# No userfaultfd in 3.10: ART runs the CC collector. With an unknown kernel
+# the build would dexpreopt everything for CMC, ART would reject it all and
+# odrefresh would recompile the boot image on the phone.
+PRODUCT_ENABLE_UFFD_GC := false
+
+# Drop Updater and Gallery2 (see removepackages/Android.mk)
+PRODUCT_PACKAGES += \
+    RemovePackages
 
 # VNDK v29 libraries for the vendor blobs (no VNDK snapshots since Android 15)
 PRODUCT_COPY_FILES += \
