@@ -158,6 +158,10 @@ TARGET_NO_RPC := true
 
 # HIDL
 PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
+# Not an A/B device: since Android 16 an unset AB_OTA_UPDATER means true and
+# the OTA step then asks for META/ab_partitions.txt.
+AB_OTA_UPDATER := false
+
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += $(DEVICE_PATH)/framework_compatibility_matrix.xml
 DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
