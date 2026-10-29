@@ -82,5 +82,5 @@ dontaudit netmgrd dnsresolver_service:service_manager find;
 # interfaces (denials seen on Android 13 with real eBPF, 28/10/2026).
 allow netmgrd bpfloader:bpf prog_run;
 allow netmgrd fs_bpf:dir search;
-allow netmgrd fs_bpf_netd_shared:dir search;
-allow netmgrd fs_bpf_netd_shared:file read;
+# Android 16 makes fs_bpf_netd_shared a private platform type: vendor policy
+# cannot name it. Check for netmgrd denials on the first A16 boot.
