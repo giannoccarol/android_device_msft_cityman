@@ -73,6 +73,10 @@ BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=cityman b
 BOARD_KERNEL_CMDLINE += lpm_levels.sleep_disabled=1 msm_poweroff.download_mode=0
 BOARD_KERNEL_CMDLINE += loop.max_part=7 androidboot.boot_devices=soc.0/f9824900.sdhci
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+# 1 MB kernel log while Android 16 is being brought up
+BOARD_KERNEL_CMDLINE += log_buf_len=1M
+# No Lineage AudioFX: it runs as a persistent app
+TARGET_EXCLUDES_AUDIOFX := true
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset $(BOARD_RAMDISK_OFFSET) --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 #KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/arm64-gcc/bin
 #KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
