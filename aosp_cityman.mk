@@ -43,9 +43,8 @@ $(call inherit-product, vendor/msft/cityman/cityman-vendor.mk)
 
 # Device Fingerprint
 PRODUCT_BUILD_PROP_OVERRIDES += \
-    PRIVATE_BUILD_DESC="bullhead-user 8.1.0 OPM3.171019.014 4503998 release-keys"
-
-BUILD_FINGERPRINT=google/bullhead/bullhead:8.1.0/OPM3.171019.014/4503998:user/release-keys 
+    BuildDesc="bullhead-user 8.1.0 OPM3.171019.014 4503998 release-keys" \
+    BuildFingerprint=google/bullhead/bullhead:8.1.0/OPM3.171019.014/4503998:user/release-keys
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.build.fingerprint=google/bullhead/bullhead:8.1.0/OPM3.171019.014/4503998:user/release-keys
