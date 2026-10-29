@@ -90,8 +90,9 @@ write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
 write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 80000
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 384000
 
-# restore A57's max
-copy /sys/devices/system/cpu/cpu4/cpufreq/cpuinfo_max_freq /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq
+# A57 max: 1.632 GHz. The steps above it heat the cluster quickly and
+# thermal-engine brings it back here at 72 C anyway (seen at 76 C in boot).
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1632000
 
 # plugin remaining A57s
 write /sys/devices/system/cpu/cpu5/online 1
@@ -125,7 +126,7 @@ chown system:system /sys/devices/system/cpu/cpu4/core_ctl/max_cpus
 
 # input boost configuration
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:1344000"
-write /sys/module/cpu_boost/parameters/input_boost_ms 40
+write /sys/module/cpu_boost/parameters/input_boost_ms 100
 
 # Setting B.L scheduler parameters
 write /proc/sys/kernel/sched_migration_fixup 1
