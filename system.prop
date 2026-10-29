@@ -122,6 +122,14 @@ ro.lmk.kill_heaviest_task=true
 ro.lmk.kill_timeout_ms=100
 ro.lmk.debug=true
 
+# HWUI: apps in the background drop all unlocked GPU resources (kgsl
+# memory cannot go to zram)
+debug.hwui.app_memory_policy=lowram
+# Battery saver: no dark theme switch, which recreates every activity
+ro.config.night_mode_on_battery_saver=false
+# Bigger logd buffers while Android 16 is being brought up
+ro.logd.size=1M
+
 # RIL
 ro.vendor.extension_library=libqti-perfd-client.so
 # Android 13 rild (PRODUCT_COMPATIBLE_PROPERTY) only reads the vendor. names.
@@ -147,10 +155,8 @@ ril.nosim.ecc_list_count=1
 ril.nosim.ecc_list_1=111,113,117,122,125
 persist.radio.redir_party_num=0
 
-#disable FUSE storage on Android 11
-persist.sys.fflag.override.settings_fuse=false
+# No FUSE passthrough in the 3.10 kernel
 persist.sys.fuse.passthrough.enable=false
-persist.sys.isolated_storage=false
 
 # Wifi
 wifi.interface=wlan0
