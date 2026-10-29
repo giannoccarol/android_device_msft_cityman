@@ -1,0 +1,7 @@
+# AIDL thermal HAL (thermal-aidl/, android.hardware.thermal-service.cityman).
+# The domain and its exec type come from system/sepolicy/vendor. It only reads
+# the thermal zones (/sys/class/thermal -> /sys/devices/virtual/thermal,
+# labelled sysfs_thermal in genfs_contexts); thermal-engine does the writes.
+allow hal_thermal_default sysfs_thermal:dir r_dir_perms;
+allow hal_thermal_default sysfs_thermal:file r_file_perms;
+allow hal_thermal_default sysfs_thermal:lnk_file r_file_perms;
