@@ -17,6 +17,8 @@
 DEVICE_PATH := device/msft/cityman
 
 BUILD_BROKEN_DUP_RULES := true
+# Qualcomm blobs read legacy property names (sys.listeners., radio.atfwd., net.r_rmnet, ...)
+BUILD_BROKEN_VENDOR_PROPERTY_NAMESPACE := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 # Android 12+: the vendor tree copies ELF blobs with PRODUCT_COPY_FILES.
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
