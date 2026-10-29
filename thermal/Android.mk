@@ -24,4 +24,5 @@ LOCAL_SRC_FILES := thermal.c
 LOCAL_SHARED_LIBRARIES := liblog libcutils
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := thermal.cityman
+LOCAL_HEADER_LIBRARIES := libhardware_headers libutils_headers
 include $(BUILD_SHARED_LIBRARY)
