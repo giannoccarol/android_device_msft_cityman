@@ -7,8 +7,10 @@ on post-fs-data
 on boot
     chmod 666 /dev/diag
 
+# cnss_diag is not shipped: start it by hand if a WLAN firmware log is needed
 service cnss_diag /vendor/bin/cnss_diag --q
     class late_start
     user root
     group root
     oneshot
+    disabled

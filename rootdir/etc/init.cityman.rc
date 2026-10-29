@@ -467,18 +467,20 @@ service charger /charger
 # LD_PRELOAD needs the daemon without file capabilities (see config.fs).
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
     setenv LD_PRELOAD libcamera_delayfree.so
-    class main
+    class late_start
     user camera
     group camera system inet input graphics
-    writepid /dev/cpuset/system-background/tasks
+    writepid /dev/cpuset/camera-daemon/tasks
 
 on property:persist.radio.atfwd.start=false
     stop atfwd
 
+# Factory AT command forwarding: not needed.
 service atfwd /vendor/bin/ATFWD-daemon
     class late_start
     user system
     group system radio
+    disabled
 
 #on property:ro.debuggable=1
 #    start ss_ramdump
@@ -498,11 +500,13 @@ service cnd /vendor/bin/cnd
     group root wakelock
     disabled
 
+# No IMS APK is installed (VoLTE does not work): keep the IMS daemons off.
 service imsqmidaemon /vendor/bin/imsqmidaemon
     class main
     user system
     socket ims_qmid stream 0660 system radio
     group radio net_raw log diag
+    disabled
 
 service imsdatadaemon /vendor/bin/imsdatadaemon
     class main
@@ -545,13 +549,3 @@ on property:init.svc.servicemanager=restarting
     
 on property:vold.decrypt=trigger_restart_framework
     restart camera-provider-2-4
-
-# start sensor daemon as core class [START]
-service lge-sensor-sh /vendor/bin/init.msm8992.sensor.sh
-    class core
-    user root
-    group root wakelock
-    oneshot
-    seclabel u:r:sensors:s0
-    writepid /dev/cpuset/system-background/tasks
-# start sensor daemon as core class [END]
