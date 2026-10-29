@@ -32,5 +32,6 @@ LOCAL_SHARED_LIBRARIES := liblog
 LOCAL_MODULE := lights.cityman
 LOCAL_HEADER_LIBRARIES := libhardware_headers libcutils_headers
 LOCAL_MODULE_TAGS := optional
+LOCAL_VENDOR_MODULE := true
 
 include $(BUILD_SHARED_LIBRARY)

@@ -365,6 +365,7 @@ service sensors /vendor/bin/sensors.qcom
     disabled
 
 service netmgrd /vendor/bin/netmgrd
+    user root
     class main
     group radio system wakelock
     setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
@@ -438,11 +439,13 @@ on property:init.svc.thermal-engine=stopped
     write /sys/module/msm_thermal/parameters/enabled 1
 
 service loc_launcher /vendor/bin/loc_launcher
+    user root
     #loc_launcher will start as root and set its uid to gps
     class late_start
     group gps inet net_raw diag net_admin wifi
 
 service cnss-daemon /vendor/bin/cnss-daemon -n -l
+    user root
     class late_start
 
 service qseecomd /vendor/bin/qseecomd
@@ -458,6 +461,7 @@ service msm_irqbalance /vendor/bin/msm_irqbalance -f /vendor/etc/msm_irqbalance.
     writepid /dev/cpuset/system-background/tasks
 
 service charger /charger
+    user root
     class charger
     critical
     seclabel u:r:charger:s0
@@ -495,6 +499,7 @@ service ss_ramdump /vendor/bin/subsystem_ramdump
 # in libcne CneCom::sendUnsolicitedMsg) and crash_dump runs each time. It is
 # not needed for Wi-Fi, LTE data or calls here; keep it off.
 service cnd /vendor/bin/cnd
+    user root
     class late_start
     socket cnd stream 660 root inet
     group root wakelock
@@ -527,6 +532,7 @@ service cityman-sh /vendor/bin/init.cityman.sh
 # bugreport is triggered by holding down volume down, volume up and power
 service bugreport /vendor/bin/dumpstate -d -p -B -z \
         -o /data/user_de/0/com.android.shell/files/bugreports/bugreport
+    user root
     class main
     disabled
     oneshot
