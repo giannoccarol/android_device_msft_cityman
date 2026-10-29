@@ -24,8 +24,6 @@ TARGET_SCREEN_WIDTH := 1440
 # setup dalvik vm configs.
 $(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
 
-PRODUCT_TAGS += dalvik.gc.type-precise
-
 # Display
 TARGET_SCREEN_DENSITY := 564
 
@@ -108,6 +106,7 @@ PRODUCT_SOONG_NAMESPACES += \
 
 # The msm8994 qcom-caf display HALs are named after msm8994; the board is msm8992.
 PRODUCT_VENDOR_PROPERTIES += \
+    ro.hardware.copybit=msm8994 \
     ro.hardware.gralloc=msm8994 \
     ro.hardware.hwcomposer=msm8994 \
     ro.hardware.memtrack=msm8994
@@ -202,6 +201,7 @@ PRODUCT_PACKAGES += \
 # Display
 PRODUCT_PACKAGES += \
     gralloc.msm8994 \
+    copybit.msm8994 \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
     android.hardware.graphics.composer@2.1-service \
@@ -213,8 +213,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.disable_backpressure=1 \
-    debug.sf.enable_gl_backpressure=1 \
-    debug.sf.latch_unsignaled=1
+    debug.sf.enable_gl_backpressure=1
 
 # Performance tuning taken from the LineageOS 20 OnePlus 2 port (MSM8994,
 # same msm8994 CAF display HAL): more layers on the MDP, no SurfaceFlinger
