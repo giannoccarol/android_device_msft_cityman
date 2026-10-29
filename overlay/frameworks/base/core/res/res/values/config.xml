@@ -405,4 +405,11 @@
 
     <!-- SD card is hot-pluggable on this device -->
     <bool name="config_batterySdCardAccessibility">true</bool>
+
+    <!-- 3 GB and no cached-app freezer on kernel 3.10: keep fewer cached
+         processes around so they cannot keep using CPU and memory. -->
+    <integer name="config_customizedMaxCachedProcesses">32</integer>
+
+    <!-- Do not keep the wallpaper zoomed (1.1x) at rest. -->
+    <item name="config_wallpaperMaxScale" format="float" type="dimen">1.00</item>
 </resources>
