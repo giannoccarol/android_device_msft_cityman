@@ -21,6 +21,9 @@
 TARGET_SCREEN_HEIGHT := 2560
 TARGET_SCREEN_WIDTH := 1440
 
+# 4 KB pages: the Qualcomm blobs are not 16 KB aligned and never need to be.
+PRODUCT_CHECK_PREBUILT_MAX_PAGE_SIZE := false
+
 # setup dalvik vm configs.
 $(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
 
