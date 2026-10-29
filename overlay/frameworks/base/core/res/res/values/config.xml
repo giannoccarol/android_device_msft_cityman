@@ -412,4 +412,12 @@
 
     <!-- Do not keep the wallpaper zoomed (1.1x) at rest. -->
     <item name="config_wallpaperMaxScale" format="float" type="dimen">1.00</item>
+
+    <!-- No significant motion sensor: without this deep Doze never starts. -->
+    <bool name="config_autoPowerModeUseMotionSensor">false</bool>
+
+    <!-- Smaller task snapshots: a full 1440p ARGB snapshot is ~15 MB. -->
+    <item name="config_highResTaskSnapshotScale" format="float" type="dimen">0.6</item>
+    <item name="config_lowResTaskSnapshotScale" format="float" type="dimen">0.3</item>
+    <bool name="config_use16BitTaskSnapshotPixelFormat">true</bool>
 </resources>
