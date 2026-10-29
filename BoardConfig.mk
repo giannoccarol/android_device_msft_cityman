@@ -185,6 +185,8 @@ TARGET_PER_MGR_ENABLED := true
 # Power
 TARGET_USES_INTERACTION_BOOST := true
 TARGET_USES_NON_LEGACY_POWERHAL := true
+# Power hints through perf locks: the OnePlus 2 perfd client has no perf_hint
+$(call soong_config_set,qtipower,mode_ext_lib,libpower_ext_cityman)
 
 BOARD_SUPPRESS_SECURE_ERASE := true
 TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.cityman
