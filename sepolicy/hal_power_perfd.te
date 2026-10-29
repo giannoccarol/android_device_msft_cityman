@@ -1,0 +1,10 @@
+# android.hardware.power-service-qti takes perf locks through
+# libqti-perfd-client.so, which connects to /data/misc/perfd/mpctl
+# (the sock_file write is in hal_power_default.te).
+allow hal_power_default perfd_data_file:dir search;
+allow hal_power_default perfd:unix_stream_socket connectto;
+
+# perfd checks that its clients are alive (kill(pid, 0)) and reads their
+# /proc entries.
+allow perfd hal_power_default:process signull;
+r_dir_file(perfd, hal_power_default)
