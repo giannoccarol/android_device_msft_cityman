@@ -127,6 +127,10 @@ on boot
     write /dev/cpuset/system-background/cpus 0-2
     # Android 16 copies foreground_window from the boot cpus (0-3) in on init
     write /dev/cpuset/foreground_window/cpus 0-2,4-7
+
+    # shorter writeback bursts on the eMMC (OnePlus 2 uses 15/1)
+    write /proc/sys/vm/dirty_ratio 15
+    write /proc/sys/vm/dirty_background_ratio 5
     write /dev/cpuset/restricted/cpus 0-1
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/camera-daemon/cpus 0-7

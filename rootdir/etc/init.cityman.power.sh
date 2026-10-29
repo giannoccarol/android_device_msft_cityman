@@ -106,7 +106,9 @@ write /sys/module/msm_performance/parameters/cpu_max_freq "4:4294967295 5:429496
 # come back on load; the A53s stay online. Set only after all CPUs are up:
 # with its default zero thresholds core_ctl keeps every core busy.
 write /sys/devices/system/cpu/cpu4/core_ctl/max_cpus 4
-write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0
+# keep two A57s online (OnePlus 2 Android 16 value): boosts and launches
+# find a big core ready instead of waiting for core_ctl to plug one in
+write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 2
 write /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres 60
 write /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres 30
 write /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms 100
@@ -146,10 +148,9 @@ write /sys/class/net/rmnet_ipa0/queues/rx-0/rps_cpus 8
 # android background processes are set to nice 10. Never schedule these on the a57s.
 write /proc/sys/kernel/sched_upmigrate_min_nice 9
 
-# Devfreq (as OnePlus 2)
+# Devfreq: bw_hwmon with the kernel defaults (io_percent 16, guard band
+# 100 MB/s, as angler); 20/30 asked the DDR for less bandwidth
 get-set-forall  /sys/class/devfreq/qcom,cpubw*/governor bw_hwmon
-get-set-forall /sys/class/devfreq/qcom,cpubw*/bw_hwmon/io_percent 20
-get-set-forall /sys/class/devfreq/qcom,cpubw*/bw_hwmon/guard_band_mbps 30
 restorecon -R /sys/class/devfreq/qcom,cpubw*
 get-set-forall  /sys/class/devfreq/qcom,mincpubw.*/governor cpufreq
 
@@ -163,8 +164,9 @@ get-set-forall /sys/devices/soc.0/qcom,bcl.*/hotplug_mask $bcl_hotplug_mask
 get-set-forall /sys/devices/soc.0/qcom,bcl.*/hotplug_soc_mask $bcl_hotplug_soc_mask
 get-set-forall /sys/devices/soc.0/qcom,bcl.*/mode enable
 
-# set GPU default power level to 5 (180MHz) instead of 4 (305MHz)
-write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 5
+# GPU wakes from slumber at the DT default level 4 (305 MHz): the first
+# frames after a pause are drawn at 1440p
+write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 4
 
 # set GPU default governor to msm-adreno-tz
 write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz
