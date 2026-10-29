@@ -436,6 +436,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     thermal.cityman 
 
+# AIDL thermal HAL (reporting only; thermal-engine/KTM still throttle)
+PRODUCT_PACKAGES += \
+    android.hardware.thermal-service.cityman
+
 # thermal-engine needs libqti-perfd-client.so to start, and reads the
 # cityman configuration given on its command line. The vendor tree now ships
 # the MSM8994 perfd with its client library (OnePlus 2 blobs), so the power
