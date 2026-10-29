@@ -43,7 +43,7 @@ LOCAL_C_INCLUDES+= \
         $(LOCAL_PATH)/../../../mm-image-codec/qomx_core
 
 LOCAL_C_INCLUDES+= $(kernel_includes)
-LOCAL_HEADER_LIBRARIES += generated_kernel_headers
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers libutils_headers
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
 
 LOCAL_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_IOMMU_HEAP_ID
@@ -157,7 +157,7 @@ LOCAL_C_INCLUDES+= \
         $(LOCAL_PATH)/../../../mm-image-codec/qomx_core
 
 LOCAL_C_INCLUDES+= $(kernel_includes)
-LOCAL_HEADER_LIBRARIES += generated_kernel_headers
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers libutils_headers
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
 
 LOCAL_CFLAGS += -DCAMERA_ION_HEAP_ID=ION_IOMMU_HEAP_ID

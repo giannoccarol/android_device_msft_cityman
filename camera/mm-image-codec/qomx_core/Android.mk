@@ -23,6 +23,7 @@ LOCAL_SRC_FILES := qomx_core.c
 LOCAL_MODULE           := libqomx_core
 LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := liblog libcutils libdl
+LOCAL_HEADER_LIBRARIES := libutils_headers
 
 LOCAL_32_BIT_ONLY := true
 LOCAL_VENDOR_MODULE := true
