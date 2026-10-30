@@ -244,6 +244,12 @@ BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
 WIFI_DRIVER_FW_PATH_STA := "sta"
 WIFI_DRIVER_FW_PATH_AP  := "ap"
 WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
+# The AIDL Wi-Fi HAL replaces the static chip modes with the driver's dynamic
+# combination (kV3) after configuring the chip in mode 0 (kV1Sta), then
+# rejects every request with "Chip not configured in a mode yet". Declare the
+# STA/AP combination explicitly, as on the OnePlus 2 tree.
+WIFI_HAL_INTERFACE_COMBINATIONS := {{{STA}, 1}}, {{{AP}, 1}}
+WIFI_AVOID_IFACE_RESET_MAC_CHANGE := true
 
 
 # NFC
