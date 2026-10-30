@@ -177,18 +177,32 @@ PRODUCT_PACKAGES += \
 # coordination. The module can always be built explicitly with m.
 ifeq ($(CITYMAN_CAMERA_SMIA_EXPERIMENTAL),true)
 PRODUCT_PACKAGES += libmmcamera_imx230
-# Rear AF through the Carrera AF/OIS controller (needs a kernel with actuator0
-# enabled). The infinity/macro codes come from the module NVM; the defaults
-# are those of the reference phone (NVM map 0x42: INF 909, MACRO 1178) until
-# an EEPROM library calibrates each module at run time.
+# Rear tuning built from C (camera-sensors/rear-tuning, from hraj9258's
+# talkman port): IMX230 chromatix with this module's black levels and colour
+# matrix, AF search tuning, and the lens actuator (high byte first).
+PRODUCT_PACKAGES += \
+    libchromatix_imx230_common \
+    libchromatix_imx230_snapshot \
+    libchromatix_imx230_default_video \
+    libchromatix_imx230_liveshot \
+    libchromatix_imx230_postproc \
+    libchromatix_imx230_cpp_preview \
+    libchromatix_imx230_cpp_snapshot \
+    libchromatix_imx230_cpp_video \
+    libchromatix_imx230_cpp_uhd_video \
+    libchromatix_imx230_cpp_liveshot
+# Rear AF (needs a kernel with actuator0 and ACTUATOR_VCM_BE). The default
+# actuator is rear-tuning's "cityman"; "carrera" is the older library, whose
+# codes (INF 909, the NVM mid point 1178) cover only half of the lens travel.
 CITYMAN_CAMERA_AF ?= true
+CITYMAN_CAMERA_AF_NAME ?= cityman
 CITYMAN_CAMERA_AF_INF_CODE ?= 909
 CITYMAN_CAMERA_AF_MACRO_CODE ?= 1178
 ifeq ($(CITYMAN_CAMERA_AF),true)
 PRODUCT_PACKAGES += \
-    libactuator_carrera \
-    libactuator_carrera_camera \
-    libactuator_carrera_camcorder
+    libactuator_$(CITYMAN_CAMERA_AF_NAME) \
+    libactuator_$(CITYMAN_CAMERA_AF_NAME)_camera \
+    libactuator_$(CITYMAN_CAMERA_AF_NAME)_camcorder
 endif
 endif
 # Front VS6955CA probe module. Requires the private 0A214000.dcc and a kernel

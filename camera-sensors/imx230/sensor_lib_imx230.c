@@ -43,17 +43,19 @@ static struct msm_camera_i2c_reg_array prologue[] = {
  * smia9 and nubia24 set them in their own tables. Seed the public smia9
  * values with the lumia20 frame length (3952 lines) before streaming.
  *
- * The digital gains are per channel (Gr, R, B, Gb, 0x0100 = 1.0). The
- * angler IMX377 chromatix AWB settles on a strong magenta cast with this
- * sensor; Gr/Gb at 1.10x gave a neutral image on the phone (1.00x magenta,
- * 1.19x and 1.38x green). This stands in for a Lumia AWB calibration.
+ * The digital gains are per channel (Gr, R, B, Gb, 0x0100 = 1.0), all at
+ * 1.0. With the angler IMX377 chromatix the image had a magenta cast, which
+ * a 1.10x Gr/Gb gain partly hid; the cause was that chromatix's black level
+ * (210 instead of this sensor's 256 at 12 bits) and colour matrix. The
+ * IMX230 chromatix in camera-sensors/rear-tuning carries this module's
+ * measured black levels and its own matrix, so the gains are neutral.
  */
 static struct msm_camera_i2c_reg_array lumia20_frame[] = {
     {0x0340, PROFILE_FRAME_LINES >> 8, 0}, {0x0341, PROFILE_FRAME_LINES & 0xff, 0},
     {0x0202, 0x04, 0}, {0x0203, 0xb0, 0},
     {0x0204, 0x00, 0}, {0x0205, 0x00, 0},
-    {0x020e, 0x01, 0}, {0x020f, 0x1a, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
-    {0x0212, 0x01, 0}, {0x0213, 0x00, 0}, {0x0214, 0x01, 0}, {0x0215, 0x1a, 0},
+    {0x020e, 0x01, 0}, {0x020f, 0x00, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
+    {0x0212, 0x01, 0}, {0x0213, 0x00, 0}, {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
 };
 #endif
 static struct msm_camera_i2c_reg_array stream_on[] = {{0x0100, 1, 0}};
@@ -204,12 +206,12 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
     .crops = {.count = 1},
     /* ABI-compatible ISP seed only; these are not IMX230/Lumia calibrations. */
     .tuning = {.entries = {{.names = {
-        "libchromatix_imx377_common.so", "libchromatix_imx377_snapshot.so",
-        "libchromatix_imx377_snapshot.so", "libchromatix_imx377_default_video.so",
-        "libchromatix_imx377_liveshot.so", "libchromatix_imx377_cpp_preview.so",
-        "libchromatix_imx377_cpp_snapshot.so", "libchromatix_imx377_cpp_snapshot.so",
-        "libchromatix_imx377_cpp_video.so", "libchromatix_imx377_cpp_uhd_video.so",
-        "libchromatix_imx377_cpp_liveshot.so", "libchromatix_imx377_postproc.so",
+        "libchromatix_imx230_common.so", "libchromatix_imx230_snapshot.so",
+        "libchromatix_imx230_snapshot.so", "libchromatix_imx230_default_video.so",
+        "libchromatix_imx230_liveshot.so", "libchromatix_imx230_cpp_preview.so",
+        "libchromatix_imx230_cpp_snapshot.so", "libchromatix_imx230_cpp_snapshot.so",
+        "libchromatix_imx230_cpp_video.so", "libchromatix_imx230_cpp_uhd_video.so",
+        "libchromatix_imx230_cpp_liveshot.so", "libchromatix_imx230_postproc.so",
     }}}, .count = 1},
     .exposure = {calculate_exposure, fill_exposure, 0, 0},
     .exposure_table_capacity = 8, .initial_frame_skip = 2,
