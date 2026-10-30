@@ -162,6 +162,28 @@
 #define APDS_PROX_NEAR 400
 #define APDS_PROX_FAR 250
 
+/*
+ * Ambient light: APDS-9930 datasheet formula with the cityman cover glass
+ * coefficients the Windows driver uses (AlsPrxAlphamon, CoeffB/C/D/GA scaled
+ * by 10000). With the generic coefficients and no glass factor the HAL read
+ * about 11 times too little light and rounded indoor light to 0 lux, so
+ * automatic brightness stayed low.
+ *   IAC = max(CH0 - B*CH1, C*CH0 - D*CH1, 0)
+ *   lux = IAC * GA * DF / (ALSIT_ms * AGAIN)
+ */
+#define APDS_ATIME_VAL 0xdb
+#define APDS_ALSIT_MS (2.73f * (256 - APDS_ATIME_VAL))
+#define APDS_ALS_MAX_COUNT (1024 * (256 - APDS_ATIME_VAL))
+#define APDS_COEF_B 1.8720f
+#define APDS_COEF_C 0.1476f
+#define APDS_COEF_D 0.2219f
+#define APDS_COEF_GA 11.2003f
+#define APDS_COEF_DF 52.0f
+/* CONTROL: PDRIVE 100 mA, PDIODE CH1, PGAIN 1x; AGAIN in bits 1:0 */
+#define APDS_CONTROL_BASE 0x20
+#define APDS_AGAIN_1X 0x00
+#define APDS_AGAIN_8X 0x01
+
 static const struct sensor_t k_list[] = {
     {
         .name = "AK09912 Magnetometer",
@@ -330,6 +352,7 @@ static int g_have_light;
 static int g_have_hall_front;
 static int g_have_hall_back;
 static float g_last_prox;
+static int g_als_gain = 8;
 static float g_last_light;
 static float g_last_hall_front;
 static float g_last_hall_back;
@@ -1338,27 +1361,35 @@ static int apds_init(void)
     else
         ALOGI("APDS-9930 ID ok");
     apds_write(APDS_ENABLE, 0x00);
-    apds_write(APDS_ATIME, 0xdb);
+    apds_write(APDS_ATIME, APDS_ATIME_VAL);
     apds_write(APDS_PTIME, 0xff);
     apds_write(APDS_WTIME, 0xff);
     apds_write(APDS_PPULSE, 0x08);
-    apds_write(APDS_CONTROL, 0x20);
+    g_als_gain = 8;
+    apds_write(APDS_CONTROL, APDS_CONTROL_BASE | APDS_AGAIN_8X);
     return 0;
 }
 
 static float apds_lux(uint16_t ch0, uint16_t ch1)
 {
-    float iac1;
-    float iac2;
-    float iac;
-    if (ch0 == 0)
+    float iac1 = (float)ch0 - APDS_COEF_B * (float)ch1;
+    float iac2 = APDS_COEF_C * (float)ch0 - APDS_COEF_D * (float)ch1;
+    float iac = iac1 > iac2 ? iac1 : iac2;
+    if (iac <= 0.0f)
         return 0.0f;
-    iac1 = (float)ch0 - 1.862f * (float)ch1;
-    iac2 = 0.630f * (float)ch0 - (float)ch1;
-    iac = iac1 > iac2 ? iac1 : iac2;
-    if (iac < 0)
-        return 0.0f;
-    return iac * 0.52f;
+    return iac * APDS_COEF_GA * APDS_COEF_DF / (APDS_ALSIT_MS * (float)g_als_gain);
+}
+
+/* Switch between 8x (dim light) and 1x (bright light) to stay in range. */
+static void apds_als_autorange(uint16_t ch0)
+{
+    if (g_als_gain == 8 && ch0 >= APDS_ALS_MAX_COUNT * 9 / 10) {
+        if (apds_write(APDS_CONTROL, APDS_CONTROL_BASE | APDS_AGAIN_1X) == 0)
+            g_als_gain = 1;
+    } else if (g_als_gain == 1 && ch0 < APDS_ALS_MAX_COUNT / 20) {
+        if (apds_write(APDS_CONTROL, APDS_CONTROL_BASE | APDS_AGAIN_8X) == 0)
+            g_als_gain = 8;
+    }
 }
 
 static int apds_read_both(int *got_prox, sensors_event_t *prox,
@@ -1380,6 +1411,7 @@ static int apds_read_both(int *got_prox, sensors_event_t *prox,
     else
         distance = pdata >= APDS_PROX_NEAR ? 0.0f : 5.0f;
     lux = apds_lux(ch0, ch1);
+    apds_als_autorange(ch0);
     if ((g_enabled & (1 << HANDLE_PROX)) &&
         (!g_have_prox || distance != g_last_prox)) {
         fill_common(prox, HANDLE_PROX, SENSOR_TYPE_PROXIMITY);

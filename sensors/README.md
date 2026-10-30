@@ -31,3 +31,9 @@ They are not extra chips.
 Proximity thresholds: raw PDATA is 88-125 with the sensor uncovered (cover
 glass crosstalk) and 1023 when covered, measured on a cityman. The HAL reports
 near above 400 and far again below 250.
+
+Ambient light: the APDS-9930 datasheet formula with the cityman cover glass
+coefficients from the Windows driver (`cityman_alsprxalphamon.inf`,
+`AlsPrxAlphamon` CoeffB 1.872, CoeffC 0.1476, CoeffD 0.2219, CoeffGA 11.2,
+stored scaled by 10000), DF 52, ALS integration 101 ms. The gain switches
+between 8x in dim light and 1x in bright light.
