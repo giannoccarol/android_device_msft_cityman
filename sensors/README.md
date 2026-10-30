@@ -27,3 +27,7 @@ hardware.
 Gravity, linear acceleration, rotation vector, and the other
 fusion types are produced by Android from accel + gyro + mag.
 They are not extra chips.
+
+Proximity thresholds: raw PDATA is 88-125 with the sensor uncovered (cover
+glass crosstalk) and 1023 when covered, measured on a cityman. The HAL reports
+near above 400 and far again below 250.

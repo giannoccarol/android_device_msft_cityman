@@ -154,7 +154,13 @@
 #define APDS_ENABLE_AEN 0x02
 #define APDS_ENABLE_PEN 0x04
 #define APDS_ID_VAL 0x39
-#define APDS_PROX_NEAR 80
+/*
+ * PDATA with 8 pulses at 100 mA (measured on a cityman, 30/10/2026): 88-125
+ * uncovered (cover glass crosstalk), 1023 when covered. The old threshold of
+ * 80 was below the uncovered level and reported "near" all the time.
+ */
+#define APDS_PROX_NEAR 400
+#define APDS_PROX_FAR 250
 
 static const struct sensor_t k_list[] = {
     {
@@ -1369,7 +1375,10 @@ static int apds_read_both(int *got_prox, sensors_event_t *prox,
     ch0 = (uint16_t)(raw[0] | (raw[1] << 8));
     ch1 = (uint16_t)(raw[2] | (raw[3] << 8));
     pdata = (uint16_t)(raw[4] | (raw[5] << 8));
-    distance = pdata >= APDS_PROX_NEAR ? 0.0f : 5.0f;
+    if (g_have_prox && g_last_prox == 0.0f)
+        distance = pdata <= APDS_PROX_FAR ? 5.0f : 0.0f;
+    else
+        distance = pdata >= APDS_PROX_NEAR ? 0.0f : 5.0f;
     lux = apds_lux(ch0, ch1);
     if ((g_enabled & (1 << HANDLE_PROX)) &&
         (!g_have_prox || distance != g_last_prox)) {
