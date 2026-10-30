@@ -47,12 +47,17 @@ if [ "$(modem_state)" != ONLINE ]; then
 fi
 
 msg "modem online after ${waited}s (attempt $attempt)"
-if [ "$waited" -ge 8 ]; then
+# Only when the first power-up failed: the QMI clients then gave up on a
+# modem that stayed offline. A first attempt that is merely slow (15 s is
+# normal) is followed by them, and restarting rild then reset the SIM and
+# asked for the PIN a second time.
+if [ "$attempt" -gt 1 ]; then
     setprop ctl.restart qmuxd
     sleep 2
     setprop ctl.restart netmgrd
     setprop ctl.restart vendor.ril-daemon
-    msg "restarted qmuxd, netmgrd and rild"
+    setprop ctl.restart cityman-uim-bootstrap
+    msg "restarted qmuxd, netmgrd, rild and the UIM bootstrap"
 fi
 
 # Keep the holder (and with it the modem) alive for the whole session.
