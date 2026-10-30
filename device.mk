@@ -445,7 +445,8 @@ PRODUCT_PACKAGES += \
     libgps.utils \
     libloc_core \
     libcrypto_shim \
-    libprotobuf-cpp-lite-3.9.1-vendorcompat
+    libprotobuf-cpp-lite-3.9.1-vendorcompat \
+    libutils-v33
 
 # TimeKeep
 PRODUCT_PACKAGES += \
