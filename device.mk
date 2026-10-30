@@ -439,7 +439,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libnetutils.vendor \
     libsqlite.vendor \
-    libsensor_vendor \
+    libsensor_camera_stub \
     libsensorndkbridge \
     libstdc++_vendor \
     libgps.utils \

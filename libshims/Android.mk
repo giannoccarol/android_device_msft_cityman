@@ -32,6 +32,16 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_CFLAGS_arm64 := -DLIBSHIMS_64BIT
 include $(BUILD_SHARED_LIBRARY)
 
+# SensorManager without sensors for liboemcamera / imglib (patched to need it)
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := sensor_camera_stub.cpp
+LOCAL_MODULE := libsensor_camera_stub
+LOCAL_SHARED_LIBRARIES := libutils
+LOCAL_VENDOR_MODULE := true
+LOCAL_32_BIT_ONLY := true
+LOCAL_CFLAGS := -Wall -Werror -Wno-unused-parameter
+include $(BUILD_SHARED_LIBRARY)
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := libcamera_delayfree
 LOCAL_SRC_FILES := camera_delayfree.c
