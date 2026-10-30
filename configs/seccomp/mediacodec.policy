@@ -5,3 +5,5 @@ socket: arg0 == 1
 connect: 1
 sendto: 1
 recvfrom: 1
+# the client waits for the reply with select()
+pselect6: 1
