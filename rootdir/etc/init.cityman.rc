@@ -347,11 +347,13 @@ on property:wc_transport.start_hci=false
 # QMUX must be in multiple groups to support external process connections
 # Cityman data services must see the msm8994 platform; the shim changes
 # only ro.board.platform for these processes (kernel tools/cityman-ril).
+# On Android 16 qmuxd and netmgrd load it as a NEEDED library (blobs patched
+# in the vendor tree): an LD_PRELOAD was inherited by the /system/bin/sh they
+# spawn, which cannot load vendor libraries.
 service qmuxd /vendor/bin/qmuxd
     class main
     user root
     group radio audio bluetooth wakelock gps nfc
-    setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
 
 service qti /vendor/bin/qti
     class main
@@ -368,7 +370,6 @@ service netmgrd /vendor/bin/netmgrd
     user root
     class main
     group radio system wakelock
-    setenv LD_PRELOAD /vendor/lib64/libcityman_ds_target.so
 
 # Same service as hardware/ril rild.rc plus the Cityman preloads. Android 13
 # builds rild with PRODUCT_COMPATIBLE_PROPERTY, so /vendor/etc/init/rild.rc
