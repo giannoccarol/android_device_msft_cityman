@@ -154,6 +154,11 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0-impl \
     android.hardware.bluetooth@1.0-service
 
+# Radio: IRadio 1.4 / IRadioConfig 1.1 wrappers over rild (radio/README.md)
+PRODUCT_PACKAGES += \
+    android.hardware.radio@1.4-service.cityman \
+    android.hardware.radio.config@1.1-service.cityman
+
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.bt.bdaddr_path=/persist/bdaddr.txt
 

@@ -1,0 +1,12 @@
+# Single SIM: one wrapper for slot1. rild keeps serving IRadio@1.1 slot1 and
+# this service re-registers it as IRadio@1.4, the oldest HIDL version the
+# Android 16 telephony stack accepts.
+service vendor.radio-1-4-cityman /vendor/bin/hw/android.hardware.radio@1.4-service.cityman
+    interface android.hardware.radio@1.0::IRadio slot1
+    interface android.hardware.radio@1.1::IRadio slot1
+    interface android.hardware.radio@1.2::IRadio slot1
+    interface android.hardware.radio@1.3::IRadio slot1
+    interface android.hardware.radio@1.4::IRadio slot1
+    class hal
+    user system
+    group system
