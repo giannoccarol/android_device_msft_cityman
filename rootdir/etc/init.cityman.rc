@@ -398,6 +398,18 @@ service per_proxy /vendor/bin/pm-proxy
 on property:init.svc.per_mgr=running
     start per_proxy
 
+# Retries the modem power-up that pm-proxy's first vote fails to complete on
+# Android 16, then keeps the modem up (init.cityman.modem.sh).
+service vendor.cityman-modem /vendor/bin/init.cityman.modem.sh
+    class late_start
+    user root
+    group system radio
+    disabled
+    oneshot
+
+on property:init.svc.per_proxy=running
+    start vendor.cityman-modem
+
 on property:sys.shutdown.requested=*
     stop per_proxy
 

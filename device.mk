@@ -327,6 +327,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devwait.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devwait.sh \
     $(LOCAL_PATH)/rootdir/etc/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh \
     $(LOCAL_PATH)/rootdir/etc/init.cityman.bootlog.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.bootlog.sh \
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.modem.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.modem.sh \
     $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_ROOT)/fstab.cityman \
     $(LOCAL_PATH)/rootdir/etc/fstab.cityman:$(TARGET_COPY_OUT_RAMDISK)/fstab.cityman
 #    $(LOCAL_PATH)/rootdir/etc/init.msm8992.sensor.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.msm8992.sensor.sh
