@@ -182,3 +182,7 @@ ro.bpf.kver_override=5.4.300
 logd.logpersistd=logcatd
 logd.logpersistd.buffer=all
 ro.logd.kernel=true
+
+# The Adreno blobs preloaded by the zygote clobber x18, the shadow call stack
+# register: Bluetooth and NFC crashed in __init_cpu_features (SEGV_ACCERR).
+ro.zygote.disable_gl_preload=1
