@@ -180,7 +180,10 @@ BOARD_RECOVERYIMAGE_PARTITION_SIZE := 33554432
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
 BOARD_SYSTEMIMAGE_JOURNAL_SIZE := 0
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 11649679360
-# The cache partition is mounted as /metadata (fstab): no cache image.
+# Android mounts the cache partition as /metadata (fstab.cityman); recovery and
+# the OTA tools still see it as /cache (recovery.fstab) and size blocks from it.
+BOARD_CACHEIMAGE_PARTITION_SIZE := 100663296
+BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_VENDORIMAGE_PARTITION_SIZE := 260046848
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 # About 1400 files: the default (one inode per block) spends ~15 MB of the
@@ -206,7 +209,7 @@ TARGET_USES_NON_LEGACY_POWERHAL := true
 $(call soong_config_set,qtipower,mode_ext_lib,libpower_ext_cityman)
 
 BOARD_SUPPRESS_SECURE_ERASE := true
-TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/fstab.cityman
+TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/recovery.fstab
 
 # Properties
 TARGET_PRODUCT_PROP += $(DEVICE_PATH)/product.prop
