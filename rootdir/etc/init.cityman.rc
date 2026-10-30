@@ -395,6 +395,17 @@ service per_proxy /vendor/bin/pm-proxy
     group system net_raw
     disabled
 
+# The Android 16 base packages install the configstore HAL for devices launched
+# before API 29, but it is not in the VINTF manifest (it is deprecated and
+# SurfaceFlinger reads sysprops): hwservicemanager refuses the registration
+# and the service aborted every 5 seconds. This definition is parsed before
+# /vendor/etc/init and keeps it from starting.
+service vendor.configstore-hal /vendor/bin/hw/android.hardware.configstore@1.1-service
+    class hal
+    user system
+    group system
+    disabled
+
 on property:init.svc.per_mgr=running
     start per_proxy
 
