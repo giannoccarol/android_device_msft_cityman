@@ -27,6 +27,10 @@ vendor.qcom.bluetooth.soc=rome
 # QCA Rome needs the APCF extended features off on Android 13 (libra).
 bluetooth.le.disable_apcf_extended_features=1
 bluetooth.enable_timeout_ms=12000
+# Calls through a Bluetooth headset had no audio with wideband speech (mSBC):
+# keep them on CVSD over the 8 kHz AUX PCM path (needs the Bluetooth patch in
+# talkman-manifests lineageos-23/patches/packages/modules/Bluetooth).
+bluetooth.hfp.wbs.supported=false
 
 # Camera
 persist.camera.eis.enable=0
