@@ -113,6 +113,12 @@ PRODUCT_VENDOR_PROPERTIES += \
     ro.hardware.hwcomposer=msm8994 \
     ro.hardware.memtrack=msm8994
 
+# qcacld unloads itself when Wi-Fi goes down and loads again only on a
+# firmware path write: make the Wi-Fi HAL write it for our chip mode too
+# (patch hardware/interfaces/0001 in talkman-manifests lineageos-23).
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.vendor.wifi.fw_path_any_mode=true
+
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
