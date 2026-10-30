@@ -162,10 +162,11 @@ PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
 # the OTA step then asks for META/ab_partitions.txt.
 AB_OTA_UPDATER := false
 
-# Keep TWRP: as a non-A/B device the build would otherwise copy the full
-# LineageOS recovery (24 MB) to vendor/etc/recovery.img, which no longer fits
-# the 248 MB vendor partition, and flash it over TWRP on boot.
-TARGET_NO_RECOVERY := true
+# Non-A/B: LineageOS defaults to copying the full recovery image (24 MB) to
+# vendor/etc/recovery.img, which overflows the 248 MB vendor partition. Ship
+# the recovery-from-boot patch instead (about 12 MB). It is applied only if
+# persist.vendor.recovery_update is set, so TWRP stays in place by default.
+BOARD_USES_FULL_RECOVERY_IMAGE := false
 
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += $(DEVICE_PATH)/framework_compatibility_matrix.xml
