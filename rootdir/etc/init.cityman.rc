@@ -461,6 +461,20 @@ service cnss-daemon /vendor/bin/cnss-daemon -n -l
     user root
     class late_start
 
+# The qcacld driver is built in and loads when its fwpath parameter is
+# written. The AIDL Wi-Fi HAL writes it only for the legacy chip modes
+# (kV1Sta/kV1Ap); with the declared interface combination the chip uses a
+# single mode and the HAL waits for a driver that never comes up. Load it
+# once here (the write blocks while the driver initializes, so not from init).
+service vendor.cityman-wlan-load /vendor/bin/sh -c "echo sta > /sys/module/wlan/parameters/fwpath"
+    user root
+    group system wifi
+    disabled
+    oneshot
+
+on property:init.svc.cnss-daemon=running
+    start vendor.cityman-wlan-load
+
 service qseecomd /vendor/bin/qseecomd
     class core
     user root
