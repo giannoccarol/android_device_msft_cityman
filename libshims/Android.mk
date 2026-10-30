@@ -14,13 +14,12 @@
 
 LOCAL_PATH:= $(call my-dir)
 
+# AudioSystem stubs for libril-qc-qmi-1.so (patched to need this library)
 include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES := libaudioclient_shim.cpp
-LOCAL_MODULE := libaudioclient_shim_cityman
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_SHARED_LIBRARIES := libaudioclient
-
+LOCAL_SRC_FILES := audiosystem_vendor_shim.cpp
+LOCAL_MODULE := libaudioclient_shim_vendor
+LOCAL_SHARED_LIBRARIES := libutils
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_SHARED_LIBRARY)
 
 # Slim_shim
@@ -31,15 +30,6 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_PROPRIETARY_MODULE := true
 LOCAL_VENDOR_MODULE := true
 LOCAL_CFLAGS_arm64 := -DLIBSHIMS_64BIT
-include $(BUILD_SHARED_LIBRARY)
-
-# SensorManager::createEventQueue(String8, int) for liboemcamera.so
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := sensor_camera_shim.cpp
-LOCAL_MODULE := libsensor_camera_shim
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_SHARED_LIBRARIES := libsensor libutils
-LOCAL_32_BIT_ONLY := true
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

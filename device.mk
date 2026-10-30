@@ -192,7 +192,6 @@ PRODUCT_PACKAGES += libmmcamera_vs6955
 endif
 PRODUCT_PACKAGES += \
     libcamera_delayfree \
-    libsensor_camera_shim \
     camera.msm8992 \
     libmmcamera_interface \
     libmmjpeg_interface \
@@ -413,7 +412,7 @@ PRODUCT_PACKAGES += \
     qti_telephony_utils.xml \
     librmnetctl \
     rmnetcli \
-    libaudioclient_shim_cityman \
+    libaudioclient_shim_vendor \
     slim_shim
 
 PRODUCT_BOOT_JARS += \
@@ -428,10 +427,24 @@ PRODUCT_PACKAGES += \
     sensors.cityman \
     android.hardware.sensors@1.0-impl
 
-# Shims: libcutils_shim comes from hardware/lineage/compat (no VNDK on
-# this device, so the core variant serves ATFWD-daemon, cnd and libcne).
+# Shims: libcutils_shim comes from hardware/lineage/compat.
 PRODUCT_PACKAGES += \
     libcutils_shim
+
+# Android 16 vendor namespace: only vendor libraries and LLNDK are visible to
+# vendor processes, so the libraries the blobs need from the old system
+# partition are installed as vendor variants (blobs patched in the vendor tree,
+# see vendor/msft/cityman/README-cityman-a16.md).
+PRODUCT_PACKAGES += \
+    libnetutils.vendor \
+    libsqlite.vendor \
+    libsensor_vendor \
+    libsensorndkbridge \
+    libstdc++_vendor \
+    libgps.utils \
+    libloc_core \
+    libcrypto_shim \
+    libprotobuf-cpp-lite-3.9.1-vendorcompat
 
 # TimeKeep
 PRODUCT_PACKAGES += \

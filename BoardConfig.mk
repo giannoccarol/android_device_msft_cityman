@@ -220,14 +220,8 @@ BOARD_SEPOLICY_DIRS += \
     $(DEVICE_PATH)/sepolicy
 SELINUX_IGNORE_NEVERALLOWS := true
 
-# Shims
-TARGET_LD_SHIM_LIBS := \
-    /vendor/bin/ATFWD-daemon|libcutils_shim.so \
-    /vendor/bin/cnd|libcutils_shim.so \
-    /vendor/lib64/libcne.so|libcutils_shim.so \
-    /system/vendor/lib64/libril-qc-qmi-1.so|libaudioclient_shim_cityman.so \
-    /vendor/lib/liboemcamera.so|libsensor_camera_shim.so
-#    /vendor/bin/slim_daemon|/vendor/lib64/slim_shim.so
+# Android 16 has no LD_SHIM_LIBS: the blobs that need a shim are patched to
+# load it (vendor/msft/cityman/README-cityman-a16.md).
 
 
 
