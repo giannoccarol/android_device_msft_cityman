@@ -555,3 +555,14 @@ on property:init.svc.servicemanager=restarting
     
 on property:vold.decrypt=trigger_restart_framework
     restart vendor.camera-provider-2-4
+
+# Android 16 bring-up: kernel log, processes and properties kept on /data
+# (init.cityman.bootlog.sh). Remove with the script once A16 boots reliably.
+service vendor.cityman_bootlog /vendor/bin/init.cityman.bootlog.sh
+    user root
+    group root
+    disabled
+    oneshot
+
+on post-fs-data
+    start vendor.cityman_bootlog

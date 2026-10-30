@@ -172,3 +172,13 @@ persist.audio.calfile3=/vendor/etc/acdbdata/cityman/Cityman_Handset_cal.acdb
 persist.audio.calfile4=/vendor/etc/acdbdata/cityman/Cityman_Hdmi_cal.acdb
 persist.audio.calfile5=/vendor/etc/acdbdata/cityman/Cityman_Headset_cal.acdb
 persist.audio.calfile6=/vendor/etc/acdbdata/cityman/Cityman_Speaker_cal.acdb
+
+# NetBpfLoad refuses kernels older than 5.4 on Android 16 and netd then aborts;
+# the lineage-23-cityman kernel carries the needed BPF backports (as on the
+# OnePlus 2 tree by davigamer987).
+ro.bpf.kver_override=5.4.300
+
+# Android 16 bring-up: persistent logcat in /data/misc/logd, kernel log included.
+logd.logpersistd=logcatd
+logd.logpersistd.buffer=all
+ro.logd.kernel=true

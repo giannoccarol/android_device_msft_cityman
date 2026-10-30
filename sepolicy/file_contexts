@@ -118,6 +118,7 @@
 /vendor/bin/cnd                    u:object_r:cnd_exec:s0
 /vendor/bin/init\.cityman\.power\.sh           u:object_r:init-power-sh_exec:s0
 /vendor/bin/init\.cityman\.sh                  u:object_r:cityman-sh_exec:s0
+/vendor/bin/init\.cityman\.bootlog\.sh          u:object_r:cityman-sh_exec:s0
 /(vendor|system/vendor)/bin/init\.msm8992\.sensor\.sh    u:object_r:cityman-sh_exec:s0
 /vendor/bin/init\.cityman\.qseecomd\.sh        u:object_r:init-cityman-qseecomd-sh_exec:s0
 /vendor/bin/init\.qcom\.devstart\.sh            u:object_r:init-qcom-devstart-sh_exec:s0
