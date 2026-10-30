@@ -183,6 +183,9 @@ BOARD_USERDATAIMAGE_PARTITION_SIZE := 11649679360
 # Android mounts the cache partition as /metadata (fstab.cityman); recovery and
 # the OTA tools still see it as /cache (recovery.fstab) and size blocks from it.
 BOARD_CACHEIMAGE_PARTITION_SIZE := 100663296
+# Creates the /metadata mount point in the system root: first stage init
+# mounts the cache partition there and moves the mount on switch_root.
+BOARD_USES_METADATA_PARTITION := true
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_VENDORIMAGE_PARTITION_SIZE := 260046848
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
