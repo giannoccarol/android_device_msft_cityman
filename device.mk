@@ -27,6 +27,11 @@ PRODUCT_CHECK_PREBUILT_MAX_PAGE_SIZE := false
 # setup dalvik vm configs.
 $(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
 
+# Shipping API level of the angler blobs. Without it Android 16 treats the
+# device as launching on 16 and drops hwservicemanager, vndservicemanager,
+# the HIDL allocator/memory and the OMX service, which every HIDL HAL here needs.
+$(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_m.mk)
+
 # Display
 TARGET_SCREEN_DENSITY := 564
 
