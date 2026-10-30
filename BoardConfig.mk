@@ -162,6 +162,11 @@ PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
 # the OTA step then asks for META/ab_partitions.txt.
 AB_OTA_UPDATER := false
 
+# Keep TWRP: as a non-A/B device the build would otherwise copy the full
+# LineageOS recovery (24 MB) to vendor/etc/recovery.img, which no longer fits
+# the 248 MB vendor partition, and flash it over TWRP on boot.
+TARGET_NO_RECOVERY := true
+
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += $(DEVICE_PATH)/framework_compatibility_matrix.xml
 DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
