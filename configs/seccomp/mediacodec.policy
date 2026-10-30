@@ -1,0 +1,7 @@
+# Appended by the OMX service to /system/etc/seccomp_policy/mediacodec.policy.
+# The QTI video encoder (libOmxVenc) takes perf locks through
+# libqti-perfd-client, which talks to perfd over a UNIX socket.
+socket: arg0 == 1
+connect: 1
+sendto: 1
+recvfrom: 1
