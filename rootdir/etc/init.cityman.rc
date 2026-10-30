@@ -556,6 +556,12 @@ on property:init.svc.servicemanager=restarting
 on property:vold.decrypt=trigger_restart_framework
     restart vendor.camera-provider-2-4
 
+# Let the kernel read firmware from /vendor/firmware itself. On Android 16
+# ueventd lost the race for the sysfs loading node of adsp.b17 ("couldn't open
+# firmware loading fd"), the ADSP never booted and audio was gone.
+on early-init
+    write /sys/module/firmware_class/parameters/path /vendor/firmware
+
 # Android 16 bring-up: kernel log, processes and properties kept on /data
 # (init.cityman.bootlog.sh). Remove with the script once A16 boots reliably.
 service vendor.cityman_bootlog /vendor/bin/init.cityman.bootlog.sh
