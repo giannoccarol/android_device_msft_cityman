@@ -106,7 +106,12 @@ TARGET_KERNEL_HEADER_ARCH := arm64
 
 # Audio
 BOARD_USES_ALSA_AUDIO := true
-AUDIO_FEATURE_ENABLED_MULTI_VOICE_SESSIONS := true
+# Multi-session voice (voice_extn) starts a call only when the QTI telephony
+# framework sends "vsid=...;call_state=..." parameters, which LineageOS never
+# does: calls connected without any voice session in the DSP (no earpiece
+# audio, no microphone). Without it the HAL starts the voice usecase itself
+# when the mode changes to IN_CALL.
+AUDIO_FEATURE_ENABLED_MULTI_VOICE_SESSIONS := false
 AUDIO_FEATURE_ENABLED_SPKR_PROTECTION := false
 USE_XML_AUDIO_POLICY_CONF := 1
 
