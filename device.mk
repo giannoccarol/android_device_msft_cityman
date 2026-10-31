@@ -191,6 +191,11 @@ PRODUCT_PACKAGES += \
     libchromatix_imx230_cpp_video \
     libchromatix_imx230_cpp_uhd_video \
     libchromatix_imx230_cpp_liveshot
+# The lumia20 profile's second mode: 2672x1872 2x2-binned at 30 fps, picked
+# by the daemon for video (camera-sensors/imx230/LUMIA20-BINNED.md).
+ifeq ($(CITYMAN_CAMERA_SENSOR_PROFILE),lumia20)
+CITYMAN_CAMERA_LUMIA20_BINNED ?= true
+endif
 # Rear AF (needs a kernel with actuator0 and ACTUATOR_VCM_BE). The default
 # actuator is rear-tuning's "cityman"; "carrera" is the older library, whose
 # codes (INF 909, the NVM mid point 1178) cover only half of the lens travel.
