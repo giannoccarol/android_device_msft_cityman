@@ -10,7 +10,8 @@
 #include "smia_registers.h"
 #endif
 
-#define FRAME_LINES PROFILE_FRAME_LINES
+/* Shortest frame of any mode; the daemon sends each mode's own length. */
+#define FRAME_LINES PROFILE_MIN_FRAME_LINES
 #define LINE_PIXELS PROFILE_LINE_PIXELS
 #define MAX_LINES (65535u - 8u)
 #define SETTING(a, type, wait) { .reg_setting = (a), .size = COUNT(a), \
@@ -56,6 +57,25 @@ static struct msm_camera_i2c_reg_array lumia20_frame[] = {
     {0x0204, 0x00, 0}, {0x0205, 0x00, 0},
     {0x020e, 0x01, 0}, {0x020f, 0x00, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
     {0x0212, 0x01, 0}, {0x0213, 0x00, 0}, {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
+};
+#endif
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+/*
+ * With two modes each resolution table carries its own frame length: the
+ * init value (3952) would otherwise stay in force after a switch, and the
+ * binned mode's 2634 would leave the full mode a frame shorter than its
+ * 3744 rows.
+ * lumia20_binned is mode 0 with the SMIA++ binning and output-size
+ * registers changed (generate-lumia20.py), so PLL and link are unchanged.
+ */
+#define FRAME_LENGTH(lines) {0x0340, (lines) >> 8, 0}, {0x0341, (lines) & 0xff, 0}
+static struct msm_camera_i2c_reg_array lumia20_full[] = {
+    LUMIA20_MODE0_WRITES
+    FRAME_LENGTH(PROFILE_FRAME_LINES),
+};
+static struct msm_camera_i2c_reg_array lumia20_binned[] = {
+    LUMIA20_BINNED_WRITES
+    FRAME_LENGTH(PROFILE_BINNED_FRAME_LINES),
 };
 #endif
 static struct msm_camera_i2c_reg_array stream_on[] = {{0x0100, 1, 0}};
@@ -113,6 +133,26 @@ static int32_t fill_exposure(uint32_t gain, uint32_t digital_gain, uint32_t line
     out->delay = 0;
     return 0;
 }
+
+#ifdef CITYMAN_CAMERA_NUBIA24
+#define CSI_EXTRA_CIDS {1, 0x36, CSI_DECODE_10BIT}, {3, CSI_EMBED_DATA, CSI_DECODE_8BIT},
+#else
+#define CSI_EXTRA_CIDS
+#endif
+#define CSI_PARAMS { \
+        .csid = {.lane_cnt = 4, .lane_assign = 0x0423, .phy_sel = 0, \
+                 .lut_params = {.num_cid = PROFILE_CIDS, .vc_cfg_a = {{0, CSI_RAW10, CSI_DECODE_10BIT}, \
+                     CSI_EXTRA_CIDS}}}, \
+        .phy = {.lane_cnt = 4, .settle_cnt = PROFILE_SETTLE, .lane_mask = 0x1f, .csid_core = 0}, \
+    }
+#define TUNING_NAMES {.names = { \
+        "libchromatix_imx230_common.so", "libchromatix_imx230_snapshot.so", \
+        "libchromatix_imx230_snapshot.so", "libchromatix_imx230_default_video.so", \
+        "libchromatix_imx230_liveshot.so", "libchromatix_imx230_cpp_preview.so", \
+        "libchromatix_imx230_cpp_snapshot.so", "libchromatix_imx230_cpp_snapshot.so", \
+        "libchromatix_imx230_cpp_video.so", "libchromatix_imx230_cpp_uhd_video.so", \
+        "libchromatix_imx230_cpp_liveshot.so", "libchromatix_imx230_postproc.so", \
+    }}
 
 __attribute__((visibility("default")))
 struct angler_sensor_descriptor cityman_imx230_descriptor = {
@@ -196,30 +236,43 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
     }, .count = 4},
 #endif
 #endif
+    /*
+     * Index 0 must stay the full-resolution mode: the angler daemon falls
+     * back to index 0 when no mode passes its checks (a photo session asking
+     * 30 fps at full size), and otherwise takes the smallest mode that is
+     * large enough with a maximum fps in [requested, requested + 20).
+     */
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+    .resolutions = {.entries = {SETTING(lumia20_full, MSM_CAMERA_I2C_BYTE_DATA, 0),
+                                SETTING(lumia20_binned, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 2},
+#else
     .resolutions = {.entries = {SETTING(PROFILE_MODE, MSM_CAMERA_I2C_BYTE_DATA, 0)}, .count = 1},
+#endif
     .resolution_actions = {{0, 2, 6, 3, 4, 5, 1}, 7},
     .modes = {.entries = {{.width = PROFILE_WIDTH, .height = PROFILE_HEIGHT, .line_length = LINE_PIXELS,
-        .frame_length = FRAME_LINES, .vt_pixel_clock = PROFILE_VT_CLOCK, .output_pixel_clock = PROFILE_OUTPUT_CLOCK,
-        .binning_factor = PROFILE_BINNING, .minimum_fps = PROFILE_MIN_FPS, .maximum_fps = PROFILE_MAX_FPS, .kind = 1}}, .count = 1},
-    .csi = {.entries = {{
-        .csid = {.lane_cnt = 4, .lane_assign = 0x0423, .phy_sel = 0,
-                 .lut_params = {.num_cid = PROFILE_CIDS, .vc_cfg_a = {{0, CSI_RAW10, CSI_DECODE_10BIT},
-#ifdef CITYMAN_CAMERA_NUBIA24
-                     {1, 0x36, CSI_DECODE_10BIT}, {3, CSI_EMBED_DATA, CSI_DECODE_8BIT},
+        .frame_length = PROFILE_FRAME_LINES, .vt_pixel_clock = PROFILE_VT_CLOCK, .output_pixel_clock = PROFILE_OUTPUT_CLOCK,
+        .binning_factor = PROFILE_BINNING, .minimum_fps = PROFILE_MIN_FPS, .maximum_fps = PROFILE_MAX_FPS, .kind = 1},
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+        /* Same clocks as mode 0: only the geometry and frame length differ. */
+        {.width = PROFILE_BINNED_WIDTH, .height = PROFILE_BINNED_HEIGHT, .line_length = LINE_PIXELS,
+         .frame_length = PROFILE_BINNED_FRAME_LINES, .vt_pixel_clock = PROFILE_VT_CLOCK,
+         .output_pixel_clock = PROFILE_OUTPUT_CLOCK, .binning_factor = 2,
+         .minimum_fps = PROFILE_BINNED_MIN_FPS, .maximum_fps = PROFILE_BINNED_MAX_FPS, .kind = 1},
 #endif
-                 }}},
-        .phy = {.lane_cnt = 4, .settle_cnt = PROFILE_SETTLE, .lane_mask = 0x1f, .csid_core = 0},
-    }}, .count = 1},
-    .crops = {.count = 1},
+    }, .count = PROFILE_MODES},
+    /* One CSI record per mode; both modes share the link rate and settle. */
+    .csi = {.entries = {CSI_PARAMS,
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+                        CSI_PARAMS,
+#endif
+    }, .count = PROFILE_MODES},
+    .crops = {.count = PROFILE_MODES},
     /* ABI-compatible ISP seed only; these are not IMX230/Lumia calibrations. */
-    .tuning = {.entries = {{.names = {
-        "libchromatix_imx230_common.so", "libchromatix_imx230_snapshot.so",
-        "libchromatix_imx230_snapshot.so", "libchromatix_imx230_default_video.so",
-        "libchromatix_imx230_liveshot.so", "libchromatix_imx230_cpp_preview.so",
-        "libchromatix_imx230_cpp_snapshot.so", "libchromatix_imx230_cpp_snapshot.so",
-        "libchromatix_imx230_cpp_video.so", "libchromatix_imx230_cpp_uhd_video.so",
-        "libchromatix_imx230_cpp_liveshot.so", "libchromatix_imx230_postproc.so",
-    }}}, .count = 1},
+    .tuning = {.entries = {TUNING_NAMES,
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+                           TUNING_NAMES,
+#endif
+    }, .count = PROFILE_MODES},
     .exposure = {calculate_exposure, fill_exposure, 0, 0},
     .exposure_table_capacity = 8, .initial_frame_skip = 2,
 };

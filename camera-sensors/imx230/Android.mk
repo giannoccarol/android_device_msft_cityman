@@ -31,8 +31,17 @@ $(cityman_sensor_header): PRIVATE_DCC := $(CITYMAN_CAMERA_LUMIA20_DCC)
 $(cityman_sensor_header): PRIVATE_GENERATOR := $(LOCAL_PATH)/generate-lumia20.py
 $(cityman_sensor_header): $(CITYMAN_CAMERA_LUMIA20_DCC) $(LOCAL_PATH)/generate-lumia20.py
 	python3 $(PRIVATE_GENERATOR) "$(PRIVATE_DCC)" "$@"
+# Opt-in second mode: 2672x1872 2x2-binned at 30 fps (LUMIA20-BINNED.md).
+ifeq ($(CITYMAN_CAMERA_LUMIA20_BINNED),true)
+LOCAL_CFLAGS += -DCITYMAN_CAMERA_LUMIA20_BINNED
+endif
 else ifneq ($(cityman_sensor_profile),smia9)
 $(error Unsupported CITYMAN_CAMERA_SENSOR_PROFILE=$(cityman_sensor_profile))
+endif
+ifeq ($(CITYMAN_CAMERA_LUMIA20_BINNED),true)
+ifneq ($(cityman_sensor_profile),lumia20)
+$(error CITYMAN_CAMERA_LUMIA20_BINNED=true requires CITYMAN_CAMERA_SENSOR_PROFILE=lumia20)
+endif
 endif
 ifeq ($(CITYMAN_CAMERA_AF),true)
 # The default name pairs with camera-sensors/rear-tuning (libactuator_cityman);

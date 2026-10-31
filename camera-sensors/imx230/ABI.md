@@ -50,7 +50,8 @@ ELFs in memory without their constructors. It executes the original angler
 capability function first on the official IMX377 descriptor (control), then on
 the candidate. Original angler conversion functions also verify its register
 records, power-up description and CSID records against the GPL kernel types.
-The actual fourcc conversion proves Bayer enum 3 produces GBRG10 (`GB10`).
+The actual fourcc conversion maps the shipped Bayer enum 3 (chosen by the
+on-device colour test) to `RG10`; enums 0-2 give `BG10`, `GB10`, `BA10`.
 The test caught and removed an unsupported I2C-mux power step; ordinary clock,
 GPIO and regulator steps pass the original translation.
 
@@ -68,6 +69,10 @@ python3 generate-registers.py KERNEL_REPO --check
 ```
 
 All fixture binaries, executables, generated logs and outputs stay outside Git.
+Both scripts also take `CITYMAN_CAMERA_SENSOR_PROFILE=lumia20` (with
+`CITYMAN_CAMERA_LUMIA20_DCC`) and the opt-in second mode,
+`CITYMAN_CAMERA_LUMIA20_BINNED=true`; `test-consumer.sh` then also runs the
+daemon's own `sensor_pick_resolution`. See [`LUMIA20-BINNED.md`](LUMIA20-BINNED.md).
 
 ### Recorded result (2026-10-26)
 

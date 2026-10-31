@@ -213,6 +213,30 @@ static uint32_t symbol(const uint8_t *file, const char *name)
     finish(97);
 }
 
+/*
+ * The daemon's own mode selection (exported sensor_pick_resolution). Inputs
+ * as decoded from the fixture: ctrl = {lib params whose +4 is the sensor
+ * descriptor, session data}; session +0x3c the requested fps (float), +0x12c
+ * the HAL version (3 selects the pick_v3 table); request = {max width,
+ * max height, stream mask, fast AEC, fast AEC mode, aspect ratio}. With HAL3
+ * and a preview/video session it checks fps (max fps in [req, req + 20)),
+ * width, height and takes the smallest qualifying mode, else index 0.
+ */
+static uint32_t session[0x400 / 4];
+static int pick(int32_t (*function)(void *, void *, uint16_t *), struct angler_sensor_descriptor *d,
+                uint32_t hal, uint32_t width, uint32_t height, uint32_t mask, float fps)
+{
+    uint32_t lib[2] = {1, (uint32_t)d}, ctrl[2] = {(uint32_t)lib, (uint32_t)session};
+    uint32_t request[6] = {width, height, mask, 0, 0, 0};
+    uint16_t index = 0xffff;
+    union { float f; uint32_t bits; } value = {.f = fps};
+    clear_bytes(session, 0, sizeof(session));
+    session[0x3c / 4] = value.bits;
+    session[0x12c / 4] = hal;
+    if (function(ctrl, request, &index)) return -1;
+    return index;
+}
+
 int run_tests(void)
 {
     uint32_t context[32] = {0};
@@ -229,6 +253,8 @@ int run_tests(void)
     struct msm_camera_i2c_reg_setting translated_setting;
     struct msm_camera_csid_params translated_csid = {0};
     struct msm_camera_csid_vc_cfg cid[16] = {{0}};
+    int32_t (*pick_resolution)(void *, void *, uint16_t *);
+    int binned = PROFILE_MODES - 1, hal;
     unsigned int i;
     load(_binary_consumer_so_start, consumer_memory, sizeof(consumer_memory));
     load(_binary_reference_so_start, reference_memory, sizeof(reference_memory));
@@ -244,11 +270,26 @@ int run_tests(void)
     context[1] = (uint32_t)descriptor;
     output[0x6a8 / 4] = 0x5a5a5a5a;
     if (caps(context, output)) return 102;
-    if (((uint8_t *)output)[0x30] != 1 || output[0x34 / 4] != PROFILE_WIDTH || output[0x38 / 4] != PROFILE_HEIGHT) return 103;
+    /* Mode list as the consumer exports it: {w, h, min fps, max fps, ...} each 0x18. */
+    if (((uint8_t *)output)[0x30] != PROFILE_MODES) return 103;
+    for (i = 0; i < PROFILE_MODES; i++) {
+        uint32_t *entry = output + (0x34 + 0x18 * i) / 4;
+        union { uint32_t bits; float f; } low = {.bits = entry[2]}, high = {.bits = entry[3]};
+        if (entry[0] != descriptor->modes.entries[i].width || entry[1] != descriptor->modes.entries[i].height ||
+            low.f != descriptor->modes.entries[i].minimum_fps || high.f != descriptor->modes.entries[i].maximum_fps)
+            return 113;
+    }
+    if (output[0x34 / 4] != PROFILE_WIDTH || output[0x38 / 4] != PROFILE_HEIGHT) return 103;
     if (output[0x6a8 / 4] != 0x5a5a5a5a) return 104;
-    if (!output[0x19c / 4] || output[0x3e4 / 4] != 5344 || output[0x3e8 / 4] != 4016) return 105;
-    /* GB10: kernel's SGBRG10 fourcc, from the actual angler conversion helper. */
-    if (fourcc(0, descriptor->output.bayer_order, CSI_DECODE_10BIT) != 0x30314247u) return 106;
+    /* Active array (0x3e4) is the full readout, whatever the mode count. */
+    if (!output[0x19c / 4] || output[0x3e4 / 4] != PROFILE_WIDTH || output[0x3e8 / 4] != PROFILE_HEIGHT) return 105;
+    /*
+     * Bayer enum 3 is the on-device colour test's choice (15cdfd3); the angler
+     * conversion helper maps it to the RG10 fourcc (0 BG10, 1 GB10, 2 BA10).
+     * The older GB10 expectation predates that choice.
+     */
+    if (descriptor->output.bayer_order != 3 ||
+        fourcc(0, descriptor->output.bayer_order, CSI_DECODE_10BIT) != 0x30314752u) return 106;
     register_setting = (void *)(consumer_memory + symbol(_binary_consumer_so_start, "translate_sensor_reg_setting"));
     for (i = 0; i < descriptor->init.count; i++) {
         struct msm_camera_i2c_reg_setting *source = &descriptor->init.entries[i];
@@ -266,14 +307,38 @@ int run_tests(void)
             up[i].config_val != source->config_val || up[i].delay != source->delay) return 109;
     }
     csid_info = (void *)(consumer_memory + symbol(_binary_consumer_so_start, "translate_sensor_csid_params"));
-    csid_info(&translated_csid, &descriptor->csi.entries[0].csid, cid);
-    if (translated_csid.lane_assign != 0x0423 || translated_csid.lane_cnt != 4 ||
-        translated_csid.lut_params.num_cid != PROFILE_CIDS || translated_csid.lut_params.vc_cfg[0] != cid ||
-        cid[0].dt != CSI_RAW10 || cid[0].decode_format != CSI_DECODE_10BIT) return 110;
-    for (i = 0; i < PROFILE_CIDS; i++) {
-        const struct msm_camera_csid_vc_cfg *source = &descriptor->csi.entries[0].csid.lut_params.vc_cfg_a[i];
-        if (translated_csid.lut_params.vc_cfg[i] != &cid[i] || cid[i].cid != source->cid ||
-            cid[i].dt != source->dt || cid[i].decode_format != source->decode_format) return 112;
+    for (unsigned int m = 0; m < descriptor->csi.count; m++) {
+        clear_bytes(&translated_csid, 0, sizeof(translated_csid));
+        clear_bytes(cid, 0, sizeof(cid));
+        csid_info(&translated_csid, &descriptor->csi.entries[m].csid, cid);
+        if (translated_csid.lane_assign != 0x0423 || translated_csid.lane_cnt != 4 ||
+            translated_csid.lut_params.num_cid != PROFILE_CIDS || translated_csid.lut_params.vc_cfg[0] != cid ||
+            cid[0].dt != CSI_RAW10 || cid[0].decode_format != CSI_DECODE_10BIT) return 110;
+        for (i = 0; i < PROFILE_CIDS; i++) {
+            const struct msm_camera_csid_vc_cfg *source = &descriptor->csi.entries[m].csid.lut_params.vc_cfg_a[i];
+            if (translated_csid.lut_params.vc_cfg[i] != &cid[i] || cid[i].cid != source->cid ||
+                cid[i].dt != source->dt || cid[i].decode_format != source->decode_format) return 112;
+        }
+    }
+    /*
+     * Mode selection by the real daemon code. Photo sessions (full-size JPEG
+     * in the stream set) must keep mode 0, also when 30 fps is asked (no
+     * match -> index 0); preview/video sessions up to the binned size at
+     * 24-30 fps must get the binned mode. 0x80a/0x812: preview+snapshot and
+     * preview+video masks seen in the Android 13 logs.
+     */
+    pick_resolution = (void *)(consumer_memory + symbol(_binary_consumer_so_start, "sensor_pick_resolution"));
+    for (hal = 3; hal >= 0; hal -= 3) {
+        if (pick(pick_resolution, descriptor, hal, PROFILE_WIDTH, PROFILE_HEIGHT, 0x80a, 30.0f) != 0) return 114;
+        if (pick(pick_resolution, descriptor, hal, PROFILE_WIDTH, PROFILE_HEIGHT, 0x80a, 20.0f) != 0) return 115;
+        if (pick(pick_resolution, descriptor, hal, PROFILE_WIDTH, PROFILE_HEIGHT, 0x80a, 0.0f) != 0) return 116;
+        if (pick(pick_resolution, descriptor, hal, 1920, 1080, 0x812, 30.0f) != binned) return 117;
+        if (pick(pick_resolution, descriptor, hal, 1440, 1080, 0x80a, 30.0f) != binned) return 118;
+        if (pick(pick_resolution, descriptor, hal, 1920, 1080, 0x812, 24.0f) != binned) return 119;
+        if (pick(pick_resolution, descriptor, hal, 1920, 1080, 0x812, 15.0f) != binned) return 120;
+        if (pick(pick_resolution, descriptor, hal, PROFILE_WIDTH / 2, PROFILE_HEIGHT / 2, 0x812, 30.0f) != binned)
+            return 121;
+        if (pick(pick_resolution, descriptor, hal, PROFILE_WIDTH / 2 + 16, 1080, 0x812, 30.0f) != 0) return 122;
     }
     /* Negative control: the real consumer must reject a descriptor with no modes. */
     descriptor->modes.count = 0;

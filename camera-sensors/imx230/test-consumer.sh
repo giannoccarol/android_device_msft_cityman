@@ -10,8 +10,10 @@ profile_flags=()
 case "${CITYMAN_CAMERA_SENSOR_PROFILE:-smia9}" in
     smia9) ;;
     nubia24) profile_flags+=(-DCITYMAN_CAMERA_NUBIA24) ;;
+    lumia20) profile_flags+=(-DCITYMAN_CAMERA_LUMIA20) ;;
     *) echo 'Unsupported sensor profile' >&2; exit 1 ;;
 esac
+[[ ${CITYMAN_CAMERA_LUMIA20_BINNED:-} == true ]] && profile_flags+=(-DCITYMAN_CAMERA_LUMIA20_BINNED)
 check_hash() {
     [[ $(sha256sum "$1" | cut -d' ' -f1) == "$2" ]] || { echo "Unexpected fixture: $1" >&2; exit 1; }
 }
@@ -36,5 +38,7 @@ fi
     -mcpu=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=softfp -I"$kernel/include" \
     "${profile_flags[@]}" -nostdlib -static -Wl,-e,_start "$here/test_consumer.c" \
     "$here/test_start.S" "$out/consumer.o" "$out/reference.o" "$out/candidate.o" -o "$out/test_consumer"
-qemu-arm -cpu max "$out/test_consumer"
-echo "Real angler consumer: ${CITYMAN_CAMERA_SENSOR_PROFILE:-smia9}, loaded .so, capabilities, GRBG10, I2C, power and CSI passed"
+status=0
+qemu-arm -cpu max "$out/test_consumer" || status=$?
+[[ $status == 0 ]] || { echo "Real angler consumer test failed: code $status" >&2; exit 1; }
+echo "Real angler consumer: ${CITYMAN_CAMERA_SENSOR_PROFILE:-smia9}, loaded .so, capabilities, modes, Bayer fourcc, I2C, power, CSI and mode pick passed"

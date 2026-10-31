@@ -52,4 +52,26 @@
 #define PROFILE_MODE smia_mode4
 #endif
 
+#ifdef CITYMAN_CAMERA_LUMIA20_BINNED
+#ifndef CITYMAN_CAMERA_LUMIA20
+#error "CITYMAN_CAMERA_LUMIA20_BINNED needs the lumia20 profile"
+#endif
+/*
+ * Second mode, opt-in (LUMIA20-BINNED.md): 2x2 binning of the full lumia20
+ * window, so the same field of view, PLL, link rate and line length.
+ * 476.16 MHz / (6024 * 2634) = 30.009 fps: the daemon only picks a mode for
+ * a 30 fps request when its maximum fps is at least 30.0.
+ */
+#define PROFILE_BINNED_WIDTH 2672u
+#define PROFILE_BINNED_HEIGHT 1872u
+#define PROFILE_BINNED_FRAME_LINES 2634u
+#define PROFILE_BINNED_MIN_FPS 7.5f
+#define PROFILE_BINNED_MAX_FPS 30.0f
+#define PROFILE_MODES 2
+#define PROFILE_MIN_FRAME_LINES PROFILE_BINNED_FRAME_LINES
+#else
+#define PROFILE_MODES 1
+#define PROFILE_MIN_FRAME_LINES PROFILE_FRAME_LINES
+#endif
+
 #endif
