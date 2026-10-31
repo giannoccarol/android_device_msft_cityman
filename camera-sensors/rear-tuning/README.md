@@ -62,5 +62,16 @@ overwriting it.
   camera (vendor `d859261`), and the built `cpp_*` payloads are bit-identical to
   those Android 13 libraries. Reduces the colour grain of the rear camera.
 
+- Brighter auto exposure (31/10): the AEC luma targets of the vfe chromatix
+  (`snapshot`, which is also the preview, `default_video`, `liveshot`) are
+  raised from the IMX377 donor's: default (indoor) 43 → 60 and outdoor 43 → 52
+  (two bytes at struct offset `0xc07c`), lowlight 23 → 36 (`0xe310`; the donor
+  blends into it from lux index 360 to 425, `0xe314`/`0xe318`, unchanged).
+  The offsets come from `aec_set_parameters` in the angler
+  `libmmcamera2_q3a_core.so`, and with `persist.camera.stats.debug=5` the
+  daemon logs `def_target 43` on the donor tuning; evidence in
+  `gen-chromatix-c.py`. Indoor photos were at mean luma 42–82 / 255 with AE
+  converged.
+
 Not yet verified on a cityman: these libraries were built and checked against
 the donors, the phone test is pending.

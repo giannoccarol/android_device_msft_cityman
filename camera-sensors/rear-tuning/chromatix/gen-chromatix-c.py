@@ -119,6 +119,27 @@ FIELDS = {
    (0x41b0, "ccm_6", "float", 9),
    (0x41dc, "ccm_7", "float", 9),
    (0x7c08, "aec_flash_flux_selector",   "uint32_t",         1),
+   # AEC luma targets.  Read from the angler q3a library
+   # (libmmcamera2_q3a_core.so), aec_set_parameters at 0x7c52..0x7d2c, with
+   # r5 = this struct (the same code copies 0x7c08 to ctx+0x1810, the flux
+   # selector above, so the offsets are struct-relative):
+   #   ldrb [0xc07c] -> ctx+0x1750, +0x132c, +0x1330.  ctx+0x1750 is printed
+   #     as "def_target" by aec_process_calculate_lux_index (0x134da), and
+   #     with persist.camera.stats.debug=5 the phone logs def_target 43 =
+   #     this byte; 0x132c/0x1330 are the live and EV-0 luma targets.
+   #   ldrb [0xc07d] -> ctx+0x1751, which aec_test_motion_iso (0x6470) turns
+   #     into the outdoor target: ctx+0x4488 = indoor - default + this byte,
+   #     blended in below the indoor index ([0xc088] 240, outdoor [0xc08c] 190).
+   #   ldr [0xe310] -> ctx+0x1754, [0xe314] -> +0x1758, [0xe318] -> +0x175c:
+   #     the lowlight target and the lux index range over which
+   #     aec_process_adjust_exposure_for_compensation (0xda78..0xdb24) blends
+   #     the default target into it ("disabling lowlight luma target" check).
+   # Other donors of this layout agree: imx179 51/50 and lowlight 45,
+   # ov5693 53/55 and 33.
+   (0xc07c, "aec_luma_target",           "uint8_t",          2),
+   (0xe310, "aec_lowlight_luma_target",  "uint32_t",         1),
+   (0xe314, "aec_lowlight_start_idx",    "uint32_t",         1),
+   (0xe318, "aec_lowlight_end_idx",      "uint32_t",         1),
    (0xd4e8, "aec_flash_flux_denom",      "float",            1),
    (0xd4ec, "aec_flash_flux_ratio",      "float",            1),
  ],
@@ -163,6 +184,27 @@ OVERRIDES = {
  ("chx_vfe_t", "led_ref_white_point_dup"):
    ((1.9231, 1.0, 1.6750), "the table holds the LED entry twice; same source."),
 }
+
+# Brighter AEC targets.  The donor's are imx377's (default and outdoor 43,
+# lowlight 23 from lux index 360 to 425): that sensor's 1.55 um pixels were
+# tuned dark, and on this module previews and photos came out at mean luma
+# 42..82 / 255 indoors with AE converged and not exposure-limited -- the
+# daemon logged def_target 43 and a final target of 34..43 on such a scene.
+# Indoor rooms sit around lux index 330..400, i.e. right where the donor
+# starts blending towards 23.  Raised moderately; the histogram adjustment
+# (aec_process_calc_hist_target_adjust) scales its bright-region bounds with
+# the target and still pulls it down when highlights saturate.
+OVERRIDES.update({
+ ("chx_vfe_t", "aec_luma_target"):
+   ((60, 52),
+    "default (indoor) luma target 43 -> 60 (+40%), outdoor 43 -> 52 (+21%): "
+    "the imx377 donor's targets left indoor photos at mean luma 42..82; "
+    "offsets and evidence in FIELDS"),
+ ("chx_vfe_t", "aec_lowlight_luma_target"):
+   (36,
+    "lowlight luma target 23 -> 36: the donor blends its default into 23 "
+    "from lux index 360 to 425, which is where dim rooms sit on this module"),
+})
 
 # Per-channel black level.  The donor's ladder starts at 210 (12-bit), which is
 # imx377's pedestal -- 52.5 in 10-bit -- because the only chromatix on this ROM
@@ -278,6 +320,8 @@ def fmt_bytes(b, indent="\t\t"):
 
 def unpack_field(ctype, count, raw):
     """A field's donor value, as a tuple, for a relative override."""
+    if ctype == "uint8_t":
+        return tuple(raw[:count])
     if ctype == "uint16_t":
         return struct.unpack_from("<%dH" % count, raw)
     if ctype == "float":
@@ -301,6 +345,10 @@ def override_bytes(cls, name, ctype, count, cur=None):
         if cur is None:
             raise SystemExit("%s: relative override needs the donor value" % name)
         val = val(unpack_field(ctype, count, cur))
+    if ctype == "uint8_t":
+        if len(val) != count or not all(0 <= v <= 255 for v in val):
+            raise SystemExit("%s: %r is not %d bytes" % (name, val, count))
+        return bytes(val)
     if ctype == "uint16_t":
         if len(val) != count:
             raise SystemExit("%s: %d values for a [%d] field" %

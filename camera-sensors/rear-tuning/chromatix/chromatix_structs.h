@@ -221,10 +221,16 @@ typedef struct {
 	chx_white_point_t  led_ref_white_point_dup;	/* 0x6eb8 */
 	uint8_t  _gap_6ec4                 [0xd44];	/* 0x6ec4 undecoded */
 	uint32_t           aec_flash_flux_selector;	/* 0x7c08 */
-	uint8_t  _gap_7c0c                 [0x58dc];	/* 0x7c0c undecoded */
+	uint8_t  _gap_7c0c                 [0x4470];	/* 0x7c0c undecoded */
+	uint8_t            aec_luma_target[2];	/* 0xc07c */
+	uint8_t  _gap_c07e                 [0x146a];	/* 0xc07e undecoded */
 	float              aec_flash_flux_denom;	/* 0xd4e8 */
 	float              aec_flash_flux_ratio;	/* 0xd4ec */
-	uint8_t  _gap_d4f0                 [0x3108];	/* 0xd4f0 undecoded */
+	uint8_t  _gap_d4f0                 [0xe20];	/* 0xd4f0 undecoded */
+	uint32_t           aec_lowlight_luma_target;	/* 0xe310 */
+	uint32_t           aec_lowlight_start_idx;	/* 0xe314 */
+	uint32_t           aec_lowlight_end_idx;	/* 0xe318 */
+	uint8_t  _gap_e31c                 [0x22dc];	/* 0xe31c undecoded */
 } chx_vfe_t;
 
 CHX_CHECK_OFF(chx_vfe_t, version, 0x0000, chx_vfe_version);
@@ -250,9 +256,15 @@ CHX_CHECK_OFF(chx_vfe_t, led_ref_white_point_dup, 0x6eb8, chx_vfe_led_ref_white_
 CHX_CHECK_OFF(chx_vfe_t, _gap_6ec4, 0x6ec4, chx_vfe_gap_6ec4);
 CHX_CHECK_OFF(chx_vfe_t, aec_flash_flux_selector, 0x7c08, chx_vfe_aec_flash_flux_selector);
 CHX_CHECK_OFF(chx_vfe_t, _gap_7c0c, 0x7c0c, chx_vfe_gap_7c0c);
+CHX_CHECK_OFF(chx_vfe_t, aec_luma_target, 0xc07c, chx_vfe_aec_luma_target);
+CHX_CHECK_OFF(chx_vfe_t, _gap_c07e, 0xc07e, chx_vfe_gap_c07e);
 CHX_CHECK_OFF(chx_vfe_t, aec_flash_flux_denom, 0xd4e8, chx_vfe_aec_flash_flux_denom);
 CHX_CHECK_OFF(chx_vfe_t, aec_flash_flux_ratio, 0xd4ec, chx_vfe_aec_flash_flux_ratio);
 CHX_CHECK_OFF(chx_vfe_t, _gap_d4f0, 0xd4f0, chx_vfe_gap_d4f0);
+CHX_CHECK_OFF(chx_vfe_t, aec_lowlight_luma_target, 0xe310, chx_vfe_aec_lowlight_luma_target);
+CHX_CHECK_OFF(chx_vfe_t, aec_lowlight_start_idx, 0xe314, chx_vfe_aec_lowlight_start_idx);
+CHX_CHECK_OFF(chx_vfe_t, aec_lowlight_end_idx, 0xe318, chx_vfe_aec_lowlight_end_idx);
+CHX_CHECK_OFF(chx_vfe_t, _gap_e31c, 0xe31c, chx_vfe_gap_e31c);
 CHX_STATIC_ASSERT(sizeof(chx_vfe_t) == 67064, chx_vfe_size);
 
 #endif
