@@ -142,7 +142,8 @@ on:
 
 The power HAL holds each profile as a perfd lock, so core_ctl, perfd and
 thermal-engine keep working together. The page and the tile come from the
-device app `CitymanParts` (`parts/`), since LineageOS 23 has no performance
+device app `CitymanParts`
+(`giannoccarol/android_packages_apps_CitymanParts`), since LineageOS 23 has no performance
 profiles of its own. Details and opcodes: `power/README.md`.
 
 ## Credits
