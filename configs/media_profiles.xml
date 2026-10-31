@@ -315,6 +315,8 @@
     </CamcorderProfiles>
 
     <CamcorderProfiles cameraId="1">
+        <!-- The front VS6955 streams at most 1280x960 (binned mode): no 1080p
+             profiles, so camera apps do not ask for a size the HAL rejects. -->
 
         <EncoderProfile quality="low" fileFormat="3gp" duration="60">
             <Video codec="h264"
@@ -331,9 +333,9 @@
 
         <EncoderProfile quality="high" fileFormat="mp4" duration="30">
             <Video codec="h264"
-                   bitRate="17000000"
-                   width="1920"
-                   height="1080"
+                   bitRate="12000000"
+                   width="1280"
+                   height="720"
                    frameRate="30" />
             <Audio codec="aac"
                    bitRate="96000"
@@ -401,17 +403,6 @@
                    channels="1" />
         </EncoderProfile>
 
-        <EncoderProfile quality="1080p" fileFormat="mp4" duration="30">
-            <Video codec="h264"
-                   bitRate="17000000"
-                   width="1920"
-                   height="1080"
-                   frameRate="30" />
-            <Audio codec="aac"
-                   bitRate="96000"
-                   sampleRate="48000"
-                   channels="1" />
-        </EncoderProfile>
 
         <EncoderProfile quality="timelapseqcif" fileFormat="mp4" duration="30">
             <Video codec="h264"
