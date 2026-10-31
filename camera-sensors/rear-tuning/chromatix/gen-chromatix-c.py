@@ -5,6 +5,8 @@ This runs BY HAND, not from the build.  Its output is checked in, so the build
 reads no vendor blob and nothing is patched: `Android.mk` compiles ordinary C.
 
     ./gen-chromatix-c.py emit          regenerate the .inc/.c sources
+    ./gen-chromatix-c.py emit cpp_     regenerate only the .inc files whose
+                                       name starts with cpp_ (see below)
     ./gen-chromatix-c.py verify        prove the sources still reproduce the
                                        donor payload byte for byte
 
@@ -26,7 +28,9 @@ A `_gap_*` array is undecoded data, labelled with its own struct offset.
 import os, re, subprocess, sys, struct
 
 HERE   = os.path.dirname(os.path.abspath(__file__))
-DONOR  = os.path.normpath(os.path.join(HERE, "../../../../../../vendor/msft/cityman/proprietary/vendor/lib"))
+# CHX_DONOR points at the donor libraries when this tree is not inside the
+# Android source tree (a separate worktree, for example).
+DONOR  = os.environ.get("CHX_DONOR") or os.path.normpath(os.path.join(HERE, "../../../../../../vendor/msft/cityman/proprietary/vendor/lib"))
 STRUCT_AT = 0x3004        # file offset of the struct; .data is at 0x3000
 
 # The ten names sensor_lib_imx230.c's .chromatix table asks for.
@@ -75,6 +79,18 @@ LIN_KNEE_FIELDS = [
     for g in range(LIN_GROUPS)
 ]
 
+# CPP wavelet denoise noise profiles, in the CPP chromatix.
+#
+# Six gain trigger entries 0xe0 apart from struct 0x6fbc; each holds its gain
+# range as two floats at +0x04 (2..3.99, 4..7.99, ... 64..88), then three
+# noise profiles of four floats (one per wavelet level, finest first): luma at
+# +0x24, Cb at +0x44, Cr at +0x64.  The weights that follow (3 / 15 / 30) stay
+# the donor's.  The layout is identical in the preview, snapshot, video,
+# liveshot and UHD video payloads.
+WNR_PLANES = (("y", 0x00), ("cb", 0x20), ("cr", 0x40))
+WNR_FIELDS = [(0x6fe0 + 0xe0 * t + d, "wnr_%s_t%d" % (pl, t), "float", 4)
+              for t in range(6) for pl, d in WNR_PLANES]
+
 FIELDS = {
  "chx_vfe_t": [
    (0x0000, "version",                   "uint8_t",          4),
@@ -106,7 +122,7 @@ FIELDS = {
    (0xd4e8, "aec_flash_flux_denom",      "float",            1),
    (0xd4ec, "aec_flash_flux_ratio",      "float",            1),
  ],
- "chx_cpp_t":      [(0x0000, "version", "uint8_t", 4)],
+ "chx_cpp_t":      [(0x0000, "version", "uint8_t", 4)] + WNR_FIELDS,
  "chx_common_t":   [(0x0000, "version", "uint8_t", 4)] + LIN_KNEE_FIELDS,
  "chx_postproc_t": [(0x0000, "version", "uint8_t", 4)],
 }
@@ -190,6 +206,24 @@ OVERRIDES.update({
        "donor's own 210..215 drift across entries is imx377's dark current "
        "and unmeasured here, so it is deliberately dropped.")
     for g in range(LIN_GROUPS)
+})
+
+# Stronger CPP denoise.  The donor's profiles are imx377's noise, and this
+# module is noisier at the same gain: preview and photos showed fine colour
+# grain at every light level.  The scaling is the one tested on this phone with
+# the Android 13 cityman camera (luma x1.4, chroma x1.6, every trigger entry):
+# grain gone without visible loss of detail.  Relative, so the donor's shape
+# across wavelet levels and gains survives.
+def wnr_scale(k):
+    return lambda cur: tuple(v * k for v in cur)
+
+OVERRIDES.update({
+    ("chx_cpp_t", "wnr_%s_t%d" % (pl, t)):
+      (wnr_scale(1.4 if pl == "y" else 1.6),
+       "stronger wavelet denoise, %s x%s: this module is noisier than "
+       "imx377 at the same gain (scaling tested on Android 13)"
+       % ("luma" if pl == "y" else "chroma", "1.4" if pl == "y" else "1.6"))
+    for t in range(6) for pl, _ in WNR_PLANES
 })
 
 CTYPE_SIZE = {"uint8_t":1, "uint16_t":2, "uint32_t":4, "int32_t":4,
@@ -365,6 +399,11 @@ def check_flux(cls, data):
 
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else "verify"
+    # cityman: data/chx_common.inc is the talkman port's file as shipped.  Its
+    # lens rolloff mesh (struct 0x8bc8..0xa768) differs from the angler donor
+    # in vendor/msft/cityman, and the rear colours were confirmed on the phone
+    # with it, so regenerate selectively instead of overwriting it.
+    only = sys.argv[2] if len(sys.argv) > 2 else ""
     seen, rc = {}, 0
     for n in NAMES:
         data = payload(os.path.join(DONOR, "libchromatix_imx377_%s.so" % n))
@@ -389,7 +428,7 @@ def main():
             print("  %-14s %-16s %6d bytes  %s%s" % (n, cls, len(data),
                   "ok" if ok else "MISMATCH",
                   "  (%d field(s) deliberately overridden)" % novr if novr else ""))
-        elif mode == "emit" and owner == n:
+        elif mode == "emit" and owner == n and n.startswith(only):
             inc = os.path.join(HERE, "data", "chx_%s.inc" % n)
             os.makedirs(os.path.dirname(inc), exist_ok=True)
             with open(inc, "w") as f:

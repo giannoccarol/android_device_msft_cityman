@@ -30,10 +30,20 @@ branch `lineage-18.1-talkman`, `camera/sensors/imx230` at `901b039`. The 950 and
   first (`ACTUATOR_VCM_BE`, kernel side in `msm_actuator.c`), and `qvalue` never
   reaches the kernel, so the step size is a whole number of codes.
 
-`chromatix/gen-chromatix-c.py verify` and `af/gen-af-c.py verify` run against the
-cityman vendor tree (`vendor/msft/cityman`) and report every payload identical to
-the donor apart from the declared overrides: the cityman IMX377 and lc898212xd
-donors are byte for byte the ones the talkman port was built from.
+`chromatix/gen-chromatix-c.py verify` and `af/gen-af-c.py verify` report every
+payload identical to the donor apart from the declared overrides. The donor must be
+the angler IMX377 as shipped: the cityman vendor tree replaced its `common` and
+`cpp_*` libraries in `d859261` with an Android 13 tuning, so point the chromatix
+generator at the earlier files:
+
+```
+CHX_DONOR=<dir with the libchromatix_imx377_*.so of d859261^> ./gen-chromatix-c.py verify
+```
+
+`data/chx_common.inc` is the talkman file as shipped. Its lens rolloff mesh
+(struct offsets 0x8bc8..0xa768) differs from the angler donor, and the rear colours
+were confirmed with it, so regenerate selectively (`emit cpp_`) rather than
+overwriting it.
 
 ## Cityman changes
 
@@ -46,6 +56,11 @@ donors are byte for byte the ones the talkman port was built from.
   travel, with a `qvalue` that the daemon replaces.
 - The AF tuning's step fields stay as tuned for the talkman's 268 steps (1% apart).
 - The OIS init sequence of `carrera-af` is not used, as on the talkman.
+- Stronger CPP wavelet denoise (31/10): the noise profiles of all six gain
+  entries scaled by 1.4 for luma and 1.6 for Cb/Cr, declared as overrides in
+  `gen-chromatix-c.py`. It is the scaling tested on this phone with the Android 13
+  camera (vendor `d859261`), and the built `cpp_*` payloads are bit-identical to
+  those Android 13 libraries. Reduces the colour grain of the rear camera.
 
 Not yet verified on a cityman: these libraries were built and checked against
 the donors, the phone test is pending.

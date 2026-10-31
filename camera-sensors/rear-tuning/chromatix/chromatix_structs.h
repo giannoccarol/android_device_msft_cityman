@@ -14,11 +14,83 @@ CHX_STATIC_ASSERT(sizeof(chx_postproc_t) == 2524, chx_postproc_size);
 
 typedef struct {
 	uint8_t            version[4];	/* 0x0000 */
-	uint8_t  _gap_0004                 [0x8848];	/* 0x0004 undecoded */
+	uint8_t  _gap_0004                 [0x6fdc];	/* 0x0004 undecoded */
+	float              wnr_y_t0[4];	/* 0x6fe0 */
+	uint8_t  _gap_6ff0                 [0x10];	/* 0x6ff0 undecoded */
+	float              wnr_cb_t0[4];	/* 0x7000 */
+	uint8_t  _gap_7010                 [0x10];	/* 0x7010 undecoded */
+	float              wnr_cr_t0[4];	/* 0x7020 */
+	uint8_t  _gap_7030                 [0x90];	/* 0x7030 undecoded */
+	float              wnr_y_t1[4];	/* 0x70c0 */
+	uint8_t  _gap_70d0                 [0x10];	/* 0x70d0 undecoded */
+	float              wnr_cb_t1[4];	/* 0x70e0 */
+	uint8_t  _gap_70f0                 [0x10];	/* 0x70f0 undecoded */
+	float              wnr_cr_t1[4];	/* 0x7100 */
+	uint8_t  _gap_7110                 [0x90];	/* 0x7110 undecoded */
+	float              wnr_y_t2[4];	/* 0x71a0 */
+	uint8_t  _gap_71b0                 [0x10];	/* 0x71b0 undecoded */
+	float              wnr_cb_t2[4];	/* 0x71c0 */
+	uint8_t  _gap_71d0                 [0x10];	/* 0x71d0 undecoded */
+	float              wnr_cr_t2[4];	/* 0x71e0 */
+	uint8_t  _gap_71f0                 [0x90];	/* 0x71f0 undecoded */
+	float              wnr_y_t3[4];	/* 0x7280 */
+	uint8_t  _gap_7290                 [0x10];	/* 0x7290 undecoded */
+	float              wnr_cb_t3[4];	/* 0x72a0 */
+	uint8_t  _gap_72b0                 [0x10];	/* 0x72b0 undecoded */
+	float              wnr_cr_t3[4];	/* 0x72c0 */
+	uint8_t  _gap_72d0                 [0x90];	/* 0x72d0 undecoded */
+	float              wnr_y_t4[4];	/* 0x7360 */
+	uint8_t  _gap_7370                 [0x10];	/* 0x7370 undecoded */
+	float              wnr_cb_t4[4];	/* 0x7380 */
+	uint8_t  _gap_7390                 [0x10];	/* 0x7390 undecoded */
+	float              wnr_cr_t4[4];	/* 0x73a0 */
+	uint8_t  _gap_73b0                 [0x90];	/* 0x73b0 undecoded */
+	float              wnr_y_t5[4];	/* 0x7440 */
+	uint8_t  _gap_7450                 [0x10];	/* 0x7450 undecoded */
+	float              wnr_cb_t5[4];	/* 0x7460 */
+	uint8_t  _gap_7470                 [0x10];	/* 0x7470 undecoded */
+	float              wnr_cr_t5[4];	/* 0x7480 */
+	uint8_t  _gap_7490                 [0x13bc];	/* 0x7490 undecoded */
 } chx_cpp_t;
 
 CHX_CHECK_OFF(chx_cpp_t, version, 0x0000, chx_cpp_version);
 CHX_CHECK_OFF(chx_cpp_t, _gap_0004, 0x0004, chx_cpp_gap_0004);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t0, 0x6fe0, chx_cpp_wnr_y_t0);
+CHX_CHECK_OFF(chx_cpp_t, _gap_6ff0, 0x6ff0, chx_cpp_gap_6ff0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t0, 0x7000, chx_cpp_wnr_cb_t0);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7010, 0x7010, chx_cpp_gap_7010);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t0, 0x7020, chx_cpp_wnr_cr_t0);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7030, 0x7030, chx_cpp_gap_7030);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t1, 0x70c0, chx_cpp_wnr_y_t1);
+CHX_CHECK_OFF(chx_cpp_t, _gap_70d0, 0x70d0, chx_cpp_gap_70d0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t1, 0x70e0, chx_cpp_wnr_cb_t1);
+CHX_CHECK_OFF(chx_cpp_t, _gap_70f0, 0x70f0, chx_cpp_gap_70f0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t1, 0x7100, chx_cpp_wnr_cr_t1);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7110, 0x7110, chx_cpp_gap_7110);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t2, 0x71a0, chx_cpp_wnr_y_t2);
+CHX_CHECK_OFF(chx_cpp_t, _gap_71b0, 0x71b0, chx_cpp_gap_71b0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t2, 0x71c0, chx_cpp_wnr_cb_t2);
+CHX_CHECK_OFF(chx_cpp_t, _gap_71d0, 0x71d0, chx_cpp_gap_71d0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t2, 0x71e0, chx_cpp_wnr_cr_t2);
+CHX_CHECK_OFF(chx_cpp_t, _gap_71f0, 0x71f0, chx_cpp_gap_71f0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t3, 0x7280, chx_cpp_wnr_y_t3);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7290, 0x7290, chx_cpp_gap_7290);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t3, 0x72a0, chx_cpp_wnr_cb_t3);
+CHX_CHECK_OFF(chx_cpp_t, _gap_72b0, 0x72b0, chx_cpp_gap_72b0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t3, 0x72c0, chx_cpp_wnr_cr_t3);
+CHX_CHECK_OFF(chx_cpp_t, _gap_72d0, 0x72d0, chx_cpp_gap_72d0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t4, 0x7360, chx_cpp_wnr_y_t4);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7370, 0x7370, chx_cpp_gap_7370);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t4, 0x7380, chx_cpp_wnr_cb_t4);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7390, 0x7390, chx_cpp_gap_7390);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t4, 0x73a0, chx_cpp_wnr_cr_t4);
+CHX_CHECK_OFF(chx_cpp_t, _gap_73b0, 0x73b0, chx_cpp_gap_73b0);
+CHX_CHECK_OFF(chx_cpp_t, wnr_y_t5, 0x7440, chx_cpp_wnr_y_t5);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7450, 0x7450, chx_cpp_gap_7450);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cb_t5, 0x7460, chx_cpp_wnr_cb_t5);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7470, 0x7470, chx_cpp_gap_7470);
+CHX_CHECK_OFF(chx_cpp_t, wnr_cr_t5, 0x7480, chx_cpp_wnr_cr_t5);
+CHX_CHECK_OFF(chx_cpp_t, _gap_7490, 0x7490, chx_cpp_gap_7490);
 CHX_STATIC_ASSERT(sizeof(chx_cpp_t) == 34892, chx_cpp_size);
 
 typedef struct {
