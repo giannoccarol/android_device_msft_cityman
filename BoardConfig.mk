@@ -215,6 +215,8 @@ TARGET_USES_INTERACTION_BOOST := true
 TARGET_USES_NON_LEGACY_POWERHAL := true
 # Power hints through perf locks: the OnePlus 2 perfd client has no perf_hint
 $(call soong_config_set,qtipower,mode_ext_lib,libpower_ext_cityman)
+# Double tap to wake: F12 wakeup gesture of the Synaptics touch controller
+$(call soong_config_set,qtipower,tap_to_wake_node,/sys/devices/soc.0/f9923000.i2c/i2c-1/1-004b/wake_gesture)
 
 BOARD_SUPPRESS_SECURE_ERASE := true
 TARGET_RECOVERY_FSTAB = $(DEVICE_PATH)/rootdir/etc/recovery.fstab

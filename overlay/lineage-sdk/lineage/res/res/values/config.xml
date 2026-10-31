@@ -54,4 +54,7 @@
          pulsating and RGB control would set this config to 75. -->
     <integer name="config_deviceLightCapabilities">0</integer>
 
+    <!-- Offer the proximity check on wake (against double taps in a pocket). -->
+    <bool name="config_proximityCheckOnWake">true</bool>
+
 </resources>

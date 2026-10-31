@@ -112,6 +112,22 @@ are still being checked. The AP sensors HAL added to the talkman tree after
 the installed ROM, and the qcom sensors blobs listed in the vendor tree,
 have not been tried on cityman.
 
+## Double tap to wake (LineageOS 23, branch lineage-23-cityman)
+
+The Synaptics S3708 touch firmware (build id 0x2000CA, the image Windows
+ships with `WakeupGestureSupported=1`) has the F12 wakeup gesture. The
+kernel driver (`synaptics_i2c_rmi4`, branch `dt2w` of the kernel) exposes
+`/sys/devices/soc.0/f9923000.i2c/i2c-1/1-004b/wake_gesture`; the QTI power
+HAL writes 1/0 there (`qtipower` `tap_to_wake_node`) when "Double tap to
+wake" is toggled (`config_supportDoubleTapWake`). With the option on, the
+screen-off path keeps the touch controller powered in gesture mode and a
+double tap sends `KEY_WAKEUP`. `config_proximityCheckOnWake` (lineage-sdk)
+offers the proximity check against wake-ups in a pocket. With always-on
+display the panel does not power down, so the touch keeps reporting and
+SystemUI handles the double tap itself; the firmware gesture is armed only
+when the panel is fully off. Not yet confirmed with a real double tap on
+the phone.
+
 ## Credits
 
 This ROM builds on the work of others:
@@ -174,6 +190,16 @@ This ROM builds on the work of others:
   Yaroslav Zviezda/acroreiser, Derek and mukul2259): the eBPF, cgroup,
   PSI and fscrypt backports and the kernel version spoof this branch's
   kernel is based on.
+- **WOA-Project/SynapticsTouch** (Bingxing Wang and the LumiaWoA authors):
+  the F12 CTRL20 gesture sequence and the DATA4 double tap code on the
+  Lumia 950 XL used by the kernel double tap to wake; the timing (350 ms,
+  3 mm) comes from Microsoft's Windows driver package for the 950 XL.
+  **Synaptics DSX 2.5** of the Nexus 6P kernel
+  (`Android4Lumia950/angler-1`) and the OnePlus 2 S3320 driver
+  (`LineageOS/android_kernel_oneplus_msm8994`, `lineage-18.0`) for the
+  register offsets and the suspend/resume handling;
+  `LineageOS/android_device_oneplus_oneplus2` as the reference for the
+  Android side.
 
 Work under evaluation for cityman, credited where it is used:
 **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230 driver).

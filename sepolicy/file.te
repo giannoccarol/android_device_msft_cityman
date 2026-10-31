@@ -114,3 +114,6 @@ type wifihal_socket, file_type;
 # type for init
 type sysfs_rfkill0, fs_type, sysfs_type;
 type sysfs_poweroff, sysfs_type, fs_type;
+
+# Touch controller double tap to wake switch
+type sysfs_tap_to_wake, fs_type, sysfs_type;

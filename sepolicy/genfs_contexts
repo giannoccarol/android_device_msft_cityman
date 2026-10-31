@@ -28,6 +28,7 @@ genfscon sysfs /devices/soc.0/fdce0000.qcom,venus                        u:objec
 genfscon sysfs /devices/soc.0/fc880000.qcom,mss                          u:object_r:sysfs_msm_subsys:s0
 genfscon sysfs /devices/soc.0/qcom,cnss.32                               u:object_r:sysfs_msm_subsys:s0
 genfscon sysfs /devices/soc.0/f9924000.i2c                               u:object_r:sysfs_msm_subsys:s0
+genfscon sysfs /devices/soc.0/f9923000.i2c/i2c-1/1-004b/wake_gesture    u:object_r:sysfs_tap_to_wake:s0
 genfscon sysfs /devices/soc.0/fe200000.qcom,lpass                        u:object_r:sysfs_msm_subsys:s0
 genfscon sysfs /module/subsystem_restart                                 u:object_r:sysfs_msm_subsys_restart:s0
 genfscon sysfs /module/msm_poweroff                                      u:object_r:sysfs_poweroff:s0

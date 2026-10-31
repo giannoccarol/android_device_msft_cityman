@@ -135,6 +135,10 @@ on boot
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/camera-daemon/cpus 0-7
 
+    # Double tap to wake (written by the power HAL)
+    chown system system /sys/devices/soc.0/f9923000.i2c/i2c-1/1-004b/wake_gesture
+    chmod 0660 /sys/devices/soc.0/f9923000.i2c/i2c-1/1-004b/wake_gesture
+
     # Bluetooth
     chown bluetooth net_bt /sys/class/rfkill/rfkill0/type
     chown bluetooth net_bt /sys/class/rfkill/rfkill0/state
