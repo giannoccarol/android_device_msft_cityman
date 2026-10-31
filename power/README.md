@@ -41,7 +41,7 @@ taken and released in an order that keeps them valid.
 
 The extension also holds a performance profile, chosen in Settings >
 Battery > Performance profile or with the "Performance" Quick Settings tile
-(app `CitymanParts`, system uid, no launcher entry, repository
+(app `CitymanParts`, system uid, also in the launcher, repository
 `giannoccarol/android_packages_apps_CitymanParts` at `packages/apps/CitymanParts`). LineageOS 23
 no longer has the LineageOS performance profiles (`PerformanceManager` was
 removed from lineage-sdk), so the page is injected into Settings by the
