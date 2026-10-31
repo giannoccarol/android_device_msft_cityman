@@ -128,6 +128,23 @@ SystemUI handles the double tap itself; the firmware gesture is armed only
 when the panel is fully off. Not yet confirmed with a real double tap on
 the phone.
 
+## Performance profiles (LineageOS 23, branch lineage-23-cityman)
+
+Settings > Battery > Performance profile, and the "Performance" Quick
+Settings tile (add it from the tile editor), choose between three profiles;
+the choice survives reboots and Battery Saver uses power save while it is
+on:
+
+- **Power save**: the four A57 cores offline, the A53 cores up to 1.25 GHz.
+- **Balanced** (default): at most two A57 cores, up to 1.44 GHz.
+- **Performance**: all eight cores, A57 up to 1.96 GHz; thermal-engine still
+  throttles at 72 °C.
+
+The power HAL holds each profile as a perfd lock, so core_ctl, perfd and
+thermal-engine keep working together. The page and the tile come from the
+device app `CitymanParts` (`parts/`), since LineageOS 23 has no performance
+profiles of its own. Details and opcodes: `power/README.md`.
+
 ## Credits
 
 This ROM builds on the work of others:

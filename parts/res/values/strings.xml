@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2026 The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Device settings</string>
+
+    <string name="perf_profile_title">Performance profile</string>
+    <string name="perf_profile_tile_label">Performance</string>
+
+    <string name="profile_power_save">Power save</string>
+    <string name="profile_power_save_summary">A53 cores only, up to 1.25 GHz. Longest battery life; apps open more slowly.</string>
+    <string name="profile_balanced">Balanced</string>
+    <string name="profile_balanced_summary">Up to two A57 cores at 1.44 GHz. Recommended.</string>
+    <string name="profile_performance">Performance</string>
+    <string name="profile_performance_summary">All eight cores, A57 up to 1.96 GHz. Uses more battery and warms the phone; thermal protection stays on.</string>
+
+    <string name="profile_battery_saver_summary"><xliff:g id="profile" example="Power save">%1$s</xliff:g> (Battery Saver)</string>
+    <string name="profile_battery_saver_note">Battery Saver is on and uses Power save. Your choice applies again when it turns off.</string>
+</resources>
