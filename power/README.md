@@ -51,7 +51,7 @@ device app.
 |---|---|---|
 | Power save (0) | `0x3DFF`, `0x150C` | A57 cluster offline (`online` = `0-3`), A53 max 1248 MHz |
 | Balanced (1, default) | `0x3DFD`, `0x230E` | at most two A57 online, A57 max 1440 MHz |
-| Performance (2) | none | core_ctl decides up to four A57, A57 up to 1958 MHz |
+| Performance (2) | none | core_ctl decides up to four A57; A57 maximum set by thermal-engine |
 
 - The app stores the choice in `persist.vendor.power.profile`; the HAL follows
   it (a thread waits for property changes) and publishes the profile in use
@@ -72,11 +72,12 @@ device app.
   the CPU frequency (`devfreq_cpufreq` in the kernel DT), so these caps also
   keep the bus at 3509 / 4066 instead of 5928. 1440 MHz is also where
   thermal-engine puts the A57s at 76 °C.
-- Performance lifts the A57 user maximum from the boot value (1632 MHz,
-  `init.cityman.power.sh`) to `cpuinfo_max_freq`: a perf lock can only
-  lower a limit, so the HAL sets `vendor.power.big_max_freq` (`full` or
-  `default`) and init runs `init.cityman.big-max-freq.sh` as root. The boot
-  keeps the 1632 MHz cap until perfd runs.
+- Performance holds no lock and leaves the A57 user maximum
+  (`scaling_max_freq`) alone: thermal-engine throttles by writing that file
+  (1632 / 1440 / 1248 / 960 MHz from 72 °C, `thermal-engine-cityman.conf`),
+  so writing it from here would undo a throttle in progress. The A57s run
+  up to what thermal-engine allows; the boot script starts them at
+  1632 MHz.
 - In power save the interaction boost keeps only the A53 lock and the launch
   boost is `0x20C` (A53 at the 1248 MHz cap): `sched_boost` and the A57
   locks would point at offline CPUs.

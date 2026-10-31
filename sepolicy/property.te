@@ -7,5 +7,5 @@ type vendor_timekeep_prop, property_type;
 
 # Performance profiles: chosen in Settings (system uid), read by the power HAL
 vendor_public_prop(vendor_power_profile_prop)
-# perfd starts and the A57 user maximum, between init and the power HAL
+# perfd (re)starts from init, profile in use from the power HAL
 vendor_internal_prop(vendor_power_prop)

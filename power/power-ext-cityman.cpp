@@ -96,13 +96,6 @@ constexpr char kProfileProp[] = "persist.vendor.power.profile";
 constexpr char kActiveProfileProp[] = "vendor.power.profile.active";
 /* Set by init when perfd starts or restarts: perf locks die with perfd. */
 constexpr char kPerfdProp[] = "vendor.power.perfd";
-/*
- * A57 user maximum, applied by init.cityman.big-max-freq.sh: "full" is
- * cpuinfo_max_freq (1958 MHz), "default" the 1632 MHz written at boot by
- * init.cityman.power.sh. A perf lock can only lower a limit, so the
- * performance profile lifts the boot cap here.
- */
-constexpr char kBigMaxFreqProp[] = "vendor.power.big_max_freq";
 /* perfd needs a moment after start before it accepts requests. */
 constexpr int kProfileRetries = 20;
 constexpr long kProfileRetryNs = 500000000L;
@@ -251,8 +244,6 @@ bool apply_profile() {
     if (profile == g_applied_profile) return true;
     if (!g_perfd_known) return false;
 
-    /* Leaving performance: back to the boot cap before the new limits. */
-    if (profile != PROFILE_HIGH_PERFORMANCE) property_set(kBigMaxFreqProp, "default");
     lock_release(g_profile);
     g_applied_profile = -1;
 
@@ -265,10 +256,11 @@ bool apply_profile() {
         int resources[] = {kBigCoresMax2, kBigMaxFreq1440};
         lock_acquire(g_profile, 0, resources, count_of(resources));
     }
+    /*
+     * Performance holds no lock: the A57 maximum is the user maximum, which
+     * belongs to thermal-engine (it throttles by writing scaling_max_freq).
+     */
     if (profile != PROFILE_HIGH_PERFORMANCE && !CHECK_HANDLE(g_profile.handle)) return false;
-
-    /* Performance: no lock, and the A57s may use every frequency step. */
-    if (profile == PROFILE_HIGH_PERFORMANCE) property_set(kBigMaxFreqProp, "full");
 
     g_applied_profile = profile;
     char value[PROPERTY_VALUE_MAX];

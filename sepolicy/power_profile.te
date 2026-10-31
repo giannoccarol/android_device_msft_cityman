@@ -1,15 +1,12 @@
 # Performance profiles (power/README.md)
 
-# The power HAL follows the profile and perfd restarts, and asks init for the
-# A57 user maximum.
+# The power HAL follows the profile and perfd restarts, and publishes the
+# profile in use.
 get_prop(hal_power_default, vendor_power_profile_prop)
 set_prop(hal_power_default, vendor_power_prop)
 
 # init.cityman.rc tells the power HAL that perfd (re)started.
 set_prop(vendor_init, vendor_power_prop)
-
-# init.cityman.big-max-freq.sh reads the A57 maximum to apply.
-get_prop(init-power-sh, vendor_power_prop)
 
 # CitymanParts (Settings > Battery, Quick Settings tile) runs with the
 # system uid and stores the chosen profile.

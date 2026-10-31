@@ -137,8 +137,8 @@ on:
 
 - **Power save**: the four A57 cores offline, the A53 cores up to 1.25 GHz.
 - **Balanced** (default): at most two A57 cores, up to 1.44 GHz.
-- **Performance**: all eight cores, A57 up to 1.96 GHz; thermal-engine still
-  throttles at 72 °C.
+- **Performance**: all eight cores with no profile limit; thermal-engine
+  still sets the A57 maximum and throttles from 72 °C.
 
 The power HAL holds each profile as a perfd lock, so core_ctl, perfd and
 thermal-engine keep working together. The page and the tile come from the

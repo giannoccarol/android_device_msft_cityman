@@ -436,8 +436,7 @@ PRODUCT_PACKAGES += \
 
 # Power configuration file
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/init.cityman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.power.sh \
-    $(LOCAL_PATH)/rootdir/etc/init.cityman.big-max-freq.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.big-max-freq.sh
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.power.sh
 
 # Performance profiles: Settings > Battery and a Quick Settings tile
 PRODUCT_PACKAGES += \
