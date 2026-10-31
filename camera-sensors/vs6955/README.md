@@ -64,7 +64,6 @@ The private DCC and generated header stay outside Git. The result is
 
 ## Not verified yet
 
-- Bayer/CFA order (the current value is a valid placeholder, not a measurement).
 - CSI lane assignment (`0x3210` provisional) and settle count (27 provisional).
 - Frame length (1125), VT/output clock (92.8125 MHz) and FPS (30) are derived
   from the line length and a 30 fps assumption; they must be measured.
@@ -81,3 +80,13 @@ The private DCC and generated header stay outside Git. The result is
 - The angler SMIA++ sensor ABI and the Cityman device tree are inherited from
   Android4Lumia950, LineageOS/LineageOS-UL, archienz and hraj9258 as recorded
   in the parent camera reports.
+
+## Measured on Android 16 (31/10/2026)
+
+- Bayer order `2` (`.output` last field): orders 0 and 3 gave an almost
+  colourless picture (3 was the old black-and-white front camera), 1
+  swapped red and blue.
+- Blue digital gain 1.35x (`0x0212/0x0213`) neutralises the yellow cast of
+  the borrowed IMX179 chromatix (1.20x still warm, 1.50x blue).
+- The front sensor streams at most 1280x960; its camcorder profiles stop at
+  720p (`configs/media_profiles.xml`).

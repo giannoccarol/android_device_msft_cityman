@@ -43,6 +43,14 @@ static struct msm_camera_i2c_reg_array stream_on[] = {
     {0x0340, 0x04, 0}, {0x0341, 0xba, 0},   /* 1210 lines @ 99.84 MHz = 30 fps */
     {0x0202, 0x03, 0}, {0x0203, 0xe8, 0},   /* 1000 lines */
     {0x0204, 0x00, 0}, {0x0205, 0x00, 0},   /* 1x gain */
+    /*
+     * Digital gains per channel (Gr, R, B, Gb; 0x0100 = 1.0): blue at 1.35x.
+     * The borrowed IMX179 chromatix left a yellow cast; measured on the
+     * phone, 1.20x was still warm, 1.35x gave a neutral white wall and
+     * 1.50x turned blue. This stands in for a VS6955 AWB calibration.
+     */
+    {0x020e, 0x01, 0}, {0x020f, 0x00, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
+    {0x0212, 0x01, 0}, {0x0213, 0x59, 0}, {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
     {0x0104, 0, 0},
     {0x0114, 1, 0},   /* two MIPI lanes */
     {0x0100, 1, 0},
@@ -148,8 +156,12 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
                                .position = FRONT_CAMERA_B, .sensor_mount_angle = 90},
         .is_flash_supported = 0,
     },
-    /* GBRG matches the angler front reference; confirm on a captured frame. */
-    .output = {0, 1, 1, 3},
+    /*
+     * Bayer order 2, measured on the phone (31/10/2026): of the four orders,
+     * 0 and 3 gave an almost colourless picture (the old value 3 was the
+     * black-and-white front camera) and 1 swapped red and blue.
+     */
+    .output = {0, 1, 1, 2},
     .output_registers = {0x034c, 0x034e, 0x0342, 0x0340},
     .exposure_registers = {VS6955_REG_COARSE, VS6955_REG_GAIN, 8},
     .aec = {1.0f, 8.0f, 8.0f, 65527u},
