@@ -186,7 +186,13 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
         .is_init_params_valid = 1,
         .sensor_init_params = {.modes_supported = CAMERA_MODE_2D_B, .position = BACK_CAMERA_B,
                                .sensor_mount_angle = 270},
+#ifdef CITYMAN_CAMERA_FLASH
+        /* Hill on CCI master 0: the daemon dlopens libflash_<name>.so. */
+        .flash_name = CITYMAN_CAMERA_FLASH_NAME,
+        .is_flash_supported = 1,
+#else
         .is_flash_supported = 0,
+#endif
     },
     /* RAW Bayer, CSI, 10-bit. GBRG was selected by the on-device Bayer test. */
     .output = {0, 1, 1, 3},

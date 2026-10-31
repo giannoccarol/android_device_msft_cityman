@@ -209,6 +209,12 @@ PRODUCT_PACKAGES += \
     libactuator_$(CITYMAN_CAMERA_AF_NAME)_camera \
     libactuator_$(CITYMAN_CAMERA_AF_NAME)_camcorder
 endif
+# Rear flash: the Hill IC on CCI master 0 (camera-sensors/hill-flash). Safe
+# with a kernel that lacks the Hill node: the daemon then finds no flash.
+CITYMAN_CAMERA_FLASH ?= true
+ifeq ($(CITYMAN_CAMERA_FLASH),true)
+PRODUCT_PACKAGES += libflash_hill
+endif
 endif
 # Front VS6955CA probe module. Requires the private 0A214000.dcc and a kernel
 # with qcom,camera@1 enabled; off by default.

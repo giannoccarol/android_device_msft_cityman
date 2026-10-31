@@ -49,6 +49,12 @@ ifeq ($(CITYMAN_CAMERA_AF),true)
 LOCAL_CFLAGS += -DCITYMAN_CAMERA_AF \
     -DCITYMAN_CAMERA_AF_NAME=\"$(or $(CITYMAN_CAMERA_AF_NAME),cityman)\"
 endif
+ifeq ($(CITYMAN_CAMERA_FLASH),true)
+# Rear flash (camera-sensors/hill-flash); needs a kernel whose qcom,camera@0
+# has qcom,led-flash-src, otherwise the daemon sees no flash and ignores it.
+LOCAL_CFLAGS += -DCITYMAN_CAMERA_FLASH \
+    -DCITYMAN_CAMERA_FLASH_NAME=\"$(or $(CITYMAN_CAMERA_FLASH_NAME),hill)\"
+endif
 LOCAL_VENDOR_MODULE := true
 LOCAL_32_BIT_ONLY := true
 include $(BUILD_SHARED_LIBRARY)

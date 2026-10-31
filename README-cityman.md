@@ -146,6 +146,15 @@ device app `CitymanParts`
 (`giannoccarol/android_packages_apps_CitymanParts`), since LineageOS 23 has no performance
 profiles of its own. Details and opcodes: `power/README.md`.
 
+## Rear flash (LineageOS 23, branch lineage-23-cityman)
+
+The rear LEDs hang off the "Hill" flash IC on CCI master 0 (8-bit 0x60, ID
+0x16), as on the Lumia 950, not off PMI8994. With a kernel that has the
+Hill nodes, `libflash_hill` (`camera-sensors/hill-flash`) gives the camera
+preflash, flash and video torch, and the flashlight tile uses the kernel's
+device tree sequence. `CITYMAN_CAMERA_FLASH=false` leaves the flash out.
+Not yet verified on the 950 XL; details in `camera-sensors/hill-flash/README.md`.
+
 ## Credits
 
 This ROM builds on the work of others:
@@ -218,6 +227,13 @@ This ROM builds on the work of others:
   register offsets and the suspend/resume handling;
   `LineageOS/android_device_oneplus_oneplus2` as the reference for the
   Android side.
+
+- **hraj9258** (Himanshu Raj, `hraj9258/android_device_msft_talkman`
+  `lineage-18.1-talkman`, `hraj9258/android_kernel_mmo_msm8994`
+  `talkman-cam-clean`): the Hill flash of the Lumia 950, its register map
+  and operating points, `flash_lib_hill.c` (built here as `libflash_hill`)
+  and the kernel flash driver changes (`bb9466c`); the rear chromatix, AF
+  and actuator tuning in `camera-sensors/rear-tuning`.
 
 Work under evaluation for cityman, credited where it is used:
 **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230 driver).
