@@ -87,6 +87,12 @@
 #define I2C_OP_WRITE        0
 #define I2C_OP_POLL         1
 
+#ifndef CITYMAN_CAMERA_OIS
+#define CITYMAN_CAMERA_OIS  1
+#endif
+/* Windows waits at most 100 x 1 ms for 0x0524 after each OIS mode write. */
+#define OIS_SETTLE_MS       100
+
 #define LENS_I2C_ADDR       0x7C        /* 0x1b42, 8-bit form; kernel >>1 */
 #define LENS_REG_POS_HI     0x05F0      /* 0x1b44 */
 #define LENS_REG_POS_LO     0x05F1
@@ -276,7 +282,37 @@ static struct actuator_driver_params cityman_actuator = {
           .hw_mask = 0x000000ffu, .hw_shift = 0,
           .addr_type = I2C_WORD, .data_type = I2C_BYTE },
     },
+#if CITYMAN_CAMERA_OIS
+    /*
+     * The lens controller at 0x7C also runs the OIS.  These are the Windows
+     * sequences from the module calibration 0AEACA05.dcc (blocks 0x18 "OIS
+     * init" and 0x15 "OIS on, viewfinder"), sent on every actuator init, i.e.
+     * each time the rear camera opens.  Windows polls 0x0524 until it is
+     * non-zero after each mode write; msm_actuator compares only once, so
+     * each poll becomes a delay (ms, applied by msm_actuator_init_focus).
+     * 0x0521 = 0x02 is the viewfinder mode; Windows uses 0x06 for video and
+     * 0x02 again for stills, and nothing here can switch per use case.
+     */
+    .init_setting_size = 6,
+    .init_settings = {
+        /* 0x18 init */
+        { .reg_addr = 0x0520, .addr_type = I2C_WORD, .reg_data = 0x01,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = OIS_SETTLE_MS },
+        { .reg_addr = LENS_REG_TRIGGER, .addr_type = I2C_WORD, .reg_data = 0x02,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = 0 },
+        /* 0x15 viewfinder, after its own 0x0520 = 0x01 */
+        { .reg_addr = 0x0520, .addr_type = I2C_WORD, .reg_data = 0x01,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = OIS_SETTLE_MS },
+        { .reg_addr = 0x0525, .addr_type = I2C_WORD, .reg_data = 0xE0,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = OIS_SETTLE_MS },
+        { .reg_addr = 0x0521, .addr_type = I2C_WORD, .reg_data = 0x02,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = OIS_SETTLE_MS },
+        { .reg_addr = 0x0520, .addr_type = I2C_WORD, .reg_data = 0x02,
+          .data_type = I2C_BYTE, .i2c_operation = I2C_OP_WRITE, .delay = OIS_SETTLE_MS },
+    },
+#else
     .init_setting_size = 0,     /* the trigger is re-armed on every move */
+#endif
 
     .scenario_size       = { 1, 1 },
     .scenario_step_bound = { { LENS_TOTAL_STEPS }, { LENS_TOTAL_STEPS } },
