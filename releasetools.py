@@ -17,8 +17,32 @@
 import common
 import re
 
+def FullOTA_InstallBegin(info):
+  OTA_RequireExt4Metadata(info)
+  return
+
 def FullOTA_InstallEnd(info):
   OTA_UpdateFirmware(info)
+  return
+
+# The cache partition is mounted as /metadata, ext4 only. A phone coming from
+# another ROM or a custom partition layout can have anything else there; then
+# /metadata stays read-only, aconfigd cannot write the flag storage,
+# flag-guarded permissions such as android.permission.RANGING disappear and
+# system_server crashes in a loop. Formatting it here could destroy data on a
+# repartitioned phone, so stop before writing anything and tell the user.
+METADATA_BLOCK = "/dev/block/platform/soc.0/f9824900.sdhci/by-name/cache"
+
+def OTA_RequireExt4Metadata(info):
+  cmd = 'blkid %s | grep -q \'TYPE="ext4"\'' % METADATA_BLOCK
+  info.script.AppendExtra('ui_print("Checking the cache (/metadata) file system...");')
+  info.script.AppendExtra(
+      '(run_program("/sbin/sh", "-c", "%s") == 0) || abort("%s");'
+      % (cmd.replace('\\', '\\\\').replace('"', '\\"'),
+         "The cache partition (/metadata) is not ext4. Format it as ext4 "
+         "in TWRP (Wipe > Advanced Wipe > Cache > Repair or Change File "
+         "System > Change File System > EXT4), then flash this zip again. "
+         "Nothing was written."))
   return
 
 def IncrementalOTA_InstallEnd(info):
