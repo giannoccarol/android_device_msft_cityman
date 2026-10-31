@@ -209,6 +209,11 @@ endif
 # with qcom,camera@1 enabled; off by default.
 ifeq ($(CITYMAN_CAMERA_FRONT_VS6955),true)
 PRODUCT_PACKAGES += libmmcamera_vs6955
+# its exposure chromatix, built from C in camera-sensors/front-tuning
+PRODUCT_PACKAGES += \
+    libchromatix_vs6955_preview \
+    libchromatix_vs6955_video_binning \
+    libchromatix_vs6955_liveshot
 endif
 PRODUCT_PACKAGES += \
     libcamera_delayfree \

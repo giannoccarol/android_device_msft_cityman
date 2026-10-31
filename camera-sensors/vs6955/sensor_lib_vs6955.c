@@ -221,10 +221,12 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
      */
     .tuning = {.entries = {{.names = {
         "libchromatix_imx179_liteon_common.so",
-        "libchromatix_imx179_liteon_preview.so",
-        "libchromatix_imx179_liteon_preview.so",
-        "libchromatix_imx179_liteon_video_binning.so",
-        "libchromatix_imx179_liteon_liveshot.so",
+        /* the imx179 VFE/3A payloads with brighter AEC targets,
+         * built in camera-sensors/front-tuning */
+        "libchromatix_vs6955_preview.so",
+        "libchromatix_vs6955_preview.so",
+        "libchromatix_vs6955_video_binning.so",
+        "libchromatix_vs6955_liveshot.so",
         "libchromatix_imx179_liteon_cpp_preview.so",
         "libchromatix_imx179_liteon_cpp_preview.so",
         "libchromatix_imx179_liteon_cpp_preview.so",

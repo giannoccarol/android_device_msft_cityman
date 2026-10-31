@@ -500,4 +500,5 @@ def main():
             print("     %-14s -> chx_%s.inc" % (n, seen[(len(data), data)]))
     return rc
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
