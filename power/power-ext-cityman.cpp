@@ -24,7 +24,11 @@
  * (perf_lock_acq through interaction_with_handle()) with the 16-bit
  * "0xRRVV" resource opcodes of the MSM8994 perfd: RR is the resource, VV the
  * value; for CPU frequencies VV is in units of 100 MHz and perfd picks the
- * nearest frequency of the cluster table.
+ * next frequency of the cluster table.
+ *
+ * It also holds the performance profile (power save, balanced,
+ * performance) as a perf lock that lasts until the profile changes; see
+ * power/README.md.
  *
  * Linking: the HAL links this file as a static library selected by the soong
  * config variable qtipower/mode_ext_lib. The linker pulls an archive member
@@ -38,11 +42,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <sys/system_properties.h>
 #include <time.h>
 
+#include <initializer_list>
 #include <mutex>
+#include <thread>
 
 #include <aidl/android/hardware/power/Mode.h>
+#include <cutils/properties.h>
 #include <hardware/power.h>
 #include <log/log.h>
 
@@ -61,6 +70,42 @@ constexpr int kBigMaxFreq1248 = 0x230C;    /* CPU4 (A57 cluster) max ~1.2 GHz */
 constexpr int kSchedBoostOn = 0x1E01;      /* /proc/sys/kernel/sched_boost = 1 */
 constexpr int kSchedUpmigrate = 0x4E00;    /* | percent: sched_upmigrate */
 constexpr int kSchedDownmigrate = 0x4F00;  /* | percent: sched_downmigrate */
+/*
+ * Online core limit of the A57 cluster. perfd applies it through core_ctl
+ * (cpu4/core_ctl/max_cpus = 0xFF - VV) and on release writes back
+ * ro.core_ctl_max_cpu, while min_cpus returns to its previous value.
+ */
+constexpr int kBigCoresMax0 = 0x3DFF;      /* A57 cluster offline */
+constexpr int kBigCoresMax2 = 0x3DFD;      /* at most two A57 online */
+constexpr int kLittleMaxFreq1248 = 0x150C; /* CPU0 (A53 cluster) max 1248 MHz */
+constexpr int kBigMaxFreq1440 = 0x230E;    /* CPU4 (A57 cluster) max 1440 MHz */
+
+/*
+ * Performance profiles, numbered as the LineageOS power HAL profiles. The
+ * profile comes from persist.vendor.power.profile (CitymanParts, in Settings
+ * > Battery and Quick Settings); Battery Saver (Mode::LOW_POWER) forces
+ * power save while it is on.
+ */
+enum Profile : int {
+    PROFILE_POWER_SAVE = 0,
+    PROFILE_BALANCED = 1,
+    PROFILE_HIGH_PERFORMANCE = 2,
+};
+constexpr int kDefaultProfile = PROFILE_BALANCED;
+constexpr char kProfileProp[] = "persist.vendor.power.profile";
+constexpr char kActiveProfileProp[] = "vendor.power.profile.active";
+/* Set by init when perfd starts or restarts: perf locks die with perfd. */
+constexpr char kPerfdProp[] = "vendor.power.perfd";
+/*
+ * A57 user maximum, applied by init.cityman.big-max-freq.sh: "full" is
+ * cpuinfo_max_freq (1958 MHz), "default" the 1632 MHz written at boot by
+ * init.cityman.power.sh. A perf lock can only lower a limit, so the
+ * performance profile lifts the boot cap here.
+ */
+constexpr char kBigMaxFreqProp[] = "vendor.power.big_max_freq";
+/* perfd needs a moment after start before it accepts requests. */
+constexpr int kProfileRetries = 20;
+constexpr long kProfileRetryNs = 500000000L;
 
 /*
  * HMP default written by init.cityman.power.sh (downmigrate 85). The kernel
@@ -106,7 +151,12 @@ TimedLock g_launch;
 TimedLock g_sustained;
 TimedLock g_display_up;
 TimedLock g_display_down;
+TimedLock g_profile;
 unsigned g_sustained_mask = 0;
+int g_user_profile = kDefaultProfile;
+bool g_low_power = false;
+int g_applied_profile = -1; /* -1: profile not applied (perfd not reached) */
+bool g_perfd_known = false; /* init has started perfd at least once */
 bool g_display_on = true;
 int64_t g_previous_boost_us = 0;
 
@@ -165,9 +215,185 @@ void release_boost_locks() {
     lock_release(g_launch);
 }
 
+/* Effective profile: Battery Saver wins over the user choice. */
+int current_profile() {
+    return g_low_power ? PROFILE_POWER_SAVE : g_user_profile;
+}
+
+const char* profile_name(int profile) {
+    switch (profile) {
+        case PROFILE_POWER_SAVE:
+            return "power save";
+        case PROFILE_BALANCED:
+            return "balanced";
+        case PROFILE_HIGH_PERFORMANCE:
+            return "performance";
+        default:
+            return "unknown";
+    }
+}
+
+int read_user_profile() {
+    int profile = property_get_int32(kProfileProp, kDefaultProfile);
+    if (profile < PROFILE_POWER_SAVE || profile > PROFILE_HIGH_PERFORMANCE) {
+        ALOGW("%s=%d is not a profile, using balanced", kProfileProp, profile);
+        profile = kDefaultProfile;
+    }
+    return profile;
+}
+
+/*
+ * Hold the perf lock of the effective profile. Returns false when perfd did
+ * not take it (not started yet, or still starting): the caller retries.
+ */
+bool apply_profile() {
+    int profile = current_profile();
+    if (profile == g_applied_profile) return true;
+    if (!g_perfd_known) return false;
+
+    /* Leaving performance: back to the boot cap before the new limits. */
+    if (profile != PROFILE_HIGH_PERFORMANCE) property_set(kBigMaxFreqProp, "default");
+    lock_release(g_profile);
+    g_applied_profile = -1;
+
+    if (profile == PROFILE_POWER_SAVE) {
+        /* The A57s go offline: drop the boosts that use them. */
+        release_boost_locks();
+        int resources[] = {kBigCoresMax0, kLittleMaxFreq1248};
+        lock_acquire(g_profile, 0, resources, count_of(resources));
+    } else if (profile == PROFILE_BALANCED) {
+        int resources[] = {kBigCoresMax2, kBigMaxFreq1440};
+        lock_acquire(g_profile, 0, resources, count_of(resources));
+    }
+    if (profile != PROFILE_HIGH_PERFORMANCE && !CHECK_HANDLE(g_profile.handle)) return false;
+
+    /* Performance: no lock, and the A57s may use every frequency step. */
+    if (profile == PROFILE_HIGH_PERFORMANCE) property_set(kBigMaxFreqProp, "full");
+
+    g_applied_profile = profile;
+    char value[PROPERTY_VALUE_MAX];
+    snprintf(value, sizeof(value), "%d", profile);
+    property_set(kActiveProfileProp, value);
+    ALOGI("profile %s%s (handle %d)", profile_name(profile),
+          g_low_power ? " for Battery Saver" : "", g_profile.handle);
+    return true;
+}
+
+void take_display_off_locks() {
+    /*
+     * Screen off: sched_upmigrate 99, sched_downmigrate 95, so the A57s stay
+     * available but are very hard to reach. Raising: upmigrate first, then
+     * downmigrate.
+     */
+    int up[] = {kSchedUpmigrate | kScreenOffUpmigrate};
+    int down[] = {kSchedDownmigrate | kScreenOffDownmigrate};
+    lock_acquire(g_display_up, 0, up, count_of(up));
+    lock_acquire(g_display_down, 0, down, count_of(down));
+}
+
+void take_sustained_lock() {
+    /* Hold both clusters at a level they can keep without throttling. */
+    int resources[] = {kLittleMaxFreq864, kBigMaxFreq1248};
+    lock_acquire(g_sustained, 0, resources, count_of(resources));
+}
+
+/*
+ * perfd (re)started: the locks it held are gone and their handle numbers
+ * may already belong to other clients, so forget them without releasing.
+ */
+void forget_locks() {
+    for (TimedLock* lock : {&g_little, &g_big, &g_upmigrate, &g_downmigrate, &g_launch,
+                            &g_sustained, &g_display_up, &g_display_down, &g_profile}) {
+        lock->handle = 0;
+        lock->expiry_us = 0;
+    }
+    g_applied_profile = -1;
+}
+
+/* Take back the locks that last until a state change. */
+bool restore_held_locks() {
+    bool ok = true;
+    if (!g_display_on) {
+        take_display_off_locks();
+        ok = ok && CHECK_HANDLE(g_display_down.handle);
+    }
+    if (g_sustained_mask) {
+        take_sustained_lock();
+        ok = ok && CHECK_HANDLE(g_sustained.handle);
+    }
+    return ok;
+}
+
+uint32_t property_serial(const char* name) {
+    const prop_info* info = __system_property_find(name);
+    return info ? __system_property_serial(info) : 0;
+}
+
+/*
+ * Follows the profile property and perfd restarts. Any property change wakes
+ * the thread; it then compares the serials of the two it cares about.
+ */
+void profile_watcher() {
+    uint32_t global_serial = 0;
+    uint32_t profile_serial = 0;
+    uint32_t perfd_serial = 0;
+    bool profile_read = false;
+    bool restore = false;
+    int retries = 0;
+
+    for (;;) {
+        uint32_t new_profile_serial = property_serial(kProfileProp);
+        uint32_t new_perfd_serial = property_serial(kPerfdProp);
+        bool pending = false;
+        {
+            std::lock_guard<std::mutex> guard(g_lock);
+            if (new_perfd_serial != perfd_serial) {
+                perfd_serial = new_perfd_serial;
+                ALOGI("perfd started, applying the profile");
+                forget_locks();
+                g_perfd_known = true;
+                restore = true;
+                retries = kProfileRetries;
+            }
+            if (!profile_read || new_profile_serial != profile_serial) {
+                profile_serial = new_profile_serial;
+                profile_read = true;
+                g_user_profile = read_user_profile();
+                retries = kProfileRetries;
+            }
+            bool ok = apply_profile();
+            if (ok && restore) {
+                ok = restore_held_locks();
+                restore = !ok;
+            }
+            pending = !ok && g_perfd_known && retries-- > 0;
+        }
+
+        struct timespec retry = {0, kProfileRetryNs};
+        uint32_t new_global_serial = global_serial;
+        __system_property_wait(nullptr, global_serial, &new_global_serial,
+                               pending ? &retry : nullptr);
+        global_serial = new_global_serial;
+    }
+}
+
+void start_profile_watcher() {
+    static std::once_flag once;
+    std::call_once(once, [] { std::thread(profile_watcher).detach(); });
+}
+
+void set_low_power(bool enabled) {
+    std::lock_guard<std::mutex> guard(g_lock);
+    if (g_low_power == enabled) return;
+    g_low_power = enabled;
+    ALOGI("Battery Saver %s", enabled ? "on" : "off");
+    apply_profile();
+}
+
 int process_interaction(void* data) {
     int duration_hint = data ? *static_cast<int*>(data) : 0;
 
+    start_profile_watcher();
     std::lock_guard<std::mutex> guard(g_lock);
 
     /* No touch boost in sustained performance mode or with the screen off. */
@@ -208,6 +434,11 @@ int process_interaction(void* data) {
     int up[] = {kSchedUpmigrate | upmigrate};
 
     lock_acquire(g_little, little_ms, little, count_of(little));
+    if (current_profile() == PROFILE_POWER_SAVE) {
+        /* The A57 cluster is offline: the A53 boost is all there is. */
+        ALOGD("interaction: hint %d ms, little %d ms (power save)", duration_hint, little_ms);
+        return HINT_HANDLED;
+    }
     lock_acquire(g_big, kBigBoostMs, big, count_of(big));
     /*
      * Back to 95/85 first, then downmigrate (<= 47 <= 95) and upmigrate
@@ -224,6 +455,7 @@ int process_interaction(void* data) {
 }
 
 int process_launch(void* data) {
+    start_profile_watcher();
     std::lock_guard<std::mutex> guard(g_lock);
 
     if (!data) {
@@ -234,8 +466,14 @@ int process_launch(void* data) {
 
     if (g_sustained_mask || lock_active(g_launch)) return HINT_HANDLED;
 
-    int resources[] = {kSchedBoostOn, kLittleMinFreq1344, kBigMinFreq1248};
-    lock_acquire(g_launch, kLaunchBoostMs, resources, count_of(resources));
+    if (current_profile() == PROFILE_POWER_SAVE) {
+        /* A53s only, up to the power save cap. */
+        int resources[] = {kLittleMinFreq1248};
+        lock_acquire(g_launch, kLaunchBoostMs, resources, count_of(resources));
+    } else {
+        int resources[] = {kSchedBoostOn, kLittleMinFreq1344, kBigMinFreq1248};
+        lock_acquire(g_launch, kLaunchBoostMs, resources, count_of(resources));
+    }
     ALOGI("launch boost for %d ms (handle %d)", kLaunchBoostMs, g_launch.handle);
     return HINT_HANDLED;
 }
@@ -248,10 +486,8 @@ void set_sustained(unsigned bit, bool enabled) {
     g_sustained_mask = mask;
 
     if (mask && !CHECK_HANDLE(g_sustained.handle)) {
-        /* Hold both clusters at a level they can keep without throttling. */
         release_boost_locks();
-        int resources[] = {kLittleMaxFreq864, kBigMaxFreq1248};
-        lock_acquire(g_sustained, 0, resources, count_of(resources));
+        take_sustained_lock();
         ALOGI("sustained performance on (mask 0x%x, handle %d)", mask, g_sustained.handle);
     } else if (!mask) {
         lock_release(g_sustained);
@@ -274,21 +510,14 @@ extern "C" int power_hint_override(power_hint_t hint, void* data) {
 }
 
 extern "C" int set_interactive_override(int on) {
+    start_profile_watcher();
     std::lock_guard<std::mutex> guard(g_lock);
 
     if (!on) {
         g_display_on = false;
         release_boost_locks();
         if (!CHECK_HANDLE(g_display_up.handle)) {
-            /*
-             * Screen off: sched_upmigrate 99, sched_downmigrate 95, so the
-             * A57s stay available but are very hard to reach. Raising:
-             * upmigrate first, then downmigrate.
-             */
-            int up[] = {kSchedUpmigrate | kScreenOffUpmigrate};
-            int down[] = {kSchedDownmigrate | kScreenOffDownmigrate};
-            lock_acquire(g_display_up, 0, up, count_of(up));
-            lock_acquire(g_display_down, 0, down, count_of(down));
+            take_display_off_locks();
         }
     } else {
         g_display_on = true;
@@ -306,13 +535,23 @@ namespace hardware {
 namespace power {
 namespace impl {
 
-bool isDeviceSpecificModeSupported(Mode /* type */, bool* /* _aidl_return */) {
+bool isDeviceSpecificModeSupported(Mode type, bool* _aidl_return) {
+    start_profile_watcher();
     /* LAUNCH, INTERACTIVE, SUSTAINED and FIXED_PERFORMANCE are already reported. */
+    if (type == Mode::LOW_POWER) {
+        /* The framework sends Battery Saver only to a HAL that reports it. */
+        *_aidl_return = true;
+        return true;
+    }
     return false;
 }
 
 bool setDeviceSpecificMode(Mode type, bool enabled) {
+    start_profile_watcher();
     switch (type) {
+        case Mode::LOW_POWER:
+            set_low_power(enabled);
+            return true;
         /*
          * Power::setMode() passes no enabled flag to power_hint() for these
          * modes, so they are handled here, where it is known.

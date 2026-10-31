@@ -65,6 +65,8 @@ on property:sys.boot_completed=1
 
     restart cameraserver
     start perfd
+    # tells the power HAL to take the performance profile lock
+    setprop vendor.power.perfd started
 
 on init
 
@@ -449,6 +451,19 @@ service perfd /vendor/bin/perfd
     group root system readproc
     disabled
     writepid /dev/cpuset/system-background/tasks
+    # the locks of the power HAL died with perfd: it takes them again
+    onrestart setprop vendor.power.perfd restarted
+
+# Performance profiles (power/README.md): the power HAL asks for the A57
+# user maximum, which only root can write.
+on property:vendor.power.big_max_freq=*
+    start vendor.big-max-freq
+
+service vendor.big-max-freq /vendor/bin/init.cityman.big-max-freq.sh
+    user root
+    group root system
+    disabled
+    oneshot
 
 # thermal-engine can write msm_thermal enabled=0 ("KERNEL mitigation
 # disabled"), which stops the kernel's CPU sensor polling. Whenever it is
