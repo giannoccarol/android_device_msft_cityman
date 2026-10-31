@@ -164,8 +164,15 @@ struct angler_sensor_descriptor cityman_imx230_descriptor = {
              /* Provisional (metres): replace with the NVM macro distance. */
              .minimum_focus_distance = 0.1f,
 #endif
-             .physical_width = 5.98528f, .physical_height = 4.49792f},
-    .active_array = {5344, 4016, 0, 0, 0, 0},
+             /* the area the profile reads out, at 1.12 um per pixel */
+             .physical_width = PROFILE_WIDTH * 1.12e-3f,
+             .physical_height = PROFILE_HEIGHT * 1.12e-3f},
+    /*
+     * The active array is what the profile outputs: lumia20 reads 3744 of
+     * the 4016 rows.  Declaring 4016 there made every crop region and 3A
+     * region the framework computes refer to rows the frames do not have.
+     */
+    .active_array = {PROFILE_WIDTH, PROFILE_HEIGHT, 0, 0, 0, 0},
     .white_level = 1023, .black_level = {64, 64, 64, 64},
     .streams = {.entries = {{.cid_count = 1, .cid = {{0, CSI_RAW10, CSI_DECODE_10BIT}},
                             .pixel_format = {0}}}, .count = 1},
