@@ -43,6 +43,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/system_properties.h>
 #include <time.h>
 
@@ -96,6 +98,12 @@ constexpr char kProfileProp[] = "persist.vendor.power.profile";
 constexpr char kActiveProfileProp[] = "vendor.power.profile.active";
 /* Set by init when perfd starts or restarts: perf locks die with perfd. */
 constexpr char kPerfdProp[] = "vendor.power.perfd";
+/*
+ * Handles of the locks held without timeout, with the serial of kPerfdProp
+ * they belong to: perfd keeps such locks after their client dies, so a
+ * restarted HAL releases the ones of its previous instance.
+ */
+constexpr char kHeldLocksProp[] = "vendor.power.locks";
 /* perfd needs a moment after start before it accepts requests. */
 constexpr int kProfileRetries = 20;
 constexpr long kProfileRetryNs = 500000000L;
@@ -150,6 +158,7 @@ int g_user_profile = kDefaultProfile;
 bool g_low_power = false;
 int g_applied_profile = -1; /* -1: profile not applied (perfd not reached) */
 bool g_perfd_known = false; /* init has started perfd at least once */
+uint32_t g_perfd_serial = 0; /* serial of kPerfdProp: changes when perfd restarts */
 bool g_display_on = true;
 int64_t g_previous_boost_us = 0;
 
@@ -316,6 +325,45 @@ bool restore_held_locks() {
     return ok;
 }
 
+/* Record the locks without timeout (see kHeldLocksProp). */
+void save_held_locks() {
+    char value[PROPERTY_VALUE_MAX];
+    int length = snprintf(value, sizeof(value), "%u", g_perfd_serial);
+    for (const TimedLock* lock : {&g_profile, &g_display_up, &g_display_down, &g_sustained}) {
+        if (CHECK_HANDLE(lock->handle) && lock->expiry_us == INT64_MAX &&
+            length < static_cast<int>(sizeof(value))) {
+            length += snprintf(value + length, sizeof(value) - length, ",%d", lock->handle);
+        }
+    }
+    /* Only on changes: the watcher wakes up on every property write. */
+    static char saved[PROPERTY_VALUE_MAX];
+    if (strcmp(value, saved) == 0) return;
+    strlcpy(saved, value, sizeof(saved));
+    property_set(kHeldLocksProp, value);
+}
+
+/*
+ * First pass after the HAL started: release the locks a previous instance
+ * left in the same perfd (a different perfd has dropped them and may have
+ * given the numbers to other clients).
+ */
+void release_previous_locks(uint32_t perfd_serial) {
+    char value[PROPERTY_VALUE_MAX];
+    if (property_get(kHeldLocksProp, value, "") <= 0) return;
+    char* end = nullptr;
+    unsigned long serial = strtoul(value, &end, 10);
+    if (perfd_serial != 0 && serial == perfd_serial) {
+        while (end && *end == ',') {
+            int handle = static_cast<int>(strtol(end + 1, &end, 10));
+            if (CHECK_HANDLE(handle)) {
+                release_request(handle);
+                ALOGI("released lock %d of the previous HAL instance", handle);
+            }
+        }
+    }
+    property_set(kHeldLocksProp, "");
+}
+
 uint32_t property_serial(const char* name) {
     const prop_info* info = __system_property_find(name);
     return info ? __system_property_serial(info) : 0;
@@ -333,6 +381,8 @@ void profile_watcher() {
     bool restore = false;
     int retries = 0;
 
+    release_previous_locks(property_serial(kPerfdProp));
+
     for (;;) {
         uint32_t new_profile_serial = property_serial(kProfileProp);
         uint32_t new_perfd_serial = property_serial(kPerfdProp);
@@ -341,6 +391,7 @@ void profile_watcher() {
             std::lock_guard<std::mutex> guard(g_lock);
             if (new_perfd_serial != perfd_serial) {
                 perfd_serial = new_perfd_serial;
+                g_perfd_serial = new_perfd_serial;
                 ALOGI("perfd started, applying the profile");
                 forget_locks();
                 g_perfd_known = true;
@@ -359,6 +410,7 @@ void profile_watcher() {
                 restore = !ok;
             }
             pending = !ok && g_perfd_known && retries-- > 0;
+            save_held_locks();
         }
 
         struct timespec retry = {0, kProfileRetryNs};
@@ -380,6 +432,7 @@ void set_low_power(bool enabled) {
     g_low_power = enabled;
     ALOGI("Battery Saver %s", enabled ? "on" : "off");
     apply_profile();
+    save_held_locks();
 }
 
 int process_interaction(void* data) {
@@ -485,6 +538,7 @@ void set_sustained(unsigned bit, bool enabled) {
         lock_release(g_sustained);
         ALOGI("sustained performance off");
     }
+    save_held_locks();
 }
 
 }  // namespace
@@ -517,6 +571,7 @@ extern "C" int set_interactive_override(int on) {
         lock_release(g_display_down);
         lock_release(g_display_up);
     }
+    save_held_locks();
     ALOGI("display %s", on ? "on" : "off");
     return HINT_HANDLED;
 }

@@ -86,6 +86,10 @@ device app.
   for 10 s while perfd opens its socket). After a perfd restart the HAL
   forgets its old handles instead of releasing numbers that may belong to
   other clients, and takes the screen-off and sustained locks back.
+- perfd keeps a lock without timeout after its client dies (seen when the
+  HAL was restarted during the tests). The HAL records the handles of those
+  locks with the perfd instance in `vendor.power.locks`; a restarted HAL
+  releases them if perfd is still the same one.
 
 Checks: `cat /sys/devices/system/cpu/online`,
 `cat /sys/devices/system/cpu/cpu4/core_ctl/max_cpus`,
