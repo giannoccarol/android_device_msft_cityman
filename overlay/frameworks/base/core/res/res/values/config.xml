@@ -127,31 +127,34 @@
          Zone N + 1     array[N] <= LUX < infinity
          Must be overridden in platform specific overlays -->
     <integer-array name="config_autoBrightnessLevels">
-        <item>15</item>
+        <item>2</item>
+        <item>10</item>
         <item>40</item>
-        <item>190</item>
-        <item>350</item>
-        <item>600</item>
+        <item>100</item>
+        <item>250</item>
+        <item>500</item>
         <item>1000</item>
-        <item>1600</item>
         <item>3000</item>
-        <item>10000</item>
+        <item>12000</item>
     </integer-array>
 
     <!-- Array of output values for LCD backlight corresponding to the LUX values
          in the config_autoBrightnessLevels array.  This array should have size one greater
-         than the size of the config_autoBrightnessLevels array. -->
+         than the size of the config_autoBrightnessLevels array.
+         Cityman: the Windows panel driver's lux to nits table (LIGHT_LuxToNitD_*:
+         11, 25, 60, 90, 130, 160, 180, 225, 300, 400 nits), assuming the panel is
+         about linear and reaches 400 nits at DCS 0x51 = 255. -->
     <integer-array name="config_autoBrightnessLcdBacklightValues">
-        <item>10</item>   <!-- 0-15 -->
-        <item>20</item>   <!-- 15-40 -->
-        <item>40</item>   <!-- 40-190 -->
-        <item>55</item>   <!-- 190-350 -->
-        <item>88</item>   <!-- 350-600 -->
-        <item>130</item>  <!-- 600-1000 -->
-        <item>167</item>  <!-- 1000-1600 -->
-        <item>204</item>  <!-- 1600-3000 -->
-        <item>240</item>  <!-- 3000-10000 -->
-        <item>255</item>  <!-- 10000+ -->
+        <item>7</item>    <!-- 0-2 -->
+        <item>16</item>   <!-- 2-10 -->
+        <item>38</item>   <!-- 10-40 -->
+        <item>57</item>   <!-- 40-100 -->
+        <item>83</item>   <!-- 100-250 -->
+        <item>102</item>  <!-- 250-500 -->
+        <item>115</item>  <!-- 500-1000 -->
+        <item>143</item>  <!-- 1000-3000 -->
+        <item>191</item>  <!-- 3000-12000 -->
+        <item>255</item>  <!-- 12000+ -->
     </integer-array>
 
     <!-- Array of output values for button backlight corresponding to the LUX values
