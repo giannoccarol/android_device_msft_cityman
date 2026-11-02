@@ -24,8 +24,11 @@
     <!-- Vibration duration for MultiWaveView used in SearchPanelView -->
     <integer translatable="false" name="config_search_panel_view_vibration_duration">10</integer>
 
-    <!-- Doze: does this device support STATE_DOZE and STATE_DOZE_SUSPEND?  -->
-    <bool name="doze_display_state_supported">false</bool>
+    <!-- Doze: does this device support STATE_DOZE and STATE_DOZE_SUSPEND?
+         Yes: the HWC maps them to FB_BLANK_VSYNC_SUSPEND and the kernel puts
+         the command mode panel in DCS idle mode (low power always-on display,
+         like the Windows Glance screen) instead of keeping it fully on. -->
+    <bool name="doze_display_state_supported">true</bool>
 
     <!-- Control whether status bar should distinguish HSPA data icon form UMTS
         data icon on devices -->
