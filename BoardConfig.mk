@@ -168,7 +168,7 @@ PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
 AB_OTA_UPDATER := false
 
 # Non-A/B: LineageOS defaults to copying the full recovery image (24 MB) to
-# vendor/etc/recovery.img, which overflows the 248 MB vendor partition. Ship
+# vendor/etc/recovery.img, which overflows the vendor partition. Ship
 # the recovery-from-boot patch instead (about 12 MB). It is applied only if
 # persist.vendor.recovery_update is set, so TWRP stays in place by default.
 BOARD_USES_FULL_RECOVERY_IMAGE := false
@@ -192,10 +192,13 @@ BOARD_CACHEIMAGE_PARTITION_SIZE := 100663296
 # mounts the cache partition there and moves the mount on switch_root.
 BOARD_USES_METADATA_PARTITION := true
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
-BOARD_VENDORIMAGE_PARTITION_SIZE := 260046848
+# The cityman vendor partition (mmcblk0p54) is 260 MiB. The old value, 248 MiB,
+# came from bullhead and left 12 MiB unused, and the image was so full that
+# ext4's reserved clusters refused any write on the device.
+BOARD_VENDORIMAGE_PARTITION_SIZE := 272629760
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 # About 1400 files: the default (one inode per block) spends ~15 MB of the
-# 248 MB partition on inode tables.
+# partition on inode tables.
 BOARD_VENDORIMAGE_EXTFS_INODE_COUNT := 4096
 BOARD_FLASH_BLOCK_SIZE := 131072
 TARGET_COPY_OUT_VENDOR := vendor
