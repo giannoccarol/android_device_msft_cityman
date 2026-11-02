@@ -10,3 +10,6 @@ persist.vendor.timeadjust          u:object_r:vendor_timekeep_prop:s0
 # Performance profiles (power/README.md)
 persist.vendor.power.profile       u:object_r:vendor_power_profile_prop:s0 exact int
 vendor.power.                      u:object_r:vendor_power_prop:s0
+
+# USB OTG switch (CitymanParts): host role on the USB-C port
+vendor.cityman.otg                 u:object_r:vendor_otg_prop:s0 exact bool

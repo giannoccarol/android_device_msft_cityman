@@ -9,3 +9,5 @@ type vendor_timekeep_prop, property_type;
 vendor_public_prop(vendor_power_profile_prop)
 # perfd (re)starts from init, profile in use from the power HAL
 vendor_internal_prop(vendor_power_prop)
+# USB OTG switch: set from Settings (system uid), applied by init
+vendor_public_prop(vendor_otg_prop)

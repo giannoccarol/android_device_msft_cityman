@@ -47,6 +47,16 @@ on charger
     write /sys/module/lpm_levels/system/a53/a53-l2-retention/idle_enabled 0
     write /sys/module/lpm_levels/system/a57/a57-l2-retention/idle_enabled 0
 
+# USB OTG switch (CitymanParts). No driver reports the USB-C role, so the
+# host role is chosen by hand: usb_otg=1 grounds the ID state, dwc3 starts
+# xHCI and turns on VBUS. Not persistent, so a reboot always returns to
+# device mode and never leaves VBUS on with a charger plugged in.
+on property:vendor.cityman.otg=1
+    write /sys/class/power_supply/usb/usb_otg 1
+
+on property:vendor.cityman.otg=0
+    write /sys/class/power_supply/usb/usb_otg 0
+
 on property:sys.boot_completed=1
     # allow CPUs to go in deeper idle state than C0
     write /sys/module/lpm_levels/parameters/sleep_disabled 0

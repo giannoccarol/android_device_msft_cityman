@@ -1,0 +1,7 @@
+# USB OTG switch (init.cityman.rc, CitymanParts)
+
+# CitymanParts runs with the system uid and sets the switch.
+set_prop(system_app, vendor_otg_prop)
+
+# init.cityman.rc turns it into the usb power supply's usb_otg property.
+allow vendor_init sysfs_usb:file w_file_perms;
