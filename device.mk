@@ -388,7 +388,8 @@ PRODUCT_PACKAGES += \
     
 # MBN
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/etc/init.cityman.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.sh
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.sh \
+    $(LOCAL_PATH)/rootdir/etc/init.cityman.wlan.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.wlan.sh
 
 # Media
 PRODUCT_PACKAGES += \

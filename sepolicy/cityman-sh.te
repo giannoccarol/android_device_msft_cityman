@@ -19,3 +19,12 @@ allow cityman-sh shell_exec:file r_file_perms;
 
 # execute toybox/toolbox
 allow cityman-sh toolbox_exec:file rx_file_perms;
+
+# init.cityman.wlan.sh: create the MAC files in /persist from the DPP
+# (mounted as firmware_file) and start the WLAN driver through sysfs
+allow cityman-sh persist_file:dir rw_dir_perms;
+allow cityman-sh persist_file:file create_file_perms;
+allow cityman-sh persist_wifi_file:file create_file_perms;
+allow cityman-sh persist_file:file relabelfrom;
+allow cityman-sh persist_wifi_file:file relabelto;
+allow cityman-sh sysfs:file w_file_perms;

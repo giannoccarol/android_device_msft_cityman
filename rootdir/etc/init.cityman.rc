@@ -91,6 +91,10 @@ on init
     write /sys/class/firmware/timeout 15
 
 on fs
+    # DPP (device provisioning, FAT) is mounted read-only for
+    # init.cityman.wlan.sh, which takes the Wi-Fi and Bluetooth MAC from it
+    mkdir /mnt/vendor 0755 root root
+    mkdir /mnt/vendor/dpp 0500 root root
     mount_all /vendor/etc/fstab.cityman --early
 
     setprop sys.usb.ffs.aio_compat 1
@@ -495,7 +499,9 @@ service cnss-daemon /vendor/bin/cnss-daemon -n -l
 # (kV1Sta/kV1Ap); with the declared interface combination the chip uses a
 # single mode and the HAL waits for a driver that never comes up. Load it
 # once here (the write blocks while the driver initializes, so not from init).
-service vendor.cityman-wlan-load /vendor/bin/sh -c "echo sta > /sys/module/wlan/parameters/fwpath"
+# The script first creates /persist/wlan_mac.bin and bdaddr.txt when the
+# phone was never provisioned: without the MAC file the driver does not start.
+service vendor.cityman-wlan-load /vendor/bin/init.cityman.wlan.sh
     user root
     group system wifi
     disabled
