@@ -198,7 +198,7 @@ struct angler_sensor_descriptor cityman_ck71ir_descriptor = {
                  .lut_params = {.num_cid = 2, .vc_cfg_a = {
                      {0, CSI_RAW10, CSI_DECODE_10BIT},
                      {1, CSI_EMBED_DATA, CSI_DECODE_8BIT}}}},
-        .phy = {.lane_cnt = 1, .settle_cnt = 12, .lane_mask = 0x18,
+        .phy = {.lane_cnt = 1, .settle_cnt = 22, .lane_mask = 0x18,
                 .combo_mode = 1, .csid_core = 3},
     }}, .count = 1},
     .crops = {.entries = {{.top = 0, .bottom = 0, .left = 0, .right = 0}}, .count = 1},
@@ -225,7 +225,87 @@ struct angler_sensor_descriptor cityman_ck71ir_descriptor = {
     .exposure_table_capacity = 8, .initial_frame_skip = 2,
 };
 
+/*
+ * Bring-up overrides, read once when the daemon loads the module, so the
+ * CSI parameters can be swept with a daemon restart instead of a rebuild:
+ *   vendor.camera.iris.lane_assign (hex), vendor.camera.iris.settle,
+ *   vendor.camera.iris.lane_mask (hex), vendor.camera.iris.combo
+ */
+/* bionic; declared here because the kernel include path shadows libc. */
+int __system_property_get(const char *name, char *value);
+
+static int iris_prop(const char *name, int base, long *out)
+{
+    char value[92] = {0}; /* PROP_VALUE_MAX */
+    const char *c = value;
+    long v = 0;
+    int digits = 0;
+    if (__system_property_get(name, value) <= 0) return 0;
+    if (base == 16 && c[0] == '0' && (c[1] == 'x' || c[1] == 'X')) c += 2;
+    for (; *c; c++, digits++) {
+        int d;
+        if (*c >= '0' && *c <= '9') d = *c - '0';
+        else if (base == 16 && *c >= 'a' && *c <= 'f') d = *c - 'a' + 10;
+        else if (base == 16 && *c >= 'A' && *c <= 'F') d = *c - 'A' + 10;
+        else return 0;
+        v = v * base + d;
+    }
+    *out = v;
+    return digits > 0;
+}
+
 __attribute__((visibility("default"))) void *sensor_open_lib(void)
 {
+    long v;
+    if (iris_prop("vendor.camera.iris.lane_assign", 16, &v))
+        cityman_ck71ir_descriptor.csi.entries[0].csid.lane_assign = (uint16_t)v;
+    if (iris_prop("vendor.camera.iris.settle", 10, &v))
+        cityman_ck71ir_descriptor.csi.entries[0].phy.settle_cnt = (uint8_t)v;
+    if (iris_prop("vendor.camera.iris.lane_mask", 16, &v))
+        cityman_ck71ir_descriptor.csi.entries[0].phy.lane_mask = (uint16_t)v;
+    if (iris_prop("vendor.camera.iris.combo", 10, &v))
+        cityman_ck71ir_descriptor.csi.entries[0].phy.combo_mode = (uint8_t)v;
+    /*
+     * vendor.camera.iris.reg = "AAAA=VV[,AAAA=VV...]" (hex): replace the value
+     * of a register already in the init or mode table. For bring-up only.
+     */
+    {
+        char value[92] = {0};
+        const char *c = value;
+        if (__system_property_get("vendor.camera.iris.reg", value) > 0) {
+            while (*c) {
+                unsigned a = 0, d = 0, i, found = 0;
+                while (*c && *c != '=') {
+                    char ch = *c++;
+                    a = a * 16 + (ch <= '9' ? ch - '0' : (ch | 32) - 'a' + 10);
+                }
+                if (*c == '=') c++;
+                while (*c && *c != ',') {
+                    char ch = *c++;
+                    d = d * 16 + (ch <= '9' ? ch - '0' : (ch | 32) - 'a' + 10);
+                }
+                if (*c == ',') c++;
+                for (i = 0; i < sizeof(ck71ir_init) / sizeof(ck71ir_init[0]); i++)
+                    if (ck71ir_init[i].reg_addr == a) { ck71ir_init[i].reg_data = d; found = 1; }
+                for (i = 0; i < sizeof(ck71ir_mode0_1920x1088) / sizeof(ck71ir_mode0_1920x1088[0]); i++)
+                    if (ck71ir_mode0_1920x1088[i].reg_addr == a) { ck71ir_mode0_1920x1088[i].reg_data = d; found = 1; }
+                (void)found;
+            }
+        }
+    }
+    /* Level of GPIO 106 while the sensor is on (1 = high, 0 = low). */
+    if (iris_prop("vendor.camera.iris.standby", 10, &v)) {
+        unsigned i;
+        struct msm_sensor_power_setting_array *a =
+            &cityman_ck71ir_descriptor.slave.power_setting_array;
+        for (i = 0; i < a->size; i++)
+            if (a->power_setting_a[i].seq_type == SENSOR_GPIO &&
+                a->power_setting_a[i].seq_val == SENSOR_GPIO_STANDBY)
+                a->power_setting_a[i].config_val = v ? GPIO_OUT_HIGH : GPIO_OUT_LOW;
+        for (i = 0; i < a->size_down; i++)
+            if (a->power_down_setting_a[i].seq_type == SENSOR_GPIO &&
+                a->power_down_setting_a[i].seq_val == SENSOR_GPIO_STANDBY)
+                a->power_down_setting_a[i].config_val = v ? GPIO_OUT_LOW : GPIO_OUT_HIGH;
+    }
     return &cityman_ck71ir_descriptor;
 }

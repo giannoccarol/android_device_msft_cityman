@@ -17,6 +17,7 @@ LOCAL_CFLAGS:= \
 
 ifeq ($(strip $(TARGET_USES_ION)),true)
 LOCAL_CFLAGS += -DUSE_ION
+LOCAL_CFLAGS += -Wno-unused-but-set-variable
 endif
 
 LOCAL_CFLAGS += -D_ANDROID_

@@ -46,6 +46,8 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <linux/socket.h>
+/* in_addr_t: the device kernel headers shadow the bionic chain */
+#include <bits/in_addr.h>
 #include <arpa/inet.h>
 #include <utils/Log.h>
 
