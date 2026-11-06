@@ -354,6 +354,18 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     com.android.ims.rcsmanager
 
+# VoLTE through phh's userspace IMS stack (krazey/ims fork) in
+# packages/apps/PhhIms: ImsService/MmTel provider on the IMS APN that rild
+# brings up; its PhhImsOverlay sets config_ims_mmtel_package. Built only when
+# the project is synced (manifest branch test/volte-phh).
+ifneq ($(wildcard packages/apps/PhhIms/Android.bp),)
+PRODUCT_PACKAGES += \
+    PhhIms
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/privapp-permissions-me.phh.ims.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/privapp-permissions-me.phh.ims.xml
+endif
+
 # Cityman RIL helpers, built from kernel/mmo/msm8994/tools/cityman-ril
 # (the build finds that Android.mk; do not include it again here).
 # The init preloads are in rootdir/etc/init.cityman.rc.

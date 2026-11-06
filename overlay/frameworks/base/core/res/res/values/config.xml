@@ -347,25 +347,32 @@
          provisioning, availability etc -->
     <bool name="config_carrier_volte_available">true</bool>
 
-    <!-- Flag specifying whether VT is available on device -->
-    <bool name="config_device_vt_available">true</bool>
+    <!-- Flag specifying whether VT is available on device: the IMS stack
+         (phh IMS) only carries voice -->
+    <bool name="config_device_vt_available">false</bool>
 
     <!-- Flag specifying whether VT should be available for carrier: independent of
          carrier provisioning. If false: hard disabled. If true: then depends on carrier
          provisioning, availability etc -->
-    <bool name="config_carrier_vt_available">true</bool>
+    <bool name="config_carrier_vt_available">false</bool>
 
-    <!-- Flag specifying whether WFC over IMS is available on device -->
-    <bool name="config_device_wfc_ims_available">true</bool>
+    <!-- Flag specifying whether WFC over IMS is available on device: no, Iwlan
+         needs XFRM interfaces or IPv6 VTI, absent from the 3.10 kernel -->
+    <bool name="config_device_wfc_ims_available">false</bool>
 
     <!-- Flag specifying whether WFC over IMS should be available for carrier: independent of
         carrier provisioning. If false: hard disabled. If true: then depends on carrier
         provisioning, availability etc -->
-    <bool name="config_carrier_wfc_ims_available">true</bool>
+    <bool name="config_carrier_wfc_ims_available">false</bool>
 
     <!-- Flag specifying that this device will NOT use the "allow_hold_in_ims_call" carrier config
          option. -->
     <bool name="config_device_respects_hold_carrier_config">false</bool>
+
+    <!-- IMS calls carry their audio in userspace (phh IMS: AudioRecord/AudioTrack
+         and RTP): Telecom must use MODE_IN_COMMUNICATION, or the audio HAL starts
+         a modem voice call (USECASE_VOICE_CALL) that takes the microphone. -->
+    <bool name="config_use_voip_mode_for_ims">true</bool>
 
     <!-- Values for GPS configuration -->
     <string-array translatable="false" name="config_gpsParameters">

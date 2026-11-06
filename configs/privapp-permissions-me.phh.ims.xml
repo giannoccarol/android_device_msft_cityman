@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- phh IMS (packages/apps/PhhIms): the app shares the system uid and is
+     platform signed; list its privileged permissions anyway. -->
+<permissions>
+    <privapp-permissions package="me.phh.ims">
+        <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
+        <permission name="android.permission.MODIFY_PHONE_STATE"/>
+    </privapp-permissions>
+</permissions>
