@@ -226,12 +226,19 @@ PRODUCT_PACKAGES += \
     libchromatix_vs6955_video_binning \
     libchromatix_vs6955_liveshot
 endif
-# Iris IR camera test stream (camera-sensors/ck71ir). Requires the private
-# 0C086101.dcc, the patched daemon sensor list and a kernel with
-# qcom,camera@2 (branch test/cityman-iris); off by default. The HAL keeps
-# the camera hidden unless persist.vendor.camera.cityman.iris=1.
+# Iris IR camera (camera-sensors/ck71ir) and iris unlock, exposed to Android
+# as a weak (class 2) IR face sensor. Requires the private 0C086101.dcc, the
+# daemon sensor list with ck71ir and a kernel with qcom,camera@2. The camera
+# HAL makes the iris camera (id 2, mono) a system camera: apps see it only
+# with persist.vendor.camera.cityman.iris=1. Off by default.
 ifeq ($(CITYMAN_CAMERA_IRIS),true)
-PRODUCT_PACKAGES += libmmcamera_ck71ir
+PRODUCT_PACKAGES += \
+    libmmcamera_ck71ir \
+    android.hardware.biometrics.face-service.cityman
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.biometrics.face.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.biometrics.face.xml
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.vendor.camera.mono_ids=2
 endif
 PRODUCT_PACKAGES += \
     libcamera_delayfree \
