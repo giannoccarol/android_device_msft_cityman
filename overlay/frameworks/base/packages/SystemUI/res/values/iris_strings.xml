@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!-- cityman: the iris scanner is exposed as a weak IR face sensor. Lock screen, bouncer and
+     biometric prompt strings say iris instead of face (some come from res-keyguard). -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Biometric prompt -->
+    <string name="accessibility_retry_face_auth">Try Iris Unlock again</string>
+    <string name="accessibility_scanning_face">Scanning iris</string>
+    <string name="biometric_dialog_face_icon_description_authenticating">Looking for your eyes</string>
+    <string name="biometric_dialog_face_icon_description_authenticated">Iris authenticated</string>
+    <string name="biometric_dialog_tap_confirm_with_face">Unlocked by iris</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1">Unlocked by iris. Press to continue.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_2">Iris recognized. Press to continue.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_3">Iris recognized. Press the unlock icon to continue.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps">Unlocked by iris. Tap to continue.</string>
+    <string name="retry_face">Retry iris authentication</string>
+
+    <!-- Re-enrollment -->
+    <string name="face_re_enroll_notification_title">Set up Iris Unlock again</string>
+    <string name="face_re_enroll_notification_name">Iris Unlock</string>
+    <string name="face_re_enroll_dialog_title">Set up Iris Unlock</string>
+    <string name="face_re_enroll_dialog_content">To set up Iris Unlock again, your current iris model will be deleted.\n\nYou\u2019ll need to set up this feature again to use your iris to unlock your phone.</string>
+    <string name="face_reenroll_failure_dialog_content">Couldn\u2019t set up Iris Unlock. Go to Settings to try again.</string>
+
+    <!-- Lock screen -->
+    <string name="keyguard_face_failed">Iris not recognized</string>
+    <string name="keyguard_face_unlock_unavailable">Iris Unlock unavailable</string>
+    <string name="keyguard_face_successful_unlock_swipe">Unlocked by iris. Swipe up to open.</string>
+    <string name="keyguard_face_successful_unlock_confirm_button">Unlocked by iris. Press confirm to continue.</string>
+    <string name="keyguard_face_successful_unlock_press">Unlocked by iris. Press the unlock icon to open.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1">Unlocked by iris. Press to open.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_2">Iris recognized. Press to open.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_3">Iris recognized. Press the unlock icon to open.</string>
+    <string name="keyguard_face_successful_unlock">Unlocked by iris</string>
+    <string name="keyguard_face_successful_unlock_alt1">Iris recognized</string>
+    <string name="accesssibility_keyguard_retry">Swipe up to try Iris Unlock again</string>
+
+    <!-- Bouncer (res-keyguard) -->
+    <string name="bouncer_face_not_recognized">Iris not recognized</string>
+    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face">Use Iris Unlock</string>
+    <string name="kg_face_locked_out">Can\u2019t unlock with iris. Too many attempts.</string>
+    <string name="kg_face_sensor_privacy_enabled">To use Iris Unlock, turn on camera access in Settings</string>
+
+</resources>

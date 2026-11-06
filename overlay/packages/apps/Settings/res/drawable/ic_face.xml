@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!-- Iris Unlock icon (delete iris model button). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960"
+    android:tint="?android:attr/colorControlNormal">
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="80"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M80,480C200,284.64 340,216 480,216C620,216 760,284.64 880,480C760,675.36 620,744 480,744C340,744 200,675.36 80,480Z" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="64"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M328,480A152,152 0,1 1,632,480A152,152 0,1 1,328,480Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M416,480A64,64 0,1 1,544,480A64,64 0,1 1,416,480Z" />
+</vector>

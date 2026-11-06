@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!-- Iris Unlock introduction: eye with iris ring and padlock. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="412dp"
+    android:height="300dp"
+    android:viewportWidth="412"
+    android:viewportHeight="300">
+    <path
+        android:fillColor="?android:attr/colorAccent"
+        android:fillAlpha="0.12"
+        android:pathData="M90,140A116,116 0,1 1,322,140A116,116 0,1 1,90,140Z" />
+    <path
+        android:strokeColor="?android:attr/colorAccent"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M323.61,199.93A132,132 0,0 1,265.93,257.61M146.07,257.61A132,132 0,0 1,88.39,199.93M88.39,80.07A132,132 0,0 1,146.07,22.39M265.93,22.39A132,132 0,0 1,323.61,80.07" />
+    <path
+        android:strokeColor="?android:attr/textColorPrimary"
+        android:strokeWidth="7"
+        android:strokeAlpha="0.87"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M112,140C140.2,98.56 173.1,84 206,84C238.9,84 271.8,98.56 300,140C271.8,181.44 238.9,196 206,196C173.1,196 140.2,181.44 112,140Z" />
+    <path
+        android:fillColor="?android:attr/colorAccent"
+        android:fillAlpha="0.42"
+        android:pathData="M165,140A41,41 0,1 1,247,140A41,41 0,1 1,165,140Z" />
+    <path
+        android:strokeColor="?android:attr/colorAccent"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M165,140A41,41 0,1 1,247,140A41,41 0,1 1,165,140Z" />
+    <path
+        android:strokeColor="?android:attr/colorAccent"
+        android:strokeWidth="2.6"
+        android:strokeAlpha="0.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M228.65,143.99L239.48,145.9M225.92,151.5L235.44,157M220.78,157.62L227.85,166.05M213.87,161.61L217.63,171.95M206,163L206,174M198.13,161.61L194.37,171.95M191.22,157.62L184.15,166.05M186.08,151.5L176.56,157M183.35,143.99L172.52,145.9M183.35,136.01L172.52,134.1M186.08,128.5L176.56,123M191.22,122.38L184.15,113.95M198.13,118.39L194.37,108.05M206,117L206,106M213.87,118.39L217.63,108.05M220.78,122.38L227.85,113.95M225.92,128.5L235.44,123M228.65,136.01L239.48,134.1" />
+    <path
+        android:fillColor="#FF1F1E24"
+        android:fillType="evenOdd"
+        android:pathData="M189.5,140A16.5,16.5 0,1 1,222.5,140A16.5,16.5 0,1 1,189.5,140ZM209,132A5,5 0,1 1,219,132A5,5 0,1 1,209,132Z" />
+    <path
+        android:strokeColor="?android:attr/colorAccent"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M197,223A9,9 0,0 1,215,223M197,223V227M215,223V227" />
+    <path
+        android:fillColor="?android:attr/colorAccent"
+        android:fillType="evenOdd"
+        android:pathData="M194,225H218A6,6 0,0 1,224,231V246A6,6 0,0 1,218,252H194A6,6 0,0 1,188,246V231A6,6 0,0 1,194,225ZM207.7,239.9A3.8,3.8 0,1 0,204.3,239.9L204.3,245.5A1.7,1.7 0,0 0,207.7,245.5Z" />
+</vector>

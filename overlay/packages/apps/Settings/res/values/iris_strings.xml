@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!-- cityman: the iris scanner is exposed as a weak (class 2) IR face sensor.
+     These strings rename Face Unlock to Iris Unlock. Strings that come from
+     res-product keep product="default" (the only variant built for a phone):
+     an overlay without product would clash with it in aapt2. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Entry, titles and summaries -->
+    <string name="security_settings_face_preference_summary">Iris added</string>
+    <string name="security_settings_face_preference_summary_none_new">Add iris</string>
+    <string name="security_settings_face_preference_title_new">Iris</string>
+    <string name="security_settings_face_profile_preference_title_new">Iris for work</string>
+    <string name="private_space_face_unlock_title_new">Iris for private space</string>
+    <string name="security_settings_face_preference_title">Iris Unlock</string>
+    <string name="security_settings_face_profile_preference_title">Iris Unlock for work</string>
+
+    <!-- Education (instructions before enrollment) -->
+    <string name="security_settings_face_enroll_education_title">How to set up Iris Unlock</string>
+    <string name="security_settings_face_enroll_education_title_accessibility">Set up Iris Unlock</string>
+    <string name="security_settings_face_enroll_education_title_unlock_disabled">Use your iris to authenticate</string>
+    <string name="security_settings_face_enroll_education_message">Hold the phone 25–30 cm (10–12 in) from your face and look at the top of the phone, where the iris camera and the infrared light are.\n\nKeep your eyes wide open. If your glasses cause reflections, you may need to take them off. Iris Unlock also works in the dark thanks to infrared light.</string>
+    <string name="security_settings_face_enroll_education_message_accessibility" product="default">Hold the phone 25–30 cm (10–12 in) from your face and look at the top of the phone. Keep your eyes open until setup is complete.</string>
+    <string name="security_settings_face_enroll_education_accessibility_dialog_message">If accessibility Iris Unlock is turned off, some setup steps may not work properly with TalkBack.</string>
+
+    <!-- Introduction -->
+    <string name="security_settings_face_enroll_introduction_title">Unlock with your iris</string>
+    <string name="security_settings_face_enroll_introduction_title_unlock_disabled">Use your iris to authenticate</string>
+    <string name="security_settings_face_enroll_introduction_message_unlock_disabled">Use your iris to unlock your phone.\n\nNote: You can’t use your iris to unlock this device. For more information, contact your organization’s admin.</string>
+    <string name="security_settings_face_enroll_introduction_message_setup">Use your iris to unlock your phone</string>
+    <string name="security_settings_face_enroll_introduction_message" product="default">Use your iris to unlock your phone. Apps that need a strong biometric, like banking and payment apps, can’t use Iris Unlock.</string>
+    <string name="security_settings_face_enroll_introduction_message_class3" product="default">Use your iris to unlock your phone or for authentication in apps, like when you sign in to apps or approve a purchase</string>
+    <string name="security_settings_face_enroll_introduction_info_title">Keep in mind</string>
+    <string name="security_settings_face_enroll_introduction_info_glasses">If your glasses reflect the infrared light, your iris may not be recognized. In that case, take them off.</string>
+    <string name="security_settings_face_enroll_introduction_info_looking" product="default">Looking at the phone can unlock it even when you don’t intend to. Your phone can also be unlocked by someone else if it’s held up to your open eyes.</string>
+    <string name="security_settings_face_enroll_introduction_info_less_secure" product="default">Using your iris to unlock your phone may be less secure than a strong pattern, PIN, or password</string>
+    <string name="security_settings_face_enroll_introduction_info_gaze" product="default">Your eyes must be open and looking at the top of the phone. Iris Unlock also works in the dark thanks to infrared light.</string>
+    <string name="security_settings_face_enroll_introduction_how_title">How it works</string>
+    <string name="security_settings_face_enroll_introduction_how_message" product="default">Iris Unlock uses the infrared camera and light at the top of the phone to take pictures of your eyes and create an iris model. Your iris model is encrypted and stored only on this phone.</string>
+    <string name="security_settings_face_enroll_introduction_control_title">You’re in control</string>
+    <string name="security_settings_face_enroll_introduction_control_message" product="default">You can delete your iris model or turn off Iris Unlock at any time in Settings.</string>
+    <string name="face_unlock_title" product="default">You can unlock your phone using your iris. For security, this option requires a backup screen lock.</string>
+
+    <!-- Enrollment -->
+    <string name="security_settings_face_enroll_repeat_title">Look at the top of the phone</string>
+    <string name="face_intro_error_max">You’ve added the maximum number of iris models</string>
+    <string name="face_intro_error_unknown">Can’t add more iris models</string>
+    <string name="security_settings_face_enroll_error_timeout_dialog_message">Iris enrollment time limit reached. Try again.</string>
+    <string name="security_settings_face_enroll_error_generic_dialog_message">Iris enrollment didn\'t work.</string>
+    <string name="security_settings_face_enroll_finish_title">All set. Your iris has been added.</string>
+    <string name="security_settings_face_enroll_should_re_enroll_title">Improve Iris Unlock performance</string>
+    <string name="security_settings_face_enroll_should_re_enroll_subtitle">Set up Iris Unlock again</string>
+    <string name="security_settings_face_enroll_must_re_enroll_title">Set up Iris Unlock again</string>
+    <string name="security_settings_face_enroll_improve_face_alert_title">Set up Iris Unlock</string>
+    <string name="security_settings_face_enroll_improve_face_alert_body">Delete your current iris model to set up Iris Unlock again.\n\nYour iris model will be permanently deleted.\n\nAfter deletion, you will need your PIN, pattern, or password to unlock your phone or for authentication in apps.</string>
+
+    <!-- Iris Unlock settings page -->
+    <string name="security_settings_face_settings_use_face_category">Use Iris Unlock for</string>
+    <string name="security_settings_face_settings_face_category">Iris</string>
+    <string name="security_settings_face_settings_use_face_to_category">Use Iris to</string>
+    <string name="security_settings_face_settings_preferences_category">When using Iris Unlock</string>
+    <string name="security_settings_face_settings_require_confirmation_details">When using Iris Unlock in apps, always require confirmation step</string>
+    <string name="security_settings_face_settings_remove_face_model">Delete iris model</string>
+    <string name="security_settings_face_settings_enroll">Set up Iris Unlock</string>
+    <string name="security_settings_face_settings_remove_dialog_title">Delete iris model?</string>
+    <string name="security_settings_face_settings_remove_dialog_details">Your iris model will be permanently deleted.\n\nAfter deletion, you will need your PIN, pattern, or password to unlock your phone or for authentication in apps.</string>
+    <string name="security_settings_face_settings_remove_dialog_details_convenience">Your iris model will be permanently deleted.\n\nAfter deletion, you will need your PIN, pattern, or password to unlock your phone.</string>
+    <string name="security_settings_face_settings_context_subtitle">Use Iris Unlock to unlock your phone</string>
+    <string name="security_settings_face_add">Add iris</string>
+    <string name="security_settings_face_settings_footer" product="default">Use your iris to unlock your phone or for authentication in apps, like when you sign in or approve a purchase.\n\nKeep in mind:\nYou can only have one iris model set up at a time. To add another one, delete the current one.\n\nLooking at the phone can unlock it when you don’t intend to.\n\nYour phone can be unlocked by someone else if it’s held up to your open eyes.\n\nIris Unlock may be less secure than a strong pattern, PIN, or password.</string>
+    <string name="security_settings_face_settings_footer_attention_not_supported" product="default">Use your iris to unlock your phone or for authentication in apps, like when you sign in or approve a purchase.\n\nKeep in mind:\nYou can only have one iris model set up at a time. To add another one, delete the current one.\n\nLooking at the phone can unlock it when you don’t intend to.\n\nYour phone can be unlocked by someone else if it’s held up to your open eyes.\n\nIris Unlock may be less secure than a strong pattern, PIN, or password.</string>
+    <string name="security_settings_face_settings_footer_class3" product="default">Use your iris to unlock your phone or verify it’s you, like when you sign in to apps or approve a purchase.\n\nKeep in mind:\nYou can only have one iris model set up at a time. To add another one, delete the current one.\n\nLooking at the phone can unlock it when you don’t intend to.\n\nYour phone can be unlocked by someone else if it’s held up to your open eyes.</string>
+    <string name="security_settings_face_settings_footer_class3_attention_not_supported" product="default">Use your iris to unlock your phone or verify it’s you, like when you sign in to apps or approve a purchase.\n\nKeep in mind:\nYou can only have one iris model set up at a time. To add another one, delete the current one.\n\nLooking at the phone can unlock it when you don’t intend to.\n\nYour phone can be unlocked by someone else if it’s held up to your open eyes.</string>
+
+    <!-- Screen lock setup -->
+    <string name="lock_screen_pin_skip_face_title">Skip setup for PIN and iris?</string>
+    <string name="lock_screen_password_skip_face_title">Skip setup for password and iris?</string>
+    <string name="lock_screen_pattern_skip_face_title">Skip setup for pattern and iris?</string>
+    <string name="lock_screen_pin_skip_face_message" product="default">A PIN is required to set up Iris Unlock.\n\nA PIN protects the phone if it’s lost or stolen.</string>
+    <string name="lock_screen_pattern_skip_face_message" product="default">A pattern is required to set up Iris Unlock.\n\nA pattern protects the phone if it’s lost or stolen.</string>
+    <string name="lock_screen_password_skip_face_message" product="default">A password is required to set up Iris Unlock.\n\nA password protects the phone if it’s lost or stolen.</string>
+    <string name="face_unlock_set_unlock_pattern">Pattern • Iris</string>
+    <string name="face_unlock_set_unlock_pin">PIN • Iris</string>
+    <string name="face_unlock_set_unlock_password">Password • Iris</string>
+    <string name="face_unlock_skip_face">Continue without Iris Unlock</string>
+    <string name="lockpassword_choose_your_password_header_for_face">To use Iris Unlock, set password</string>
+    <string name="lockpassword_choose_your_pattern_header_for_face">To use Iris Unlock, set pattern</string>
+    <string name="lockpassword_choose_your_pin_header_for_face">To use Iris Unlock, set PIN</string>
+    <string name="unlock_disable_frp_warning_content_pattern_face">"A pattern protects your phone if it’s lost or stolen.<xliff:g id="empty_line">\n\n</xliff:g>Your iris model will also be permanently deleted. You won’t be able to use your iris for authentication in apps."</string>
+    <string name="unlock_disable_frp_warning_content_pin_face">"A PIN protects your phone if it’s lost or stolen.<xliff:g id="empty_line">\n\n</xliff:g>Your iris model will also be permanently deleted. You won’t be able to use your iris for authentication in apps."</string>
+    <string name="unlock_disable_frp_warning_content_password_face">"A password protects your phone if it’s lost or stolen.<xliff:g id="empty_line">\n\n</xliff:g>Your iris model will also be permanently deleted. You won’t be able to use your iris for authentication in apps."</string>
+    <string name="unlock_disable_frp_warning_content_unknown_face">"Device protection features will not work without your screen lock.<xliff:g id="empty_line">\n\n</xliff:g>Your iris model will also be permanently deleted. You won’t be able to use your iris for authentication in apps."</string>
+    <string name="unlock_disable_frp_warning_content_face_authbound_keys">"Your screen lock and Iris Unlock will be removed.<xliff:g id="empty_line">\n\n</xliff:g>Tap to pay won’t be available.<xliff:g id="empty_line">\n\n</xliff:g>Wallet, payment, and other apps that require authentication may not work properly."</string>
+
+    <!-- Private space -->
+    <string name="private_space_face_title">Iris Unlock</string>
+    <string name="private_space_face_unlock_title">Iris Unlock for private space</string>
+    <string name="private_space_face_enroll_introduction_title">Set up Iris Unlock for private space</string>
+    <string name="private_space_face_enroll_introduction_message">Use your iris to unlock your private space</string>
+    <string name="private_space_face_enroll_introduction_info_looking">Looking at the phone can unlock private space even when you don’t intend to. Your private space can also be unlocked if someone holds the device up to your open eyes.</string>
+    <string name="private_space_face_enroll_introduction_info_less_secure">Using your iris to unlock your private space may be less secure than a strong pattern, PIN, or password</string>
+    <string name="private_space_face_settings_require_attention_details">To unlock private space, your eyes must be open. If your glasses cause reflections, take them off.</string>
+    <string name="private_space_face_settings_footer">Use your iris to unlock your private space.\n\nKeep in mind:\nYou can only have one iris model set up at a time. To add another one, delete the current one.\n\nLooking at the phone can unlock it when you don’t intend to.\n\nYour private space can be unlocked by someone else if your device is held up to your open eyes.\n\nIris Unlock may be less secure than a strong pattern, PIN, or password.</string>
+    <string name="private_space_face_settings_require_confirmation_details">When using Iris Unlock, always require confirmation step</string>
+
+    <!-- Search keywords -->
+    <string name="keywords_face_unlock">iris, eye, face, unlock, auth, sign in</string>
+    <string name="keywords_face_settings">iris, face</string>
+
+</resources>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!-- cityman: errori, messaggi di aiuto, richiesta biometrica e notifiche parlano di iride.
+     face_acquired_vendor è in iris_face_strings.xml. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Richiesta biometrica -->
+    <string name="biometric_face_not_recognized">Iride non riconosciuta</string>
+    <string name="face_authenticated_no_confirmation_required">Iride autenticata</string>
+    <string name="face_authenticated_confirmation_required">Iride autenticata, premi Conferma</string>
+    <string name="face_app_setting_name">Usa lo Sblocco con l\'iride</string>
+    <string name="face_or_screen_lock_app_setting_name">Usa lo Sblocco con l\'iride o il blocco schermo</string>
+    <string name="face_dialog_default_subtitle">Usa la tua iride per continuare</string>
+    <string name="face_or_screen_lock_dialog_default_subtitle">Per continuare devi usare la tua iride o il tuo blocco schermo</string>
+    <string name="face_icon_content_description">Icona iride</string>
+    <string name="face_name_template">Iride <xliff:g id="FACEID">%d</xliff:g></string>
+
+    <!-- Notifiche -->
+    <string name="face_recalibrate_notification_name">Sblocco con l\'iride</string>
+    <string name="face_recalibrate_notification_title">Problema con lo Sblocco con l\'iride</string>
+    <string name="face_recalibrate_notification_content">Tocca per eliminare il modello dell\'iride e poi aggiungi di nuovo la tua iride</string>
+    <string name="face_sensor_privacy_enabled">Per utilizzare lo Sblocco con l\'iride, attiva <b>l\'accesso alla fotocamera</b> in Impostazioni &gt; Privacy</string>
+    <string name="face_dangling_notification_title">Riconfigura lo Sblocco con l\'iride</string>
+    <string name="face_dangling_notification_msg">Il tuo modello dell\'iride non può più essere riconosciuto. Riconfigura lo Sblocco con l\'iride.</string>
+
+    <!-- Messaggi di aiuto inviati dall'HAL dell'iride -->
+    <string name="face_acquired_insufficient">Impossibile leggere l\'iride. Riprova.</string>
+    <string name="face_acquired_too_bright">Troppa luce. Evita la luce diretta del sole.</string>
+    <string name="face_acquired_too_dark">Immagine troppo scura. Avvicina un po\' il telefono.</string>
+    <string name="face_acquired_too_close">Allontana il telefono dagli occhi</string>
+    <string name="face_acquired_too_far">Avvicina il telefono agli occhi</string>
+    <string name="face_acquired_poor_gaze">Guarda la parte alta del telefono.</string>
+    <string name="face_acquired_not_detected">Occhi non visibili. Tieni il telefono all\'altezza degli occhi, a 25-30 cm.</string>
+    <string name="face_acquired_recalibrate">Riconfigura lo Sblocco con l\'iride.</string>
+    <string name="face_acquired_too_different">Iride non riconosciuta. Riprova.</string>
+    <string name="face_acquired_too_similar">Sposta leggermente il telefono</string>
+    <string name="face_acquired_pan_too_extreme">Guarda dritto verso la parte alta del telefono</string>
+    <string name="face_acquired_tilt_too_extreme">Guarda dritto verso la parte alta del telefono</string>
+    <string name="face_acquired_roll_too_extreme">Guarda dritto verso la parte alta del telefono</string>
+    <string name="face_acquired_obscured">Rimuovi tutto ciò che copre gli occhi.</string>
+    <string name="face_acquired_sensor_dirty">Pulisci la parte alta del telefono, dove si trova la fotocamera per l\'iride</string>
+    <string name="face_acquired_recalibrate_alt">Impossibile creare il modello dell\'iride. Riprova.</string>
+    <string name="face_acquired_dark_glasses_detected_alt">Sono stati rilevati occhiali scuri. I tuoi occhi devono essere completamente visibili.</string>
+
+    <!-- Errori -->
+    <string name="face_error_hw_not_available">Imposs. verificare iride. Hardware non disponibile.</string>
+    <string name="face_error_timeout">Riprova lo Sblocco con l\'iride</string>
+    <string name="face_error_no_space">Impossibile salvare nuovi dati dell\'iride. Elimina prima quelli attuali.</string>
+    <string name="face_error_canceled">Operazione associata all\'iride annullata.</string>
+    <string name="face_error_user_canceled">Sblocco con l\'iride annullato dall\'utente</string>
+    <string name="face_error_lockout_permanent">Troppi tentativi. Sblocco con l\'iride non disponibile.</string>
+    <string name="face_error_unable_to_process">Impossibile verificare l\'iride. Riprova.</string>
+    <string name="face_error_not_enrolled">Non hai configurato lo Sblocco con l\'iride</string>
+    <string name="face_error_hw_not_present">Lo Sblocco con l\'iride non è supportato su questo dispositivo</string>
+    <string name="faceunlock_multiple_failures">Numero massimo di tentativi di Sblocco con l\'iride superato</string>
+    <string name="keyguard_accessibility_face_unlock">Sblocco con l\'iride.</string>
+
+</resources>

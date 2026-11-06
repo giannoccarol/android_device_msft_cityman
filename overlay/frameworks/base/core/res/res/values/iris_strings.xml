@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!-- cityman: the iris scanner is exposed as a weak IR face sensor (cityman-iris/hal).
+     Face errors, acquired (help) messages, biometric prompt texts and notifications say
+     iris. face_acquired_vendor is in iris_face_strings.xml. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Biometric prompt -->
+    <string name="biometric_face_not_recognized">Iris not recognized</string>
+    <string name="face_authenticated_no_confirmation_required">Iris authenticated</string>
+    <string name="face_authenticated_confirmation_required">Iris authenticated, please press confirm</string>
+    <string name="face_app_setting_name">Use Iris Unlock</string>
+    <string name="face_or_screen_lock_app_setting_name">Use iris or screen lock</string>
+    <string name="face_dialog_default_subtitle">Use your iris to continue</string>
+    <string name="face_or_screen_lock_dialog_default_subtitle">Use your iris or screen lock to continue</string>
+    <string name="face_icon_content_description">Iris icon</string>
+    <string name="face_name_template">Iris <xliff:g id="faceId" example="1">%d</xliff:g></string>
+
+    <!-- Notifications -->
+    <string name="face_recalibrate_notification_name">Iris Unlock</string>
+    <string name="face_recalibrate_notification_title">Issue with Iris Unlock</string>
+    <string name="face_recalibrate_notification_content">Tap to delete your iris model, then add your iris again</string>
+    <string name="face_sensor_privacy_enabled">To use Iris Unlock, turn on <b>Camera access</b> in Settings &gt; Privacy</string>
+    <string name="face_dangling_notification_title">Set up Iris Unlock again</string>
+    <string name="face_dangling_notification_msg">Your iris model can no longer be recognized. Set up Iris Unlock again.</string>
+
+    <!-- Acquired (help) messages, as sent by the iris HAL -->
+    <string name="face_acquired_insufficient">Can’t read your iris. Try again.</string>
+    <string name="face_acquired_too_bright">Too much light. Avoid direct sunlight.</string>
+    <string name="face_acquired_too_dark">Image too dark. Move phone a little closer.</string>
+    <string name="face_acquired_too_close">Move phone farther from your eyes</string>
+    <string name="face_acquired_too_far">Move phone closer to your eyes</string>
+    <string name="face_acquired_poor_gaze">Look at the top of the phone.</string>
+    <string name="face_acquired_not_detected">Can’t see your eyes. Hold your phone at eye level, 25–30 cm away.</string>
+    <string name="face_acquired_recalibrate">Please set up Iris Unlock again.</string>
+    <string name="face_acquired_too_different">Iris not recognized. Try again.</string>
+    <string name="face_acquired_too_similar">Move the phone slightly</string>
+    <string name="face_acquired_pan_too_extreme">Look straight at the top of the phone</string>
+    <string name="face_acquired_tilt_too_extreme">Look straight at the top of the phone</string>
+    <string name="face_acquired_roll_too_extreme">Look straight at the top of the phone</string>
+    <string name="face_acquired_obscured">Remove anything covering your eyes.</string>
+    <string name="face_acquired_sensor_dirty">Clean the top of the phone, where the iris camera is</string>
+    <string name="face_acquired_recalibrate_alt">Can’t create your iris model. Try again.</string>
+    <string name="face_acquired_dark_glasses_detected_alt">Dark glasses detected. Your eyes must be fully visible.</string>
+
+    <!-- Errors -->
+    <string name="face_error_hw_not_available">Can’t verify iris. Hardware not available.</string>
+    <string name="face_error_timeout">Try Iris Unlock again</string>
+    <string name="face_error_no_space">Can’t store new iris data. Delete the current one first.</string>
+    <string name="face_error_canceled">Iris operation canceled.</string>
+    <string name="face_error_user_canceled">Iris Unlock canceled by user</string>
+    <string name="face_error_lockout_permanent">Too many attempts. Iris Unlock unavailable.</string>
+    <string name="face_error_unable_to_process">Can’t verify iris. Try again.</string>
+    <string name="face_error_not_enrolled">You haven’t set up Iris Unlock</string>
+    <string name="face_error_hw_not_present">Iris Unlock isn’t supported on this device</string>
+    <string name="faceunlock_multiple_failures">Maximum Iris Unlock attempts exceeded</string>
+    <string name="keyguard_accessibility_face_unlock">Iris Unlock.</string>
+
+</resources>

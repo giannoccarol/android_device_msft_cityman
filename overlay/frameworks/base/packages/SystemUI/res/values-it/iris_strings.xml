@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2026 The LineageOS Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<!-- cityman: schermata di blocco, bouncer e richiesta biometrica parlano di iride invece che di volto. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Richiesta biometrica -->
+    <string name="accessibility_retry_face_auth">Riprova lo Sblocco con l\'iride</string>
+    <string name="accessibility_scanning_face">Scansione dell\'iride</string>
+    <string name="biometric_dialog_face_icon_description_authenticating">Ricerca dei tuoi occhi</string>
+    <string name="biometric_dialog_face_icon_description_authenticated">Iride autenticata</string>
+    <string name="biometric_dialog_tap_confirm_with_face">Sbloccato con l\'iride</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1">Sbloccato con l\'iride. Premi per continuare.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_2">Iride riconosciuta. Premi per continuare.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_3">Iride riconosciuta. Premi l\'icona Sblocca e continua.</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps">Sbloccato con l\'iride. Tocca per continuare.</string>
+    <string name="retry_face">Riprova autenticazione con l\'iride</string>
+
+    <!-- Nuova registrazione -->
+    <string name="face_re_enroll_notification_title">Riconfigura lo Sblocco con l\'iride</string>
+    <string name="face_re_enroll_notification_name">Sblocco con l\'iride</string>
+    <string name="face_re_enroll_dialog_title">Configura lo Sblocco con l\'iride</string>
+    <string name="face_re_enroll_dialog_content">Per riconfigurare lo Sblocco con l\'iride, l\'attuale modello dell\'iride verrà eliminato.\n\nDovrai riconfigurare questa funzionalità per usare l\'iride per sbloccare il telefono.</string>
+    <string name="face_reenroll_failure_dialog_content">Impossibile configurare lo Sblocco con l\'iride. Vai alle Impostazioni e riprova.</string>
+
+    <!-- Schermata di blocco -->
+    <string name="keyguard_face_failed">Iride non riconosciuta</string>
+    <string name="keyguard_face_unlock_unavailable">Sblocco con l\'iride non disponibile</string>
+    <string name="keyguard_face_successful_unlock_swipe">Sbloccato con l\'iride. Scorri verso l\'alto per aprire.</string>
+    <string name="keyguard_face_successful_unlock_confirm_button">Sbloccato con l\'iride. Premi Conferma per continuare.</string>
+    <string name="keyguard_face_successful_unlock_press">Sbloccato con l\'iride. Premi l\'icona Sblocca per aprire.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1">Sbloccato con l\'iride. Premi per aprire.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_2">Iride riconosciuta. Premi per aprire.</string>
+    <string name="keyguard_face_successful_unlock_press_alt_3">Iride riconosciuta. Premi l\'icona Sblocca per aprire.</string>
+    <string name="keyguard_face_successful_unlock">Sbloccato con l\'iride</string>
+    <string name="keyguard_face_successful_unlock_alt1">Iride riconosciuta</string>
+    <string name="accesssibility_keyguard_retry">Scorri verso l\'alto per riprovare lo Sblocco con l\'iride</string>
+
+    <!-- Bouncer (res-keyguard) -->
+    <string name="bouncer_face_not_recognized">Iride non riconosciuta</string>
+    <string name="kg_prompt_subtitle_for_secure_lock_device_biometric_auth_face">Usa lo Sblocco con l\'iride</string>
+    <string name="kg_face_locked_out">Impossibile sbloccare con l\'iride. Troppi tentativi.</string>
+    <string name="kg_face_sensor_privacy_enabled">Lo Sblocco con l\'iride richiede l\'accesso alla fotocamera</string>
+
+</resources>
