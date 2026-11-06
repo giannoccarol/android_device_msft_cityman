@@ -25,6 +25,8 @@
     <!-- The iris camera (face sensor) and the front camera share CSIPHY2 and cannot
          both be open: no front camera preview during face (iris) enrollment. -->
     <bool name="config_face_enroll_use_camera_preview">false</bool>
+    <!-- The iris face HAL draws its own IR preview, with rings on the eyes. -->
+    <bool name="config_face_enroll_hal_preview">true</bool>
 
     <!-- Iris unlock is a weak (class 2) biometric: say it is less secure than a PIN. -->
     <bool name="config_face_intro_show_less_secure">true</bool>
