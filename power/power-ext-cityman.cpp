@@ -137,18 +137,17 @@ constexpr int kFlingUpmigrate = 20;
 
 /*
  * Continuous gesture (scrolling, dragging): interaction hints keep arriving
- * less than kGestureGapUs apart for at least kGestureMinUs. The angler curve
- * above treats such hints as fast typing and keeps sched_upmigrate high, so
- * RenderThread and the UI thread stay on the A53s for the whole scroll.
- * During a gesture the A57 and migration locks use the values below and are
- * renewed when less than kRenewMarginUs is left.
+ * less than kGestureGapUs apart for at least kGestureMinUs. The A53 lock is
+ * renewed for the whole gesture (renewed when less than kRenewMarginUs is
+ * left). The migration thresholds are left alone: measured on 6/11/2026,
+ * moving RenderThread to the A57s (sched_boost) during a scroll gained
+ * 1 ms at the 90th percentile and heated the A57s by 10 C, while the GPU
+ * floor below took janky frames from 7.8 % to 2.7 %.
  */
 constexpr int64_t kGestureGapUs = 150000;
 constexpr int64_t kGestureMinUs = 300000;
 constexpr int kGestureBoostMs = 800;
 constexpr int64_t kRenewMarginUs = 300000;
-constexpr int kGestureUpmigrate = 30;
-constexpr int kGestureDownmigrate = 15;
 
 /*
  * GPU floor during interaction (kgsl power levels on MSM8994: 0 = 630 MHz,
@@ -158,7 +157,8 @@ constexpr int kGestureDownmigrate = 15;
  * this floor, so the floor never overrides a thermal step.
  */
 constexpr char kGpuMinLevelPath[] = "/sys/class/kgsl/kgsl-3d0/min_pwrlevel";
-constexpr int kGpuFloorBalanced = 3;    /* 390 MHz */
+/* 450 MHz: 2.7 % janky frames in the app drawer, against 5.1 % at 390. */
+constexpr int kGpuFloorBalanced = 2;    /* 450 MHz */
 constexpr int kGpuFloorPerformance = 2; /* 450 MHz */
 constexpr int kGpuFloorMs = 1000;
 
@@ -577,18 +577,9 @@ int process_interaction(void* data) {
         if (g_gesture_until_us - now > kRenewMarginUs) return HINT_HANDLED;
         g_previous_boost_us = now;
         int little[] = {kLittleMinFreq1248};
-        int big[] = {kBigMinFreq864};
-        int down[] = {kSchedDownmigrate | kGestureDownmigrate};
-        int up[] = {kSchedUpmigrate | kGestureUpmigrate};
-        lock_acquire(g_little, kGestureBoostMs + 750, little, count_of(little));
-        lock_acquire(g_big, kGestureBoostMs, big, count_of(big));
-        /* Same order as below: back to 95/85, then downmigrate, then upmigrate. */
-        release_migrate_locks();
-        lock_acquire(g_downmigrate, kGestureBoostMs + 500, down, count_of(down));
-        lock_acquire(g_upmigrate, kGestureBoostMs, up, count_of(up));
+        lock_acquire(g_little, kGestureBoostMs, little, count_of(little));
         g_gesture_until_us = now + static_cast<int64_t>(kGestureBoostMs) * 1000;
-        ALOGD("gesture: upmigrate %d/%d for %d ms", kGestureUpmigrate, kGestureDownmigrate,
-              kGestureBoostMs);
+        ALOGD("gesture: A53 lock renewed for %d ms", kGestureBoostMs);
         return HINT_HANDLED;
     }
 
