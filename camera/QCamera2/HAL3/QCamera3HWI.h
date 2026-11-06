@@ -439,6 +439,10 @@ private:
     bool mLdafCalibExist;
     uint32_t mLdafCalib[2];
     bool mPowerHintEnabled;
+    // Camera without a colour filter (ro.vendor.camera.mono_ids): the ISP always runs
+    // in mono so every client gets a grey picture.
+    bool mForceMono;
+    static bool isMonoCamera(uint32_t cameraId);
     int32_t mLastCustIntentFrmNum;
 
     static const QCameraMap<camera_metadata_enum_android_control_effect_mode_t,

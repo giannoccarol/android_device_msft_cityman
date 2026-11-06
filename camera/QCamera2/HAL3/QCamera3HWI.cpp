@@ -377,6 +377,10 @@ QCamera3HardwareInterface::QCamera3HardwareInterface(uint32_t cameraId,
     // Getting system props of different kinds
     char prop[PROPERTY_VALUE_MAX];
     memset(prop, 0, sizeof(prop));
+    mForceMono = isMonoCamera(cameraId);
+    if (mForceMono) {
+        ALOGI("%s: camera %d has no colour filter: forcing the mono effect", __func__, cameraId);
+    }
     property_get("persist.camera.raw.dump", prop, "0");
     mEnableRawDump = atoi(prop);
     if (mEnableRawDump)
@@ -8082,6 +8086,30 @@ int32_t QCamera3HardwareInterface::setHalFpsRange(const CameraMetadata &settings
     return rc;
 }
 
+
+/*===========================================================================
+ * FUNCTION   : isMonoCamera
+ *
+ * DESCRIPTION: true if cameraId is listed in ro.vendor.camera.mono_ids
+ *              (comma separated), i.e. a sensor without a colour filter
+ *              such as the Lumia 950 XL iris camera.
+ *==========================================================================*/
+bool QCamera3HardwareInterface::isMonoCamera(uint32_t cameraId)
+{
+    char prop[PROPERTY_VALUE_MAX];
+    property_get("ro.vendor.camera.mono_ids", prop, "");
+    char *save = NULL;
+    for (char *tok = strtok_r(prop, ", ", &save); tok != NULL;
+            tok = strtok_r(NULL, ", ", &save)) {
+        char *end = NULL;
+        unsigned long id = strtoul(tok, &end, 10);
+        if (end != tok && *end == '\0' && id == cameraId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /*===========================================================================
  * FUNCTION   : translateToHalMetadata
  *
@@ -8249,10 +8277,13 @@ int QCamera3HardwareInterface::translateToHalMetadata
         }
     }
 
-    if (frame_settings.exists(ANDROID_CONTROL_EFFECT_MODE)) {
-        uint8_t fwk_effectMode = frame_settings.find(ANDROID_CONTROL_EFFECT_MODE).data.u8[0];
-        int val = lookupHalName(EFFECT_MODES_MAP, METADATA_MAP_SIZE(EFFECT_MODES_MAP),
-                fwk_effectMode);
+    if (mForceMono || frame_settings.exists(ANDROID_CONTROL_EFFECT_MODE)) {
+        int val = CAM_EFFECT_MODE_MONO;
+        if (!mForceMono) {
+            uint8_t fwk_effectMode = frame_settings.find(ANDROID_CONTROL_EFFECT_MODE).data.u8[0];
+            val = lookupHalName(EFFECT_MODES_MAP, METADATA_MAP_SIZE(EFFECT_MODES_MAP),
+                    fwk_effectMode);
+        }
         if (NAME_NOT_FOUND != val) {
             uint8_t effectMode = (uint8_t)val;
             if (ADD_SET_PARAM_ENTRY_TO_BATCH(hal_metadata, CAM_INTF_PARM_EFFECT, effectMode)) {
