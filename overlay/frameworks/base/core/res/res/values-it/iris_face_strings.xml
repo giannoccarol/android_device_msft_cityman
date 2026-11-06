@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Messaggi del sensore dell'iride (cityman-iris/hal). -->
+<resources>
+    <string-array name="face_acquired_vendor">
+        <item>Apri gli occhi</item>
+        <item>Luce IR in raffreddamento, riprova tra un minuto</item>
+        <item>Guarda la parte alta del telefono</item>
+    </string-array>
+</resources>

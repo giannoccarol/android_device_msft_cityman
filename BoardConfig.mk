@@ -234,6 +234,10 @@ TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)
 BOARD_SEPOLICY_DIRS += \
     $(DEVICE_PATH)/sepolicy
 SELINUX_IGNORE_NEVERALLOWS := true
+# Iris unlock face HAL (vendor/cityman-iris, see device.mk)
+ifeq ($(CITYMAN_CAMERA_IRIS),true)
+BOARD_SEPOLICY_DIRS += vendor/cityman-iris/hal/sepolicy
+endif
 
 # Android 16 has no LD_SHIM_LIBS: the blobs that need a shim are patched to
 # load it (vendor/msft/cityman/README-cityman-a16.md).

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vendor acquired messages of the iris unlock face HAL (cityman-iris/hal). -->
+<resources>
+    <string-array name="face_acquired_vendor">
+        <item>Open your eyes</item>
+        <item>IR light cooling down, try again in a minute</item>
+        <item>Look at the top of the phone</item>
+    </string-array>
+</resources>
