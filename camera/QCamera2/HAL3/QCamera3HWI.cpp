@@ -6641,6 +6641,18 @@ int QCamera3HardwareInterface::initStaticMetadata(uint32_t cameraId)
     if (CAM_SENSOR_YUV != gCamCapability[cameraId]->sensor_type.sens_type) {
         available_capabilities.add(ANDROID_REQUEST_AVAILABLE_CAPABILITIES_RAW);
     }
+
+    // Cityman: the iris camera (a mono camera, last id) is a system camera:
+    // apps do not see it, vendor clients such as the iris unlock service do.
+    // persist.vendor.camera.cityman.iris=1 exposes it to apps for tests.
+    if (isMonoCamera(cameraId)) {
+        char iris_prop[PROPERTY_VALUE_MAX];
+        property_get("persist.vendor.camera.cityman.iris", iris_prop, "0");
+        if (atoi(iris_prop) != 1) {
+            available_capabilities.add(
+                    ANDROID_REQUEST_AVAILABLE_CAPABILITIES_SYSTEM_CAMERA);
+        }
+    }
     staticInfo.update(ANDROID_REQUEST_AVAILABLE_CAPABILITIES,
             available_capabilities.array(),
             available_capabilities.size());

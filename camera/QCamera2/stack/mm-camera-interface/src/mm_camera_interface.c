@@ -52,7 +52,8 @@ static mm_camera_ctrl_t g_cam_ctrl = {0, {{0}}, {0}, {{0}}};
 /*
  * Cityman: the iris camera (sensor "ck71ir", CSID3) is a monochrome IR
  * sensor. Keep it after the colour cameras, so ids 0 and 1 stay the rear
- * and front cameras, and expose it only with
+ * and front cameras. The camera HAL marks it as a system camera (hidden from
+ * apps, open to the iris unlock service) unless
  * persist.vendor.camera.cityman.iris=1.
  */
 #define CITYMAN_IRIS_SENSOR_NAME "ck71ir"
@@ -1475,18 +1476,13 @@ void get_sensor_info()
  *==========================================================================*/
 void sort_camera_info(int num_cam)
 {
-    int idx = 0, i, pass, hidden = 0;
-    char prop[PROPERTY_VALUE_MAX];
-    int expose_iris;
+    int idx = 0, i, pass;
     struct camera_info temp_info[MM_CAMERA_MAX_NUM_SENSORS];
     char temp_dev_name[MM_CAMERA_MAX_NUM_SENSORS][MM_CAMERA_DEV_NAME_LEN];
     memset(temp_info, 0, sizeof(temp_info));
     memset(temp_dev_name, 0, sizeof(temp_dev_name));
 
-    property_get("persist.vendor.camera.cityman.iris", prop, "0");
-    expose_iris = atoi(prop) == 1;
-
-    /* back cameras, then front cameras, then (optionally) the iris camera */
+    /* back cameras, then front cameras, then the iris camera */
     for (pass = 0; pass < 3; pass++) {
         for (i = 0; i < num_cam; i++) {
             int is_iris = g_cam_is_iris[i];
@@ -1494,27 +1490,17 @@ void sort_camera_info(int num_cam)
                     g_cam_ctrl.info[i].facing !=
                     (pass == 0 ? CAMERA_FACING_BACK : CAMERA_FACING_FRONT)))
                 continue;
-            if (pass == 2) {
-                if (!is_iris)
-                    continue;
-                if (!expose_iris) {
-                    hidden++;
-                    continue;
-                }
-            }
+            if (pass == 2 && !is_iris)
+                continue;
             temp_info[idx] = g_cam_ctrl.info[i];
             memcpy(temp_dev_name[idx++], g_cam_ctrl.video_dev_name[i],
                 MM_CAMERA_DEV_NAME_LEN);
         }
     }
 
-    if (idx + hidden == num_cam) {
+    if (idx == num_cam) {
         memcpy(g_cam_ctrl.info, temp_info, sizeof(temp_info));
         memcpy(g_cam_ctrl.video_dev_name, temp_dev_name, sizeof(temp_dev_name));
-        g_cam_ctrl.num_cam = (int8_t)idx;
-        if (hidden)
-            ALOGI("%s: iris camera hidden (persist.vendor.camera.cityman.iris=0)",
-                __func__);
     } else {
         ALOGE("%s: Failed to sort all cameras!", __func__);
         ALOGE("%s: Number of cameras %d sorted %d", __func__, num_cam, idx);
