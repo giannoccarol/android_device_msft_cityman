@@ -17,8 +17,8 @@
  *   analogue gain code 56..448, gain = code / 56 (1x..8x)
  *   coarse integration margin 6 lines
  *
- * NOT VERIFIED ON HARDWARE: CCI master, slave address, ID register value,
- * lane assignment (0x0004, data on PHY lane 4 per msm_csiphy combo logic),
+ * Verified on hardware: CCI master 0, slave 0x6c, ID 0x0861 at 0x0000.
+ * NOT VERIFIED ON HARDWARE: lane assignment (0x0004, data on PHY lane 4 per msm_csiphy combo logic),
  * settle count, black level, mount angle. The register tables come from a
  * proprietary DCC and must not be committed to a public tree.
  */
@@ -121,11 +121,10 @@ struct angler_sensor_descriptor cityman_ck71ir_descriptor = {
     .slave = {
         /*
          * The HAL matches this name to keep the camera last and hidden
-         * (persist.vendor.camera.cityman.iris). Slave 0x20 (SMIA default)
-         * and model 0x0861 at 0x0000 are inferred from the DCC name
-         * 0C-0861-01; check both with cci_probe 2 first.
+         * (persist.vendor.camera.cityman.iris). Slave 0x6c on CCI master 0
+         * answers with model 0x0861 at 0x0000 (cci_probe 2, 6/11/2026).
          */
-        .sensor_name = "ck71ir", .camera_id = CAMERA_2, .slave_addr = 0x20,
+        .sensor_name = "ck71ir", .camera_id = CAMERA_2, .slave_addr = 0x6c,
         .i2c_freq_mode = I2C_FAST_MODE, .addr_type = MSM_CAMERA_I2C_WORD_ADDR,
         .sensor_id_info = { .sensor_id_reg_addr = 0x0000, .sensor_id = 0x0861 },
         .power_setting_array = {
