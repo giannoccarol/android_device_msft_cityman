@@ -23,6 +23,8 @@ CPU frequencies in units of 100 MHz, rounded by perfd to the cluster table).
 | | `0x1F08` | A57 min ≥ 0.8 GHz (864 MHz) | 0.5 s |
 | | `0x4F00 \| n/2` | `sched_downmigrate` = upmigrate / 2 | 1 s (hint, max 5 s) |
 | | `0x4E00 \| n` | `sched_upmigrate` 20 (sporadic touch, fling) .. 87 (rapid touches) | 0.5 s |
+| Continuous gesture (hints < 150 ms apart for ≥ 300 ms) | `0x20C`, `0x1F08`, `0x4F0F`, `0x4E1E` | A53 ≥ 1248 MHz, A57 ≥ 864 MHz, `sched_upmigrate` 30 / `sched_downmigrate` 15 | 0.8 s, renewed while the gesture goes on |
+| Interaction, GPU (balanced / performance) | sysfs `kgsl-3d0/min_pwrlevel` 3 / 2 | GPU ≥ 390 / 450 MHz; the thermal limit stays above it | 1 s (or the hint, max 5 s); off with the screen and in power save |
 | Launch | `0x1E01`, `0x20D`, `0x1F0C` | `sched_boost` on, A53 min ≥ 1344 MHz, A57 min ≥ 1248 MHz | 1.5 s, released early when the launch ends |
 | Sustained / fixed performance | `0x1509`, `0x230C` | A53 max ~0.9 GHz, A57 max ~1.2 GHz; touch and launch boosts off | while the mode is on |
 | Screen off | `0x4E63`, `0x4F5F` | `sched_upmigrate` 99, `sched_downmigrate` 95 | until the screen is on |
@@ -36,6 +38,13 @@ verified on the OnePlus 2 perfd, so here the A57s are capped with the `0x23`
 resource instead and the GPU is left alone. The kernel rejects a
 `sched_downmigrate` above `sched_upmigrate`, so the two are separate locks,
 taken and released in an order that keeps them valid.
+
+The continuous-gesture locks fix scrolling: with the angler curve, hints
+that come in quick succession (as during a scroll) got `sched_upmigrate`
+80-87, so RenderThread stayed on the A53s for the whole scroll. The GPU
+floor is written by the HAL itself (no known perfd opcode for the GPU on the
+OnePlus 2 blob): msm-adreno-tz kept the GPU at 305 MHz at 85-90 % busy while
+scrolling at 1440p (measured on 31/10/2026).
 
 ## Performance profiles
 

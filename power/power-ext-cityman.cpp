@@ -40,6 +40,8 @@
 
 #define LOG_TAG "QTI PowerHAL cityman"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -47,7 +49,10 @@
 #include <string.h>
 #include <sys/system_properties.h>
 #include <time.h>
+#include <unistd.h>
 
+#include <chrono>
+#include <condition_variable>
 #include <initializer_list>
 #include <mutex>
 #include <thread>
@@ -130,6 +135,33 @@ constexpr int kFlingDurationMs = 750;
 constexpr int kMaxHintDurationMs = 5000;
 constexpr int kFlingUpmigrate = 20;
 
+/*
+ * Continuous gesture (scrolling, dragging): interaction hints keep arriving
+ * less than kGestureGapUs apart for at least kGestureMinUs. The angler curve
+ * above treats such hints as fast typing and keeps sched_upmigrate high, so
+ * RenderThread and the UI thread stay on the A53s for the whole scroll.
+ * During a gesture the A57 and migration locks use the values below and are
+ * renewed when less than kRenewMarginUs is left.
+ */
+constexpr int64_t kGestureGapUs = 150000;
+constexpr int64_t kGestureMinUs = 300000;
+constexpr int kGestureBoostMs = 800;
+constexpr int64_t kRenewMarginUs = 300000;
+constexpr int kGestureUpmigrate = 30;
+constexpr int kGestureDownmigrate = 15;
+
+/*
+ * GPU floor during interaction (kgsl power levels on MSM8994: 0 = 630 MHz,
+ * 1 = 510, 2 = 450, 3 = 390, 4 = 305, 5 = 180). msm-adreno-tz stays at
+ * 305 MHz while the GPU is 85-90 % busy at 1440p, so frames miss the vsync.
+ * The kernel keeps the thermal limit (thermal-engine, max_gpuclk) above
+ * this floor, so the floor never overrides a thermal step.
+ */
+constexpr char kGpuMinLevelPath[] = "/sys/class/kgsl/kgsl-3d0/min_pwrlevel";
+constexpr int kGpuFloorBalanced = 3;    /* 390 MHz */
+constexpr int kGpuFloorPerformance = 2; /* 450 MHz */
+constexpr int kGpuFloorMs = 1000;
+
 /* Launch boost; released early when the framework ends the launch. */
 constexpr int kLaunchBoostMs = 1500;
 
@@ -161,6 +193,17 @@ bool g_perfd_known = false; /* init has started perfd at least once */
 uint32_t g_perfd_serial = 0; /* serial of kPerfdProp: changes when perfd restarts */
 bool g_display_on = true;
 int64_t g_previous_boost_us = 0;
+int64_t g_previous_hint_us = 0;
+int64_t g_gesture_start_us = 0;
+int64_t g_gesture_until_us = 0; /* expiry of the gesture locks */
+
+/* GPU floor state, under its own mutex (the worker waits on it). */
+std::mutex g_gpu_lock;
+std::condition_variable g_gpu_cv;
+int g_gpu_default_level = -1; /* min_pwrlevel found at the first hint */
+int g_gpu_level = -1;         /* level written last */
+int64_t g_gpu_until_us = 0;
+bool g_gpu_disabled = false;
 
 template <typename T, size_t N>
 constexpr int count_of(T (&)[N]) {
@@ -204,6 +247,75 @@ void lock_acquire(TimedLock& lock, int duration_ms, int* resources, int count) {
                                      : INT64_MAX;
 }
 
+bool write_gpu_level(int level) {
+    int fd = open(kGpuMinLevelPath, O_WRONLY | O_CLOEXEC);
+    if (fd < 0) {
+        ALOGE("open %s: %s, GPU floor disabled", kGpuMinLevelPath, strerror(errno));
+        return false;
+    }
+    char value[8];
+    int length = snprintf(value, sizeof(value), "%d", level);
+    bool ok = write(fd, value, length) == length;
+    if (!ok) ALOGE("write %d to %s: %s", level, kGpuMinLevelPath, strerror(errno));
+    close(fd);
+    return ok;
+}
+
+int read_gpu_level() {
+    int fd = open(kGpuMinLevelPath, O_RDONLY | O_CLOEXEC);
+    if (fd < 0) return -1;
+    char value[8] = {};
+    ssize_t length = read(fd, value, sizeof(value) - 1);
+    close(fd);
+    return length > 0 ? atoi(value) : -1;
+}
+
+/* Puts the default level back once the floor expires. */
+void gpu_floor_worker() {
+    std::unique_lock<std::mutex> guard(g_gpu_lock);
+    for (;;) {
+        if (g_gpu_level == g_gpu_default_level) {
+            g_gpu_cv.wait(guard);
+            continue;
+        }
+        int64_t left = g_gpu_until_us - now_us();
+        if (left > 0) {
+            g_gpu_cv.wait_for(guard, std::chrono::microseconds(left));
+            continue;
+        }
+        if (write_gpu_level(g_gpu_default_level)) g_gpu_level = g_gpu_default_level;
+        else g_gpu_disabled = true;
+    }
+}
+
+/* Keep the GPU at level or faster for duration_ms (0: drop the floor now). */
+void gpu_floor(int level, int duration_ms) {
+    std::lock_guard<std::mutex> guard(g_gpu_lock);
+    if (g_gpu_disabled) return;
+    if (g_gpu_default_level < 0) {
+        g_gpu_default_level = read_gpu_level();
+        if (g_gpu_default_level < 0) {
+            ALOGE("cannot read %s, GPU floor disabled", kGpuMinLevelPath);
+            g_gpu_disabled = true;
+            return;
+        }
+        g_gpu_level = g_gpu_default_level;
+        std::thread(gpu_floor_worker).detach();
+    }
+    if (duration_ms == 0) {
+        g_gpu_until_us = 0;
+    } else {
+        int64_t until = now_us() + static_cast<int64_t>(duration_ms) * 1000;
+        if (until > g_gpu_until_us) g_gpu_until_us = until;
+        /* A lower number is a faster level; keep the faster one. */
+        if (level < g_gpu_level) {
+            if (write_gpu_level(level)) g_gpu_level = level;
+            else g_gpu_disabled = true;
+        }
+    }
+    g_gpu_cv.notify_one();
+}
+
 /* These locks lower the values: upmigrate goes back to its default first. */
 void release_migrate_locks() {
     lock_release(g_upmigrate);
@@ -211,6 +323,7 @@ void release_migrate_locks() {
 }
 
 void release_boost_locks() {
+    g_gesture_until_us = 0;
     lock_release(g_little);
     lock_release(g_big);
     release_migrate_locks();
@@ -445,6 +558,40 @@ int process_interaction(void* data) {
     if (g_sustained_mask || !g_display_on) return HINT_HANDLED;
 
     int64_t now = now_us();
+    if (now - g_previous_hint_us >= kGestureGapUs) g_gesture_start_us = now;
+    g_previous_hint_us = now;
+    bool gesture = now - g_gesture_start_us >= kGestureMinUs;
+
+    int profile = current_profile();
+    if (profile != PROFILE_POWER_SAVE) {
+        int gpu_ms = duration_hint > kGpuFloorMs
+                             ? (duration_hint < kMaxHintDurationMs ? duration_hint
+                                                                   : kMaxHintDurationMs)
+                             : kGpuFloorMs;
+        gpu_floor(profile == PROFILE_HIGH_PERFORMANCE ? kGpuFloorPerformance : kGpuFloorBalanced,
+                  gpu_ms);
+    }
+
+    if (gesture && duration_hint < kFlingDurationMs && profile != PROFILE_POWER_SAVE) {
+        /* Renew the gesture locks only when they are about to run out. */
+        if (g_gesture_until_us - now > kRenewMarginUs) return HINT_HANDLED;
+        g_previous_boost_us = now;
+        int little[] = {kLittleMinFreq1248};
+        int big[] = {kBigMinFreq864};
+        int down[] = {kSchedDownmigrate | kGestureDownmigrate};
+        int up[] = {kSchedUpmigrate | kGestureUpmigrate};
+        lock_acquire(g_little, kGestureBoostMs + 750, little, count_of(little));
+        lock_acquire(g_big, kGestureBoostMs, big, count_of(big));
+        /* Same order as below: back to 95/85, then downmigrate, then upmigrate. */
+        release_migrate_locks();
+        lock_acquire(g_downmigrate, kGestureBoostMs + 500, down, count_of(down));
+        lock_acquire(g_upmigrate, kGestureBoostMs, up, count_of(up));
+        g_gesture_until_us = now + static_cast<int64_t>(kGestureBoostMs) * 1000;
+        ALOGD("gesture: upmigrate %d/%d for %d ms", kGestureUpmigrate, kGestureDownmigrate,
+              kGestureBoostMs);
+        return HINT_HANDLED;
+    }
+
     int64_t elapsed = now - g_previous_boost_us;
     if (elapsed > kMaxElapsedUs) {
         elapsed = kMaxElapsedUs;
@@ -479,7 +626,7 @@ int process_interaction(void* data) {
     int up[] = {kSchedUpmigrate | upmigrate};
 
     lock_acquire(g_little, little_ms, little, count_of(little));
-    if (current_profile() == PROFILE_POWER_SAVE) {
+    if (profile == PROFILE_POWER_SAVE) {
         /* The A57 cluster is offline: the A53 boost is all there is. */
         ALOGD("interaction: hint %d ms, little %d ms (power save)", duration_hint, little_ms);
         return HINT_HANDLED;
@@ -490,6 +637,7 @@ int process_interaction(void* data) {
      * (>= downmigrate). The downmigrate lock always outlives the upmigrate
      * one, so the expiries restore 95 before 85 as well.
      */
+    g_gesture_until_us = 0;
     release_migrate_locks();
     lock_acquire(g_downmigrate, downmigrate_ms, down, count_of(down));
     lock_acquire(g_upmigrate, kUpmigrateMs, up, count_of(up));
@@ -562,6 +710,7 @@ extern "C" int set_interactive_override(int on) {
     if (!on) {
         g_display_on = false;
         release_boost_locks();
+        gpu_floor(0, 0);
         if (!CHECK_HANDLE(g_display_up.handle)) {
             take_display_off_locks();
         }

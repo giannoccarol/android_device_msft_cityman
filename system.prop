@@ -131,7 +131,7 @@ ro.lmk.debug=true
 debug.hwui.app_memory_policy=lowram
 # Battery saver: no dark theme switch, which recreates every activity
 ro.config.night_mode_on_battery_saver=false
-# Bigger logd buffers while Android 16 is being brought up
+# logd buffers: 1 MB each, room for a bug report after a problem
 ro.logd.size=1M
 
 # RIL
@@ -182,10 +182,8 @@ persist.audio.calfile6=/vendor/etc/acdbdata/cityman/Cityman_Speaker_cal.acdb
 # OnePlus 2 tree by davigamer987).
 ro.bpf.kver_override=5.4.300
 
-# Android 16 bring-up: persistent logcat in /data/misc/logd, kernel log included.
-logd.logpersistd=logcatd
-logd.logpersistd.buffer=all
-ro.logd.kernel=true
+# No persistent logcat by default (it kept logcat writing to /data all the
+# time): turn it on from Developer options > Persistent logging when needed.
 
 # The Adreno blobs preloaded by the zygote clobber x18, the shadow call stack
 # register: Bluetooth and NFC crashed in __init_cpu_features (SEGV_ACCERR).

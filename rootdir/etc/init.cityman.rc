@@ -133,6 +133,10 @@ on boot
     # don't run as a service to avoid race conditions
     exec - root root system -- /vendor/bin/init.cityman.power.sh
 
+    # GPU floor of the power HAL during interaction (power/README.md)
+    chown system system /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/min_pwrlevel
+
     # cpusets for eight CPUs: background work stays on the A53 cluster
     mkdir /dev/cpuset/camera-daemon
     write /dev/cpuset/camera-daemon/mems 0
@@ -624,13 +628,15 @@ on property:vold.decrypt=trigger_restart_framework
 on early-init
     write /sys/module/firmware_class/parameters/path /vendor/firmware
 
-# Android 16 bring-up: kernel log, processes and properties kept on /data
-# (init.cityman.bootlog.sh). Remove with the script once A16 boots reliably.
+# Boot diagnostics: kernel log, processes and properties kept on /data
+# (init.cityman.bootlog.sh). Off by default: it syncs every 5 s for 30 min.
+# Turn it on for one boot with
+#   setprop persist.vendor.cityman.bootlog 1
 service vendor.cityman_bootlog /vendor/bin/init.cityman.bootlog.sh
     user root
     group root
     disabled
     oneshot
 
-on post-fs-data
+on property:persist.vendor.cityman.bootlog=1
     start vendor.cityman_bootlog
