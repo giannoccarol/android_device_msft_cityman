@@ -107,11 +107,11 @@ persist.media.treble_omx=false
 ro.min_freq_0=384000
 ro.min_freq_4=384000
 
-# IMS
+# IMS: VoLTE only. No video calls, and no Wi-Fi calling (the 3.10 kernel
+# has no XFRM interfaces or IPv6 VTI for Iwlan).
 persist.dbg.ims_volte_enable=1
 persist.dbg.volte_avail_ovr=1
-persist.dbg.vt_avail_ovr=1
-persist.dbg.wfc_avail_ovr=1
+persist.dbg.allow_ims_off=1
 
 # Properties for Surfaceflinger: AOSP default durations for a single 60 Hz
 # mode (about two frames less touch latency than the old 27.6 ms values).

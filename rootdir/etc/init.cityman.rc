@@ -571,24 +571,6 @@ service cnd /vendor/bin/cnd
     group root wakelock
     disabled
 
-# No IMS APK is installed (VoLTE does not work): keep the IMS daemons off.
-service imsqmidaemon /vendor/bin/imsqmidaemon
-    class main
-    user system
-    socket ims_qmid stream 0660 system radio
-    group radio net_raw log diag
-    disabled
-
-service imsdatadaemon /vendor/bin/imsdatadaemon
-    class main
-    user system
-    socket ims_datad stream 0660 system radio
-    group system wifi radio inet net_raw log diag net_admin
-    disabled
-
-on property:sys.ims.QMI_DAEMON_STATUS=1
-    start imsdatadaemon
-
 service cityman-sh /vendor/bin/init.cityman.sh
     class late_start
     user radio

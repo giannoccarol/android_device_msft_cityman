@@ -350,10 +350,8 @@ PRODUCT_PACKAGES += \
     libhidltransport \
     libhwbinder
 
-# IMS
+# IMS: the Qualcomm IMS stack (ims.apk and its daemons) is not shipped.
 PRODUCT_PACKAGES += \
-    ims-ext-common \
-    ims_ext_common.xml \
     com.android.ims.rcsmanager
 
 # Cityman RIL helpers, built from kernel/mmo/msm8994/tools/cityman-ril
