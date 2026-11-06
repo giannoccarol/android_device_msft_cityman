@@ -226,6 +226,13 @@ PRODUCT_PACKAGES += \
     libchromatix_vs6955_video_binning \
     libchromatix_vs6955_liveshot
 endif
+# Iris IR camera test stream (camera-sensors/ck71ir). Requires the private
+# 0C086101.dcc, the patched daemon sensor list and a kernel with
+# qcom,camera@2 (branch test/cityman-iris); off by default. The HAL keeps
+# the camera hidden unless persist.vendor.camera.cityman.iris=1.
+ifeq ($(CITYMAN_CAMERA_IRIS),true)
+PRODUCT_PACKAGES += libmmcamera_ck71ir
+endif
 PRODUCT_PACKAGES += \
     libcamera_delayfree \
     camera.msm8992 \
