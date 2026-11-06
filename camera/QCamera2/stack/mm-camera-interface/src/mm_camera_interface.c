@@ -49,6 +49,15 @@ static pthread_mutex_t g_intf_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static mm_camera_ctrl_t g_cam_ctrl = {0, {{0}}, {0}, {{0}}};
 
+/*
+ * Cityman: the iris camera (sensor "ck71ir", CSID3) is a monochrome IR
+ * sensor. Keep it after the colour cameras, so ids 0 and 1 stay the rear
+ * and front cameras, and expose it only with
+ * persist.vendor.camera.cityman.iris=1.
+ */
+#define CITYMAN_IRIS_SENSOR_NAME "ck71ir"
+static uint8_t g_cam_is_iris[MM_CAMERA_MAX_NUM_SENSORS];
+
 static pthread_mutex_t g_handler_lock = PTHREAD_MUTEX_INITIALIZER;
 static uint16_t g_handler_history_count = 0; /* history count for handler */
 volatile uint32_t gMmCameraIntfLogLevel = 1;
@@ -1435,6 +1444,10 @@ void get_sensor_info()
                     (unsigned int)mount_angle, (unsigned int)facing);
                 g_cam_ctrl.info[num_cameras].facing = (int)facing;
                 g_cam_ctrl.info[num_cameras].orientation = (int)mount_angle;
+                if (num_cameras < MM_CAMERA_MAX_NUM_SENSORS)
+                    g_cam_is_iris[num_cameras] = !strncmp(entity.name,
+                        CITYMAN_IRIS_SENSOR_NAME,
+                        sizeof(CITYMAN_IRIS_SENSOR_NAME) - 1);
                 num_cameras++;
                 continue;
             }
@@ -1462,33 +1475,46 @@ void get_sensor_info()
  *==========================================================================*/
 void sort_camera_info(int num_cam)
 {
-    int idx = 0, i;
+    int idx = 0, i, pass, hidden = 0;
+    char prop[PROPERTY_VALUE_MAX];
+    int expose_iris;
     struct camera_info temp_info[MM_CAMERA_MAX_NUM_SENSORS];
     char temp_dev_name[MM_CAMERA_MAX_NUM_SENSORS][MM_CAMERA_DEV_NAME_LEN];
     memset(temp_info, 0, sizeof(temp_info));
     memset(temp_dev_name, 0, sizeof(temp_dev_name));
 
-    /* firstly save the back cameras info*/
-    for (i = 0; i < num_cam; i++) {
-        if (g_cam_ctrl.info[i].facing == CAMERA_FACING_BACK) {
+    property_get("persist.vendor.camera.cityman.iris", prop, "0");
+    expose_iris = atoi(prop) == 1;
+
+    /* back cameras, then front cameras, then (optionally) the iris camera */
+    for (pass = 0; pass < 3; pass++) {
+        for (i = 0; i < num_cam; i++) {
+            int is_iris = g_cam_is_iris[i];
+            if (pass < 2 && (is_iris ||
+                    g_cam_ctrl.info[i].facing !=
+                    (pass == 0 ? CAMERA_FACING_BACK : CAMERA_FACING_FRONT)))
+                continue;
+            if (pass == 2) {
+                if (!is_iris)
+                    continue;
+                if (!expose_iris) {
+                    hidden++;
+                    continue;
+                }
+            }
             temp_info[idx] = g_cam_ctrl.info[i];
-            memcpy(temp_dev_name[idx++],g_cam_ctrl.video_dev_name[i],
+            memcpy(temp_dev_name[idx++], g_cam_ctrl.video_dev_name[i],
                 MM_CAMERA_DEV_NAME_LEN);
         }
     }
 
-    /* then save the front cameras info*/
-    for (i = 0; i < num_cam; i++) {
-        if (g_cam_ctrl.info[i].facing == CAMERA_FACING_FRONT) {
-            temp_info[idx] = g_cam_ctrl.info[i];
-            memcpy(temp_dev_name[idx++],g_cam_ctrl.video_dev_name[i],
-                MM_CAMERA_DEV_NAME_LEN);
-        }
-    }
-
-    if (idx == num_cam) {
+    if (idx + hidden == num_cam) {
         memcpy(g_cam_ctrl.info, temp_info, sizeof(temp_info));
         memcpy(g_cam_ctrl.video_dev_name, temp_dev_name, sizeof(temp_dev_name));
+        g_cam_ctrl.num_cam = (int8_t)idx;
+        if (hidden)
+            ALOGI("%s: iris camera hidden (persist.vendor.camera.cityman.iris=0)",
+                __func__);
     } else {
         ALOGE("%s: Failed to sort all cameras!", __func__);
         ALOGE("%s: Number of cameras %d sorted %d", __func__, num_cam, idx);
@@ -1662,6 +1688,7 @@ uint8_t get_num_of_cameras()
     }
     g_cam_ctrl.num_cam = num_cameras;
 
+    memset(g_cam_is_iris, 0, sizeof(g_cam_is_iris));
     get_sensor_info();
     sort_camera_info(g_cam_ctrl.num_cam);
     /* unlock the mutex */
