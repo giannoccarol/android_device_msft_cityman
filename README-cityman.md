@@ -155,6 +155,27 @@ preflash, flash and video torch, and the flashlight tile uses the kernel's
 device tree sequence. `CITYMAN_CAMERA_FLASH=false` leaves the flash out.
 Not yet verified on the 950 XL; details in `camera-sensors/hill-flash/README.md`.
 
+## VoLTE (LineageOS 23, branch lineage-23-cityman)
+
+VoLTE runs on phh's userspace IMS stack (`krazey/ims` in
+`packages/apps/PhhIms`, built when the project is synced): SIP registration
+with USIM AKA and IPsec over the IMS APN that rild brings up, AMR-NB/WB over
+RTP, call audio through the normal audio path (Telecom uses
+MODE_IN_COMMUNICATION for IMS calls). Three platform pieces make it work:
+
+- `cityman-ims-profile` sets the modem's `ims` profile (IPv4 from the Windows
+  firmware) to IPv4v6, or rild refuses the IPv6 IMS APN;
+- the radio wrapper reports the registered PLMN (MCC/MNC from OPERATOR) and
+  drops empty address entries of failed data calls;
+- the Iliad (222-50) CarrierConfig entry turns VoLTE on; SMS and
+  supplementary services stay on CS.
+
+Verified on Iliad on 2026-11-07 with the same pieces loaded at runtime:
+registration, an outgoing call with two-way audio, SMS sent over CS while
+registered. Not verified yet: incoming calls, other carriers, long calls, LTE
+to 3G/2G handover. No video calling, no Wi-Fi calling (the 3.10 kernel lacks
+XFRM interfaces and IPv6 VTI).
+
 ## Credits
 
 This ROM builds on the work of others:
@@ -234,6 +255,10 @@ This ROM builds on the work of others:
   and operating points, `flash_lib_hill.c` (built here as `libflash_hill`)
   and the kernel flash driver changes (`bb9466c`); the rear chromatix, AF
   and actuator tuning in `camera-sensors/rear-tuning`.
+
+- **Pierre-Hugues Husson** (phhusson, `phhusson/ims`) for the IMS stack and
+  **krazey** (`krazey/ims`) for its LineageOS 23 fork used for VoLTE; its
+  audio submodules come from **amikhasenko** (rnnoise) and **ewan-xu** (AEC3).
 
 Work under evaluation for cityman, credited where it is used:
 **hraj9258** (talkman rear camera with a kernel SMIA++ IMX230 driver).

@@ -357,7 +357,7 @@ PRODUCT_PACKAGES += \
 # VoLTE through phh's userspace IMS stack (krazey/ims fork) in
 # packages/apps/PhhIms: ImsService/MmTel provider on the IMS APN that rild
 # brings up; its PhhImsOverlay sets config_ims_mmtel_package. Built only when
-# the project is synced (manifest branch test/volte-phh).
+# the project is synced (lineageos-23 manifest).
 ifneq ($(wildcard packages/apps/PhhIms/Android.bp),)
 PRODUCT_PACKAGES += \
     PhhIms
