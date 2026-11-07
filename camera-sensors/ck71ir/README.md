@@ -1,7 +1,9 @@
 # Iris IR camera (Cityman, ACPI `CAMT`)
 
-Experimental test-stream module for the Lumia 950 XL iris scanner camera.
-It is **off by default** and has **not been run on hardware**.
+Sensor module for the Lumia 950 XL iris scanner camera, used by the iris unlock
+face HAL (giannoccarol/cityman-iris). Built only with `CITYMAN_CAMERA_IRIS=true`.
+It streams on hardware since 6/11/2026 (CSID3, 0 ECC/CRC errors) with a kernel
+that has the cityman iris CSIPHY changes (MISC1 bit 1 on PHY2 lanes 3/4).
 
 ## Identification (offline)
 
@@ -16,12 +18,14 @@ It is **off by default** and has **not been run on hardware**.
   29.9 fps. Gain code 56..448 (code/56). Production exposure 350 us.
 - CSIPHY2 in 2+1 combo mode (PHY lanes 3/4) to CSID3, MCLK1 9.6 MHz,
   reset GPIO 102, standby GPIO 106, L3 1.2 V / L17 2.8 V / LVS1 1.8 V.
-- Illuminator: PMI8994 flash block `0xd300` (ACPI `FLHT`), i.e. the
-  `led:torch_0/1` / `led:flash_0/1` channels; the channel is not known.
+- Illuminator: PMI8994 flash block `0xd300` (ACPI `FLHT`). Both
+  `led:torch_0` and `led:torch_1` feed it and their currents add.
 
-Unknown until measured: CCI master and slave address (master 0 / 0x20 is
-the guess), the value at `0x0000`, lane assignment (0x0004 or 0x0003),
-settle count, black level, orientation.
+Measured on the phone: CCI master 0, 8-bit slave **0x6C**, model `0x0861`;
+CSID3 `lane_assign 0x0004`, settle 22, PHY2 `lane_mask 0x18` in combo mode;
+black level 64; monochrome (the four CFA sites match within 3 %, the BGGR
+order is only a label). `sensor_lib_ck71ir.c` reads `vendor.camera.iris.*`
+overrides for bring-up (lane_assign, settle, lane_mask, combo, standby, reg).
 
 ## Private input
 
@@ -39,19 +43,22 @@ The tables are written as the Windows driver does, including the non-standard
 ```sh
 export CITYMAN_CAMERA_IRIS=true
 export CITYMAN_CAMERA_IRIS_DCC=/absolute/path/to/0C086101.dcc
-m libmmcamera_ck71ir mm-qcamera-app
+m libmmcamera_ck71ir
 ```
 
 The daemon probes only the names compiled into
 `libmmcamera2_sensor_modules.so`. `patch-sensor-list-iris.py` turns the
 list tail `ov4688, vs6955` into `vs6955, ck71ir` so the iris is probed after
-the front camera and HAL ids 0/1 do not move. Output stays private.
+the front camera and HAL ids 0/1 do not move (ov4688 is not fitted on cityman);
+the vendor tree ships the patched list.
 
-The HAL (`mm_camera_interface.c`) sorts the `ck71ir` camera last and hides it
-unless `persist.vendor.camera.cityman.iris=1`.
+The HAL sorts the `ck71ir` camera last (id 2), forces the mono effect on it
+(`ro.vendor.camera.mono_ids=2`) and marks it `SYSTEM_CAMERA`: apps see it only
+with `persist.vendor.camera.cityman.iris=1`, the face HAL always.
 
 `iris-ir-test.sh` lights one PMI8994 torch channel for a bounded time
-(max 100 mA, 20 s) to find the IR LED.
+(max 100 mA, 20 s). Kernels with `qcom,auto-off-ms` on the torch nodes switch
+it off after 100 ms, so use pulsed tools (cityman-iris `iris_grab -S`).
 
 ## Credits
 
