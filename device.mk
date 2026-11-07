@@ -360,6 +360,7 @@ PRODUCT_PACKAGES += \
 # (the build finds that Android.mk; do not include it again here).
 # The init preloads are in rootdir/etc/init.cityman.rc.
 PRODUCT_PACKAGES += \
+    cityman-ims-profile \
     cityman-uim-bootstrap \
     libcityman_ds_target \
     libcityman_ril_init
