@@ -8,6 +8,7 @@
 #include "RadioIndication.h"
 #include "Helpers.h"
 #include <cutils/properties.h>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -137,28 +138,90 @@ Return<void> RadioResponse::getSignalStrengthResponse(const V1_0::RadioResponseI
     return mRealRadioResponse->getSignalStrengthResponse_1_4(info, Create1_4SignalStrength(sigStrength));
 }
 
-void Init1_2CellIdentity(const V1_0::CellIdentity& legacyCI, V1_2::CellIdentity& newCI) {
+/*
+ * rild answers OPERATOR with the registered "MCCMNC" but leaves MCC and MNC
+ * empty in the cell identity of the registration state, and the 1.0 -> 1.2
+ * conversion lost the cell type: Android then dropped the cell identity and
+ * had no registered PLMN (NetworkRegistrationInfo.getRegisteredPlmn() empty),
+ * which IMS clients such as phh wait for. Keep the type, and fill MCC, MNC and
+ * operator names of a registered cell from the last OPERATOR answer.
+ */
+static std::mutex gOperatorLock;
+static std::string gOperatorMcc, gOperatorMnc, gOperatorLong, gOperatorShort;
+
+static void rememberOperator(const std::string& numeric, const std::string& longName,
+                             const std::string& shortName) {
+    std::lock_guard<std::mutex> lock(gOperatorLock);
+    if ((numeric.size() == 5 || numeric.size() == 6) &&
+        numeric.find_first_not_of("0123456789") == std::string::npos) {
+        gOperatorMcc = numeric.substr(0, 3);
+        gOperatorMnc = numeric.substr(3);
+        gOperatorLong = longName;
+        gOperatorShort = shortName;
+    } else {
+        gOperatorMcc.clear();
+        gOperatorMnc.clear();
+        gOperatorLong.clear();
+        gOperatorShort.clear();
+    }
+}
+
+template <typename Base>
+static void fillPlmn(Base& base, V1_2::CellIdentityOperatorNames& names) {
+    std::lock_guard<std::mutex> lock(gOperatorLock);
+    if (gOperatorMcc.empty())
+        return;
+    if (base.mcc.size() == 0 || base.mnc.size() == 0) {
+        base.mcc = gOperatorMcc;
+        base.mnc = gOperatorMnc;
+    }
+    if (names.alphaLong.size() == 0)
+        names.alphaLong = gOperatorLong;
+    if (names.alphaShort.size() == 0)
+        names.alphaShort = gOperatorShort;
+}
+
+static bool isRegistered(V1_0::RegState state) {
+    return state == V1_0::RegState::REG_HOME || state == V1_0::RegState::REG_ROAMING;
+}
+
+void Init1_2CellIdentity(const V1_0::CellIdentity& legacyCI, V1_2::CellIdentity& newCI,
+                         bool registered) {
+    newCI.cellInfoType = legacyCI.cellInfoType;
     if(legacyCI.cellIdentityGsm.size() == 1){
+        newCI.cellInfoType = V1_0::CellInfoType::GSM;
         newCI.cellIdentityGsm.resize(1);
         newCI.cellIdentityGsm[0].base = legacyCI.cellIdentityGsm[0];
+        if (registered)
+            fillPlmn(newCI.cellIdentityGsm[0].base, newCI.cellIdentityGsm[0].operatorNames);
     }
     else if(legacyCI.cellIdentityCdma.size() == 1){
+        newCI.cellInfoType = V1_0::CellInfoType::CDMA;
         newCI.cellIdentityCdma.resize(1);
         newCI.cellIdentityCdma[0].base = legacyCI.cellIdentityCdma[0];
     }
     else if(legacyCI.cellIdentityLte.size() == 1){
+        newCI.cellInfoType = V1_0::CellInfoType::LTE;
         newCI.cellIdentityLte.resize(1);
         newCI.cellIdentityLte[0].base = legacyCI.cellIdentityLte[0];
         newCI.cellIdentityLte[0].bandwidth = INT_MAX;
+        if (registered)
+            fillPlmn(newCI.cellIdentityLte[0].base, newCI.cellIdentityLte[0].operatorNames);
     }
     else if(legacyCI.cellIdentityWcdma.size() == 1){
+        newCI.cellInfoType = V1_0::CellInfoType::WCDMA;
         newCI.cellIdentityWcdma.resize(1);
         newCI.cellIdentityWcdma[0].base = legacyCI.cellIdentityWcdma[0];
+        if (registered)
+            fillPlmn(newCI.cellIdentityWcdma[0].base, newCI.cellIdentityWcdma[0].operatorNames);
     }
     else if(legacyCI.cellIdentityTdscdma.size() == 1){
+        newCI.cellInfoType = V1_0::CellInfoType::TD_SCDMA;
         newCI.cellIdentityTdscdma.resize(1);
         newCI.cellIdentityTdscdma[0].base = legacyCI.cellIdentityTdscdma[0];
         newCI.cellIdentityTdscdma[0].uarfcn = INT_MAX;
+        if (registered)
+            fillPlmn(newCI.cellIdentityTdscdma[0].base, newCI.cellIdentityTdscdma[0].operatorNames);
     }
 }
 
@@ -172,7 +235,8 @@ Return<void> RadioResponse::getVoiceRegistrationStateResponse(
     newVRR.systemIsInPrl = voiceRegResponse.systemIsInPrl;
     newVRR.defaultRoamingIndicator = voiceRegResponse.defaultRoamingIndicator;
     newVRR.reasonForDenial = voiceRegResponse.reasonForDenial;
-    Init1_2CellIdentity(voiceRegResponse.cellIdentity, newVRR.cellIdentity);
+    Init1_2CellIdentity(voiceRegResponse.cellIdentity, newVRR.cellIdentity,
+                        isRegistered(voiceRegResponse.regState));
 
     return mRealRadioResponse->getVoiceRegistrationStateResponse_1_2(info, newVRR);
 }
@@ -187,7 +251,8 @@ Return<void> RadioResponse::getDataRegistrationStateResponse(
     newDRR.base.rat = dataRegResponse.rat;
     newDRR.base.reasonDataDenied = dataRegResponse.reasonDataDenied;
     newDRR.base.maxDataCalls = dataRegResponse.maxDataCalls;
-    Init1_2CellIdentity(dataRegResponse.cellIdentity, newDRR.base.cellIdentity);
+    Init1_2CellIdentity(dataRegResponse.cellIdentity, newDRR.base.cellIdentity,
+                        isRegistered(dataRegResponse.regState));
 
     return mRealRadioResponse->getDataRegistrationStateResponse_1_4(info, newDRR);
 }
@@ -196,6 +261,8 @@ Return<void> RadioResponse::getOperatorResponse(const V1_0::RadioResponseInfo& i
                                                 const hidl_string& longName,
                                                 const hidl_string& shortName,
                                                 const hidl_string& numeric) {
+    if (info.error == V1_0::RadioError::NONE)
+        rememberOperator(numeric, longName, shortName);
     return mRealRadioResponse->getOperatorResponse(info, longName, shortName, numeric);
 }
 
