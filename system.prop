@@ -38,6 +38,10 @@ persist.camera.is_type=4
 persist.camera.tnr.preview=0
 persist.camera.tnr.video=0
 persist.camera.HAL3.enabled=1
+# No chroma downsampling (CDS). In low light the ISP halves the chroma in both
+# directions and the snapshot path does not scale it back: front camera photos
+# came out green except one quarter (6-7/11/2026, ISO above ~1000 in auto).
+persist.camera.CDS=Off
 ro.camera.notify_nfc=1
 
 # Configstore
