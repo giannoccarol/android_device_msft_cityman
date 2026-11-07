@@ -146,9 +146,13 @@ hidl_vec<hidl_string> DelimitedStrToVec(std::string delimitedStr){
     std::sregex_token_iterator iter(delimitedStr.begin(), delimitedStr.end(), rgx, -1);
     std::sregex_token_iterator end;
 
+    // rild sends "" (or leading spaces) when a call fails or has no address:
+    // an empty entry makes the framework throw while parsing the whole
+    // response, and the data network then stays CONNECTING.
     std::vector<hidl_string> tokens;
     for ( ; iter != end; ++iter)
-        tokens.push_back(hidl_string(*iter));
+        if (iter->length() > 0)
+            tokens.push_back(hidl_string(*iter));
 
     return hidl_vec(tokens);
 }
