@@ -220,11 +220,14 @@ endif
 # with qcom,camera@1 enabled; off by default.
 ifeq ($(CITYMAN_CAMERA_FRONT_VS6955),true)
 PRODUCT_PACKAGES += libmmcamera_vs6955
-# its exposure chromatix, built from C in camera-sensors/front-tuning
+# its chromatix, built from C in camera-sensors/front-tuning: three colour
+# matrix sets, switchable with vendor.camera.front.ccm, and the common
+# payload when CITYMAN_CAMERA_FRONT_BLACK sets the black level
 PRODUCT_PACKAGES += \
-    libchromatix_vs6955_preview \
-    libchromatix_vs6955_video_binning \
-    libchromatix_vs6955_liveshot
+    $(foreach s,imx179 swarc hwqc,$(foreach n,preview video_binning liveshot,libchromatix_vs6955_$(s)_$(n)))
+ifneq ($(strip $(CITYMAN_CAMERA_FRONT_BLACK)),)
+PRODUCT_PACKAGES += libchromatix_vs6955_common
+endif
 endif
 # Iris IR camera (camera-sensors/ck71ir) and iris unlock, exposed to Android
 # as a weak (class 2) IR face sensor. Requires the private 0C086101.dcc, the

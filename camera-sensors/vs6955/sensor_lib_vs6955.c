@@ -22,6 +22,21 @@
 #include "angler_sensor_abi.h"
 #include "vs6955_registers.generated.h"
 
+/*
+ * Colour options (README.md "Colour options"). The build defaults come from
+ * Android.mk; the vendor.camera.front.* properties override them when the
+ * daemon loads this module (sensor_open_lib), so a daemon restart is enough.
+ */
+#ifndef CITYMAN_FRONT_BLUE_GAIN
+#define CITYMAN_FRONT_BLUE_GAIN 0x0159     /* 1.35x, 503c139 */
+#endif
+#ifndef CITYMAN_FRONT_CCM_DEFAULT
+#define CITYMAN_FRONT_CCM_DEFAULT "swarc"
+#endif
+#ifndef CITYMAN_FRONT_HAVE_COMMON
+#define CITYMAN_FRONT_HAVE_COMMON 0        /* libchromatix_vs6955_common built */
+#endif
+
 #define COUNT(a) (sizeof(a) / sizeof((a)[0]))
 #define SETTING(a, type, wait) { .reg_setting = (a), .size = COUNT(a), \
     .addr_type = MSM_CAMERA_I2C_WORD_ADDR, .data_type = (type), .delay = (wait) }
@@ -44,13 +59,16 @@ static struct msm_camera_i2c_reg_array stream_on[] = {
     {0x0202, 0x03, 0}, {0x0203, 0xe8, 0},   /* 1000 lines */
     {0x0204, 0x00, 0}, {0x0205, 0x00, 0},   /* 1x gain */
     /*
-     * Digital gains per channel (Gr, R, B, Gb; 0x0100 = 1.0): blue at 1.35x.
+     * Digital gains per channel (Gr, R, B, Gb; 0x0100 = 1.0): blue at 1.35x
+     * by default (CITYMAN_FRONT_BLUE_GAIN, vendor.camera.front.blue_gain).
      * The borrowed IMX179 chromatix left a yellow cast; measured on the
      * phone, 1.20x was still warm, 1.35x gave a neutral white wall and
      * 1.50x turned blue. This stands in for a VS6955 AWB calibration.
      */
     {0x020e, 0x01, 0}, {0x020f, 0x00, 0}, {0x0210, 0x01, 0}, {0x0211, 0x00, 0},
-    {0x0212, 0x01, 0}, {0x0213, 0x59, 0}, {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
+    {0x0212, (CITYMAN_FRONT_BLUE_GAIN >> 8) & 0xff, 0},
+    {0x0213, CITYMAN_FRONT_BLUE_GAIN & 0xff, 0},
+    {0x0214, 0x01, 0}, {0x0215, 0x00, 0},
     {0x0104, 0, 0},
     {0x0114, 1, 0},   /* two MIPI lanes */
     {0x0100, 1, 0},
@@ -220,13 +238,14 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
      * VS6955 calibration.
      */
     .tuning = {.entries = {{.names = {
+        /* entries 0..4 are chosen in sensor_open_lib() */
         "libchromatix_imx179_liteon_common.so",
-        /* the imx179 VFE/3A payloads with brighter AEC targets,
-         * built in camera-sensors/front-tuning */
-        "libchromatix_vs6955_preview.so",
-        "libchromatix_vs6955_preview.so",
-        "libchromatix_vs6955_video_binning.so",
-        "libchromatix_vs6955_liveshot.so",
+        /* the imx179 VFE/3A payloads with brighter AEC targets and a choice
+         * of colour matrix, built in camera-sensors/front-tuning */
+        "libchromatix_vs6955_imx179_preview.so",
+        "libchromatix_vs6955_imx179_preview.so",
+        "libchromatix_vs6955_imx179_video_binning.so",
+        "libchromatix_vs6955_imx179_liveshot.so",
         "libchromatix_imx179_liteon_cpp_preview.so",
         "libchromatix_imx179_liteon_cpp_preview.so",
         "libchromatix_imx179_liteon_cpp_preview.so",
@@ -239,7 +258,99 @@ struct angler_sensor_descriptor cityman_vs6955_descriptor = {
     .exposure_table_capacity = 8, .initial_frame_skip = 2,
 };
 
+/* bionic; declared here because the kernel include path shadows libc. */
+int __system_property_get(const char *name, char *value);
+
+static int front_streq(const char *a, const char *b)
+{
+    while (*a && *a == *b) a++, b++;
+    return *a == *b;
+}
+
+/* Decimal or 0x-prefixed hexadecimal; 0 if unset or malformed. */
+static int front_prop_num(const char *name, unsigned long *out)
+{
+    char value[92] = {0}; /* PROP_VALUE_MAX */
+    const char *c = value;
+    unsigned long v = 0, base = 10;
+    if (__system_property_get(name, value) <= 0) return 0;
+    if (c[0] == '0' && (c[1] == 'x' || c[1] == 'X')) c += 2, base = 16;
+    if (!*c) return 0;
+    for (; *c; c++) {
+        unsigned long d;
+        if (*c >= '0' && *c <= '9') d = (unsigned long)(*c - '0');
+        else if (base == 16 && (*c | 32) >= 'a' && (*c | 32) <= 'f') d = (unsigned long)((*c | 32) - 'a' + 10);
+        else return 0;
+        v = v * base + d;
+        if (v > 0xffff) return 0;
+    }
+    *out = v;
+    return 1;
+}
+
+static void front_set_blue_gain(unsigned long code)
+{
+    unsigned i;
+    /* 1.0x .. 15.99x in 1/256 steps (SMIA++ 8.8 digital gain). */
+    if (code < 0x0100) code = 0x0100;
+    if (code > 0x0fff) code = 0x0fff;
+    for (i = 0; i < COUNT(stream_on); i++) {
+        if (stream_on[i].reg_addr == 0x0212) stream_on[i].reg_data = (code >> 8) & 0xff;
+        if (stream_on[i].reg_addr == 0x0213) stream_on[i].reg_data = code & 0xff;
+    }
+}
+
+/* Chromatix names per colour matrix set (front-tuning/Android.mk). */
+#define FRONT_CHX(set) { \
+    "libchromatix_vs6955_" set "_preview.so", \
+    "libchromatix_vs6955_" set "_video_binning.so", \
+    "libchromatix_vs6955_" set "_liveshot.so" }
+static const struct { const char *name, *alias; const char *chx[3]; } front_ccm_sets[] = {
+    { "imx179", "donor",  FRONT_CHX("imx179") },
+    { "swarc",  "sw_arc", FRONT_CHX("swarc") },
+    { "hwqc",   "hw_qc",  FRONT_CHX("hwqc") },
+};
+
+static int front_ccm_set(const char *v)
+{
+    unsigned i;
+    for (i = 0; i < COUNT(front_ccm_sets); i++)
+        if (front_streq(v, front_ccm_sets[i].name) || front_streq(v, front_ccm_sets[i].alias))
+            return (int)i;
+    return -1;
+}
+
 __attribute__((visibility("default"))) void *sensor_open_lib(void)
 {
+    const char **names = cityman_vs6955_descriptor.tuning.entries[0].names;
+    char value[92] = {0};
+    unsigned long v;
+    int set = front_ccm_set(CITYMAN_FRONT_CCM_DEFAULT);
+    int common = CITYMAN_FRONT_HAVE_COMMON;
+
+    /*
+     * vendor.camera.front.blue_gain: digital gain of the blue channel,
+     * 0x100 = 1.0x (decimal or 0x hex). Default CITYMAN_FRONT_BLUE_GAIN.
+     */
+    if (front_prop_num("vendor.camera.front.blue_gain", &v))
+        front_set_blue_gain(v);
+    /* vendor.camera.front.ccm: imx179 | swarc | hwqc */
+    if (__system_property_get("vendor.camera.front.ccm", value) > 0 && front_ccm_set(value) >= 0)
+        set = front_ccm_set(value);
+    if (set < 0) set = 0;
+    /*
+     * vendor.camera.front.common: imx179 (the vendor blob, donor black
+     * level) or vs6955 (CITYMAN_CAMERA_FRONT_BLACK, only if it was built).
+     */
+    value[0] = 0;
+    if (__system_property_get("vendor.camera.front.common", value) > 0) {
+        if (front_streq(value, "imx179")) common = 0;
+        else if (front_streq(value, "vs6955") && CITYMAN_FRONT_HAVE_COMMON) common = 1;
+    }
+    names[0] = common ? "libchromatix_vs6955_common.so" : "libchromatix_imx179_liteon_common.so";
+    names[1] = front_ccm_sets[set].chx[0];
+    names[2] = front_ccm_sets[set].chx[0];
+    names[3] = front_ccm_sets[set].chx[1];
+    names[4] = front_ccm_sets[set].chx[2];
     return &cityman_vs6955_descriptor;
 }
