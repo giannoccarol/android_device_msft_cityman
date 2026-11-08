@@ -58,6 +58,11 @@ on property:vendor.cityman.otg=0
     write /sys/class/power_supply/usb/usb_otg 0
 
 on property:sys.boot_completed=1
+    # USB-C video: the composer enables HDMI hot plug on the first
+    # HWC_POWER_MODE_NORMAL of the primary display, and on cityman that call
+    # does not reach it at boot. Without it the HDMI side ignores the
+    # SlimPort bridge and no picture reaches the external display.
+    write /sys/class/graphics/fb1/hpd 1
     # allow CPUs to go in deeper idle state than C0
     write /sys/module/lpm_levels/parameters/sleep_disabled 0
     #end boot time fs tune
