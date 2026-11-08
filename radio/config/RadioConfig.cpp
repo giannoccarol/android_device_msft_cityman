@@ -15,6 +15,22 @@ namespace radio {
 namespace config {
 
 using namespace ::android::hardware::radio::config::V1_1;
+using ::android::hardware::radio::V1_0::RadioError;
+using ::android::hardware::radio::V1_0::RadioResponseInfo;
+using ::android::hardware::radio::V1_0::RadioResponseType;
+
+// The framework matches a response to its request by serial: an
+// uninitialised info was dropped, the request never completed, and
+// PhoneSwitcher never published the active data subscription (the status
+// bar then showed the mobile signal with an exclamation mark).
+static RadioResponseInfo responseInfo(int32_t serial,
+                                      RadioError error = RadioError::NONE) {
+    RadioResponseInfo info = {};
+    info.type = RadioResponseType::SOLICITED;
+    info.serial = serial;
+    info.error = error;
+    return info;
+}
 
 Return<void> RadioConfig::setResponseFunctions(
     const sp<V1_0::IRadioConfigResponse>& radioConfigResponse,
@@ -31,7 +47,7 @@ static uint32_t simSlotCount() {
     return (!strcmp(prop, "dsds") || !strcmp(prop, "dsda")) ? 2 : 1;
 }
 
-Return<void> RadioConfig::getSimSlotsStatus(int32_t /* serial */) {
+Return<void> RadioConfig::getSimSlotsStatus(int32_t serial) {
     const uint32_t slots = simSlotCount();
     hidl_vec<V1_0::SimSlotStatus> slotStatus(slots);
     for (uint32_t i = 0; i < slots; ++i) {
@@ -54,43 +70,44 @@ Return<void> RadioConfig::getSimSlotsStatus(int32_t /* serial */) {
         }
     }
 
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    info.error = ::android::hardware::radio::V1_0::RadioError::NONE;
-    mRadioConfigResponse->getSimSlotsStatusResponse(info, slotStatus);
+    mRadioConfigResponse->getSimSlotsStatusResponse(responseInfo(serial), slotStatus);
     return Void();
 }
 
-Return<void> RadioConfig::setSimSlotsMapping(int32_t /* serial */,
+Return<void> RadioConfig::setSimSlotsMapping(int32_t serial,
                                              const hidl_vec<uint32_t>& /* slotMap */) {
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    mRadioConfigResponse->setSimSlotsMappingResponse(info);
+    mRadioConfigResponse->setSimSlotsMappingResponse(responseInfo(serial));
     return Void();
 }
 
-Return<void> RadioConfig::getPhoneCapability(int32_t /* serial */) {
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    V1_1::PhoneCapability capability;
-    mRadioConfigResponse->getPhoneCapabilityResponse(info, capability);
+// One modem, data on one logical modem at a time.
+Return<void> RadioConfig::getPhoneCapability(int32_t serial) {
+    V1_1::PhoneCapability capability = {};
+    capability.maxActiveData = 1;
+    capability.maxActiveInternetData = 1;
+    capability.isInternetLingeringSupported = false;
+    capability.logicalModemList.resize(1);
+    capability.logicalModemList[0].modemId = 0;
+    mRadioConfigResponse->getPhoneCapabilityResponse(responseInfo(serial), capability);
     return Void();
 }
 
-Return<void> RadioConfig::setPreferredDataModem(int32_t /* serial */, uint8_t /* modemId */) {
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    mRadioConfigResponse->setPreferredDataModemResponse(info);
+// rild has a single data stack: there is nothing to switch.
+Return<void> RadioConfig::setPreferredDataModem(int32_t serial, uint8_t /* modemId */) {
+    mRadioConfigResponse->setPreferredDataModemResponse(responseInfo(serial));
     return Void();
 }
 
-Return<void> RadioConfig::setModemsConfig(int32_t /* serial */,
+Return<void> RadioConfig::setModemsConfig(int32_t serial,
                                           const V1_1::ModemsConfig& /* modemsConfig */) {
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    mRadioConfigResponse->setModemsConfigResponse(info);
+    mRadioConfigResponse->setModemsConfigResponse(responseInfo(serial));
     return Void();
 }
 
-Return<void> RadioConfig::getModemsConfig(int32_t /* serial */) {
-    ::android::hardware::radio::V1_0::RadioResponseInfo info;
-    const V1_1::ModemsConfig config = {};
-    mRadioConfigResponse->getModemsConfigResponse(info, config);
+Return<void> RadioConfig::getModemsConfig(int32_t serial) {
+    V1_1::ModemsConfig config = {};
+    config.numOfLiveModems = 1;
+    mRadioConfigResponse->getModemsConfigResponse(responseInfo(serial), config);
     return Void();
 }
 
