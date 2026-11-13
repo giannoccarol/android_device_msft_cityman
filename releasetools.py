@@ -18,7 +18,22 @@ import common
 import re
 
 def FullOTA_InstallBegin(info):
+  OTA_RequireLumia(info)
   OTA_RequireExt4Metadata(info)
+  return
+
+# The device names accepted above include angler and bullhead, because the
+# Lumia TWRPs are built from the Nexus 6P and 5X trees. A real Nexus has no DPP
+# (Lumia provisioning) partition: stop there before anything is written.
+DPP_BLOCK = "/dev/block/platform/soc.0/f9824900.sdhci/by-name/DPP"
+
+def OTA_RequireLumia(info):
+  info.script.AppendExtra('ui_print("Checking for a Lumia...");')
+  info.script.AppendExtra(
+      '(run_program("/sbin/sh", "-c", "test -e %s") == 0) || abort("%s");'
+      % (DPP_BLOCK,
+         "This zip is for the Lumia 950 XL and 950: no Lumia DPP partition "
+         "was found on this phone. Nothing was written."))
   return
 
 def FullOTA_InstallEnd(info):
