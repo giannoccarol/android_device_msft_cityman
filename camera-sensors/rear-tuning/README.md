@@ -56,6 +56,15 @@ overwriting it.
   travel, with a `qvalue` that the daemon replaces.
 - The AF tuning's step fields stay as tuned for the talkman's 268 steps (1% apart).
 - The OIS init sequence of `carrera-af` is not used, as on the talkman.
+- OIS (14/11): off by default. The lens controller also runs the stabiliser,
+  and `actuator_lib_cityman.c` has the init sequence for the viewfinder mode
+  (commit 41c764a, 31/10), but the module calibration that the controller needs
+  before the OIS is switched on (the data block in the module NVM, written
+  through the controller's download registers 0x0581/0x0584) is not loaded, the
+  same mode is used for photos and video, and every camera open waits 500 ms
+  for the controller. Build with `CITYMAN_CAMERA_OIS=true` to send the sequence
+  again. Rear photos became soft around the day it was enabled; whether it is
+  the cause is not established.
 - Stronger CPP wavelet denoise (31/10): the noise profiles of all six gain
   entries scaled by 1.4 for luma and 1.6 for Cb/Cr, declared as overrides in
   `gen-chromatix-c.py`. It is the scaling tested on this phone with the Android 13

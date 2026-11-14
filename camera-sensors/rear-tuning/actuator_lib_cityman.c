@@ -87,8 +87,9 @@
 #define I2C_OP_WRITE        0
 #define I2C_OP_POLL         1
 
+/* Off unless the build asks for it (CITYMAN_CAMERA_OIS=true in Android.mk). */
 #ifndef CITYMAN_CAMERA_OIS
-#define CITYMAN_CAMERA_OIS  1
+#define CITYMAN_CAMERA_OIS  0
 #endif
 /* Windows waits at most 100 x 1 ms for 0x0524 after each OIS mode write. */
 #define OIS_SETTLE_MS       100
