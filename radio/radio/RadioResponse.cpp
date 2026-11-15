@@ -41,6 +41,15 @@ Return<void> RadioResponse::getIccCardStatusResponse(const V1_0::RadioResponseIn
     snprintf(prop, sizeof(prop), "vendor.radio.iccid.slot%d", slotId);
     property_set(prop, std::string(newCS.base.iccid).c_str());
 
+    if (cardStatus.cardState == V1_0::CardState::PRESENT && mOnCardPresent) {
+        int32_t app = cardStatus.gsmUmtsSubscriptionAppIndex;
+        for (size_t i = 0; app < 0 && i < cardStatus.applications.size(); ++i)
+            if (cardStatus.applications[i].appType == V1_0::AppType::USIM ||
+                cardStatus.applications[i].appType == V1_0::AppType::SIM)
+                app = i;
+        if (app >= 0) mOnCardPresent(app);
+    }
+
     return mRealRadioResponse->getIccCardStatusResponse_1_4(info, newCS);
 }
 
@@ -803,6 +812,11 @@ Return<void> RadioResponse::nvResetConfigResponse(const V1_0::RadioResponseInfo&
 }
 
 Return<void> RadioResponse::setUiccSubscriptionResponse(const V1_0::RadioResponseInfo& info) {
+    if (info.serial == kUiccSubscriptionSerial) {
+        LOG(INFO) << "slot " << slotId << ": setUiccSubscription answered, error "
+                  << static_cast<int>(info.error);
+        return Void();
+    }
     return mRealRadioResponse->setUiccSubscriptionResponse(info);
 }
 

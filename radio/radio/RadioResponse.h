@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include <android/hardware/radio/1.4/IRadioResponse.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
@@ -29,9 +31,13 @@ using ::android::hardware::Void;
 constexpr const char* kDataSlotProp = "vendor.radio.cityman.data_slot";
 constexpr const char* kDataAckProp = "vendor.radio.cityman.data_ack";
 constexpr int32_t kInternalSerialBase = 0x7eda0000;
+// Serial of the setUiccSubscription the wrapper sends itself (Radio::activateUiccSubscription).
+constexpr int32_t kUiccSubscriptionSerial = 0x7edb0001;
 
 struct RadioResponse : public V1_4::IRadioResponse {
     sp<V1_4::IRadioResponse> mRealRadioResponse;
+    // Called with the USIM application index when rild reports the card present.
+    std::function<void(int32_t)> mOnCardPresent;
     V1_0::RadioTechnology mRat = V1_0::RadioTechnology::UNKNOWN;
     bool mDataRoaming = false;
     // Methods from ::android::hardware::radio::V1_0::IRadioResponse follow.

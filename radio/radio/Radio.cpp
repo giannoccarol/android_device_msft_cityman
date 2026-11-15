@@ -66,7 +66,9 @@ extern int slotId;
 
 namespace android::hardware::radio::implementation {
 
-Radio::Radio(sp<V1_0::IRadio> realRadio) : mRealRadio(realRadio) {}
+Radio::Radio(sp<V1_0::IRadio> realRadio) : mRealRadio(realRadio) {
+    mRadioResponse->mOnCardPresent = [this](int32_t app) { activateUiccSubscription(app); };
+}
 
 // Methods from ::android::hardware::radio::V1_0::IRadio follow.
 Return<void> Radio::setResponseFunctions(const sp<V1_0::IRadioResponse>& radioResponse,
@@ -82,9 +84,35 @@ Return<void> Radio::setResponseFunctions(const sp<V1_0::IRadioResponse>& radioRe
         // A new telephony connection (or a restarted rild): send the data slot again.
         std::lock_guard<std::mutex> lock(mDataSlotLock);
         mDataAllowed = -1;
+        mUiccSubscriptionSent = false;
     }
     applyDataSlot();
     return ret;
+}
+
+// Dual SIM: in DSDS mode qcril finishes its start-up (operational status
+// "unrestricted") only after a subscription follow-up, which runs when it is
+// asked to activate a subscription with RIL_REQUEST_SET_UICC_SUBSCRIPTION.
+// Qualcomm's telephony framework sent that for each slot at boot; Android
+// 16 never does, so qcril stayed in "init ongoing" and dropped every voice
+// indication: outgoing calls stuck in DIALING, incoming calls never rang.
+// The wrapper of each slot sends it once per telephony connection, as soon
+// as rild reports the card present.
+void Radio::activateUiccSubscription(int32_t appIndex) {
+    if (android::base::GetProperty("persist.radio.multisim.config", "") != "dsds") return;
+    std::lock_guard<std::mutex> lock(mDataSlotLock);
+    auto realRadio = mRealRadio;
+    if (realRadio == nullptr || mRadioResponse->mRealRadioResponse == nullptr ||
+        mUiccSubscriptionSent)
+        return;
+    V1_0::SelectUiccSub sub = {};
+    sub.slot = slotId - 1;
+    sub.appIndex = appIndex;
+    sub.subType = static_cast<V1_0::SubscriptionType>(slotId - 1);
+    sub.actStatus = V1_0::UiccSubActStatus::ACTIVATE;
+    LOG(INFO) << "slot " << slotId << ": setUiccSubscription(app " << appIndex << ")";
+    if (realRadio->setUiccSubscription(kUiccSubscriptionSerial, sub).isOk())
+        mUiccSubscriptionSent = true;
 }
 
 // Dual SIM data slot: RadioConfig::setPreferredDataModem writes the logical

@@ -263,11 +263,14 @@ struct Radio : public V1_4::IRadio {
 
     // Dual SIM: send rild setDataAllowed for this slot from kDataSlotProp.
     void applyDataSlot();
+    // Dual SIM: ask qcril to activate this slot's subscription (once per connection).
+    void activateUiccSubscription(int32_t appIndex);
 
   private:
     std::mutex mDataSlotLock;
     int mDataAllowed = -1;  // last value sent to rild, -1 = none yet
     int32_t mInternalSerial = kInternalSerialBase;
+    bool mUiccSubscriptionSent = false;
 
     sp<V1_0::IRadio> mRealRadio;
     sp<RadioResponse> mRadioResponse = new RadioResponse();
