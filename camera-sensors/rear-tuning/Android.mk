@@ -13,11 +13,9 @@ LOCAL_MODULE_CLASS         := SHARED_LIBRARIES
 LOCAL_VENDOR_MODULE        := true
 LOCAL_SRC_FILES            := actuator_lib_cityman.c
 LOCAL_MULTILIB             := 32
-# The OIS init sequence is sent only with CITYMAN_CAMERA_OIS=true: the module
-# calibration has to be downloaded to the controller before the OIS is turned
-# on, and that step is not implemented here (README.md, "OIS").
+# CITYMAN_CAMERA_OIS=false leaves the OIS off (no init sequence).
 LOCAL_CFLAGS               := $(cityman_rear_cflags) \
-                              -DCITYMAN_CAMERA_OIS=$(if $(filter true,$(CITYMAN_CAMERA_OIS)),1,0)
+                              -DCITYMAN_CAMERA_OIS=$(if $(filter false,$(CITYMAN_CAMERA_OIS)),0,1)
 LOCAL_LDFLAGS              := $(cityman_rear_ldflags) -Wl,-soname,libactuator_cityman.so
 LOCAL_SYSTEM_SHARED_LIBRARIES := none
 LOCAL_NO_CRT               := true
