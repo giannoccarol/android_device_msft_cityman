@@ -257,6 +257,10 @@ on post-fs
     chmod 0222 /sys/kernel/tracing/trace_marker
 
 on post-fs-data
+    # Dual SIM models (RM-1116, RM-1118): persist.radio.multisim.config=dsds
+    # before rild, the radio HALs and telephony start (init.cityman.simconfig.sh).
+    exec_start vendor.cityman-simconfig
+
     # boot time fs tune
     write /sys/block/mmcblk0/queue/iostats 0
     write /sys/block/mmcblk0/queue/scheduler cfq
@@ -412,6 +416,26 @@ service vendor.ril-daemon /vendor/bin/hw/rild
     group radio cache inet misc audio log readproc wakelock
     capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
     setenv LD_PRELOAD /vendor/lib64/libcityman_ril_init.so:/vendor/lib64/libcityman_ds_target.so
+
+# Second SIM slot of the dual SIM models: a second rild (qcril instance 2,
+# secondary subscription) with the same preloads, enabled only when
+# init.cityman.simconfig.sh found a dual SIM phone.
+service vendor.ril-daemon2 /vendor/bin/hw/rild -c 2
+    class main
+    user radio
+    group radio cache inet misc audio log readproc wakelock
+    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+    setenv LD_PRELOAD /vendor/lib64/libcityman_ril_init.so:/vendor/lib64/libcityman_ds_target.so
+    disabled
+
+on property:persist.radio.multisim.config=dsds
+    enable vendor.ril-daemon2
+
+service vendor.cityman-simconfig /vendor/bin/init.cityman.simconfig.sh
+    user root
+    group root system
+    disabled
+    oneshot
 
 service per_mgr /vendor/bin/pm-service
     class core

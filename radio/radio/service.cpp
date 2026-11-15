@@ -39,15 +39,18 @@ int slotId = 1;
 // through linkDeathToDeath and finds the new rild on restart, so the two
 // services cannot restart each other in a loop.
 static sp<V1_0::IRadio> getRildRadio(const std::string& name) {
+    // The rild serving this slot: vendor.ril-daemon, or vendor.ril-daemon2
+    // for the second slot of the dual SIM models.
+    const std::string rild = slotId == 1 ? "vendor.ril-daemon" : "vendor.ril-daemon2";
     bool restarted = false;
     for (int i = 0; i < 120; ++i) {
         sp<V1_0::IRadio> radio = V1_0::IRadio::tryGetService(name);
         if (radio != nullptr) return radio;
         if (!restarted && i >= 30 &&
-            android::base::GetProperty("init.svc.vendor.ril-daemon", "") == "running") {
-            LOG(WARNING) << "rild is running but its IRadio " << name
-                         << " is not registered, restarting rild";
-            android::base::SetProperty("ctl.restart", "vendor.ril-daemon");
+            android::base::GetProperty("init.svc." + rild, "") == "running") {
+            LOG(WARNING) << rild << " is running but its IRadio " << name
+                         << " is not registered, restarting it";
+            android::base::SetProperty("ctl.restart", rild);
             restarted = true;
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));

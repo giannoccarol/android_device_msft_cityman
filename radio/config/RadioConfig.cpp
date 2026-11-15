@@ -80,14 +80,16 @@ Return<void> RadioConfig::setSimSlotsMapping(int32_t serial,
     return Void();
 }
 
-// One modem, data on one logical modem at a time.
+// One logical modem per SIM slot (dual SIM dual standby), data on one at a time.
 Return<void> RadioConfig::getPhoneCapability(int32_t serial) {
+    const uint32_t slots = simSlotCount();
     V1_1::PhoneCapability capability = {};
     capability.maxActiveData = 1;
     capability.maxActiveInternetData = 1;
     capability.isInternetLingeringSupported = false;
-    capability.logicalModemList.resize(1);
-    capability.logicalModemList[0].modemId = 0;
+    capability.logicalModemList.resize(slots);
+    for (uint32_t i = 0; i < slots; ++i)
+        capability.logicalModemList[i].modemId = i;
     mRadioConfigResponse->getPhoneCapabilityResponse(responseInfo(serial), capability);
     return Void();
 }
@@ -106,7 +108,7 @@ Return<void> RadioConfig::setModemsConfig(int32_t serial,
 
 Return<void> RadioConfig::getModemsConfig(int32_t serial) {
     V1_1::ModemsConfig config = {};
-    config.numOfLiveModems = 1;
+    config.numOfLiveModems = simSlotCount();
     mRadioConfigResponse->getModemsConfigResponse(responseInfo(serial), config);
     return Void();
 }
