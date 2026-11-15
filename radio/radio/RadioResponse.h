@@ -34,12 +34,14 @@ constexpr int32_t kInternalSerialBase = 0x7eda0000;
 // Serial of the setUiccSubscription the wrapper sends itself (Radio::activateUiccSubscription).
 constexpr int32_t kUiccSubscriptionSerial = 0x7edb0001;
 
-// Dual SIM call audio: the slot (1 or 2) of the call in progress, 0 when there
-// is none. The audio HAL starts the second voice session (VSID 0x10DC1000)
-// when it reads 2; without it calls on SIM 2 connected without audio.
+// Dual SIM call audio: the voice session (1 or 2) of the call in progress, 0
+// when there is none. It is the modem stack of the slot's rild instance plus
+// one: slot 1 and 2 normally, swapped after Android moves the LTE stack to
+// SIM 2. The audio HAL starts the second voice session (VSID 0x10DC1000) when
+// it reads 2; without it calls on the second stack had no audio.
 constexpr const char* kVoiceSlotProp = "vendor.radio.cityman.voice_slot";
-// Writes this slot to kVoiceSlotProp (inCall) or clears it if it holds this
-// slot. Dual SIM only.
+// Writes this slot's voice session to kVoiceSlotProp (inCall) or clears it if
+// it holds this slot's session. Dual SIM only.
 void updateVoiceSlot(bool inCall);
 
 struct RadioResponse : public V1_4::IRadioResponse {

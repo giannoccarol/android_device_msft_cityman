@@ -23,14 +23,25 @@ extern int32_t emergency_dial_serial;
 
 namespace android::hardware::radio::implementation {
 
+// The voice session of this slot's calls: the modem stack its rild instance
+// is bound to, plus one. qcril keeps the binding in
+// persist.radio.msim.stackid_<instance>; it is 0 for slot 1 and 1 for slot 2
+// until Android moves the LTE stack to SIM 2 (setRadioCapability), which
+// swaps them.
+static std::string voiceSession() {
+    const std::string stack = android::base::GetProperty(
+            "persist.radio.msim.stackid_" + std::to_string(slotId - 1), std::to_string(slotId - 1));
+    return stack == "1" ? "2" : "1";
+}
+
 void updateVoiceSlot(bool inCall) {
     static const bool dsds =
             android::base::GetProperty("persist.radio.multisim.config", "") == "dsds";
     if (!dsds) return;
-    const std::string self = std::to_string(slotId);
+    const std::string self = voiceSession();
     const std::string current = android::base::GetProperty(kVoiceSlotProp, "");
     if (inCall && current != self) {
-        LOG(INFO) << "slot " << slotId << ": call audio on this SIM";
+        LOG(INFO) << "slot " << slotId << ": call audio on voice session " << self;
         android::base::SetProperty(kVoiceSlotProp, self);
     } else if (!inCall && current == self) {
         LOG(INFO) << "slot " << slotId << ": no call left on this SIM";
