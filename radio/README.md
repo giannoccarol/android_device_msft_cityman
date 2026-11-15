@@ -31,6 +31,18 @@ their responses are not forwarded to telephony. The wrapper of the chosen slot
 writes `vendor.radio.cityman.data_ack`, and RadioConfig waits up to 5 s for it
 before answering.
 
+Calls: in DSDS mode qcril leaves its "init ongoing" state, and only then
+handles voice indications, after `RIL_REQUEST_SET_UICC_SUBSCRIPTION`, which
+Android 16 never sends. Without it outgoing calls stayed in DIALING and
+incoming calls never rang. The wrapper of each slot sends `setUiccSubscription`
+once per telephony connection when rild reports the card present.
+
+Call audio on SIM 2: the wrapper writes the slot of the call in progress to
+`vendor.radio.cityman.voice_slot` (on dial, answer and from the call list; 0
+when no call is left). The audio HAL patch
+`hardware/qcom-caf/msm8994/audio/0001` of the manifest starts the second voice
+session (`voice2-call`, VSID 0x10DC1000) when it reads 2.
+
 ## Credits
 
 Taken from the OnePlus 2 Android 16 device tree,

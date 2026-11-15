@@ -23,6 +23,21 @@ extern int32_t emergency_dial_serial;
 
 namespace android::hardware::radio::implementation {
 
+void updateVoiceSlot(bool inCall) {
+    static const bool dsds =
+            android::base::GetProperty("persist.radio.multisim.config", "") == "dsds";
+    if (!dsds) return;
+    const std::string self = std::to_string(slotId);
+    const std::string current = android::base::GetProperty(kVoiceSlotProp, "");
+    if (inCall && current != self) {
+        LOG(INFO) << "slot " << slotId << ": call audio on this SIM";
+        android::base::SetProperty(kVoiceSlotProp, self);
+    } else if (!inCall && current == self) {
+        LOG(INFO) << "slot " << slotId << ": no call left on this SIM";
+        android::base::SetProperty(kVoiceSlotProp, "0");
+    }
+}
+
 // Methods from ::android::hardware::radio::V1_0::IRadioResponse follow.
 Return<void> RadioResponse::getIccCardStatusResponse(const V1_0::RadioResponseInfo& info,
                                                      const V1_0::CardStatus& cardStatus) {
@@ -90,6 +105,7 @@ Return<void> RadioResponse::supplyNetworkDepersonalizationResponse(
 
 Return<void> RadioResponse::getCurrentCallsResponse(const V1_0::RadioResponseInfo& info,
                                                     const hidl_vec<V1_0::Call>& calls) {
+    if (info.error == V1_0::RadioError::NONE) updateVoiceSlot(calls.size() > 0);
     hidl_vec<V1_2::Call> newCalls;
     newCalls.resize(calls.size());
 
@@ -968,6 +984,7 @@ Return<void> RadioResponse::setLinkCapacityReportingCriteriaResponse(
 
 Return<void> RadioResponse::getCurrentCallsResponse_1_2(const V1_0::RadioResponseInfo& info,
                                                         const hidl_vec<V1_2::Call>& calls) {
+    if (info.error == V1_0::RadioError::NONE) updateVoiceSlot(calls.size() > 0);
     return mRealRadioResponse->getCurrentCallsResponse_1_2(info, calls);
 }
 

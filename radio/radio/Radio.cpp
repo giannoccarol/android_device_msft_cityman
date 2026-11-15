@@ -179,6 +179,8 @@ Return<void> Radio::getCurrentCalls(int32_t serial) {
 }
 
 Return<void> Radio::dial(int32_t serial, const V1_0::Dial& dialInfo) {
+    // Before rild answers: telephony may switch the audio mode to in-call first.
+    updateVoiceSlot(true);
     WRAP_V1_0_CALL(dial, serial, dialInfo);
 }
 
@@ -295,6 +297,7 @@ Return<void> Radio::acknowledgeLastIncomingGsmSms(int32_t serial, bool success,
 }
 
 Return<void> Radio::acceptCall(int32_t serial) {
+    updateVoiceSlot(true);
     WRAP_V1_0_CALL(acceptCall, serial);
 }
 
@@ -891,6 +894,7 @@ Return<void> Radio::emergencyDial(int32_t serial, const V1_0::Dial& dialInfo,
 
     if (emergency_dial_serial == -1) {
         emergency_dial_serial = serial;
+        updateVoiceSlot(true);
         WRAP_V1_0_CALL(dial, serial, dialInfo);
     }
 
