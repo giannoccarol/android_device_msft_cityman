@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "RadioConfig.h"
 #include <android/hardware/radio/1.0/types.h>
 #include <cutils/properties.h>
@@ -94,8 +96,25 @@ Return<void> RadioConfig::getPhoneCapability(int32_t serial) {
     return Void();
 }
 
-// rild has a single data stack: there is nothing to switch.
-Return<void> RadioConfig::setPreferredDataModem(int32_t serial, uint8_t /* modemId */) {
+// Dual SIM: move mobile data to MODEMID. Each rild instance is reached only
+// through its IRadio wrapper, so the slot goes to the wrappers through
+// vendor.radio.cityman.data_slot: they send setDataAllowed (qcril moves the
+// DDS) and the wrapper of the chosen slot writes vendor.radio.cityman.data_ack
+// once rild accepted it. Wait up to 5 s for that before answering, so that
+// telephony sets up data on the new slot after the switch. Single SIM: there
+// is nothing to switch.
+Return<void> RadioConfig::setPreferredDataModem(int32_t serial, uint8_t modemId) {
+    if (simSlotCount() > 1) {
+        char want[8], ack[PROPERTY_VALUE_MAX];
+
+        snprintf(want, sizeof(want), "%u", modemId);
+        property_set("vendor.radio.cityman.data_slot", want);
+        for (int i = 0; i < 50; ++i) {
+            property_get("vendor.radio.cityman.data_ack", ack, "");
+            if (!strcmp(ack, want)) break;
+            usleep(100 * 1000);
+        }
+    }
     mRadioConfigResponse->setPreferredDataModemResponse(responseInfo(serial));
     return Void();
 }

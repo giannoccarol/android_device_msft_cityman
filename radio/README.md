@@ -22,8 +22,14 @@ declares `slot2`, RadioConfig reports two slots and two logical modems, and the
 UIM bootstrap (kernel `tools/cityman-ril`) opens the secondary GW session for
 the card in the second slot. Single SIM models are unchanged.
 
-Not done yet: `setPreferredDataModem` still only acknowledges, so mobile data
-stays on the subscription the modem uses by default (expected: the first SIM).
+Mobile data on either SIM: RadioConfig's `setPreferredDataModem` writes the
+chosen logical modem to `vendor.radio.cityman.data_slot`. The wrapper of each
+slot watches it and sends its rild `setDataAllowed` (true for the chosen slot,
+false for the other), which qcril handles with a DDS switch
+(`RIL_REQUEST_ALLOW_DATA`); those requests use serials from 0x7eda0000 and
+their responses are not forwarded to telephony. The wrapper of the chosen slot
+writes `vendor.radio.cityman.data_ack`, and RadioConfig waits up to 5 s for it
+before answering.
 
 ## Credits
 
@@ -37,5 +43,5 @@ Taken from the OnePlus 2 Android 16 device tree,
 - Davi (davigamer987): wrapper integration, slot registration, getSimSlotsStatus.
 
 Cityman changes: module names, the `slot2` wrapper only on dual SIM models
-(and its rild name in the restart check), and the slot and modem counts in
-RadioConfig.
+(and its rild name in the restart check), the slot and modem counts in
+RadioConfig, and the data slot switch.

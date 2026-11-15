@@ -20,6 +20,16 @@ using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 
+// Dual SIM data slot (see Radio::applyDataSlot): RadioConfig writes the
+// logical modem that carries mobile data to kDataSlotProp; the wrapper of each
+// slot then sends rild's setDataAllowed, with which qcril moves the DDS, and
+// the wrapper of the chosen slot acknowledges in kDataAckProp. Those requests
+// use serials from kInternalSerialBase so that their responses are not
+// forwarded to telephony, which never sent them.
+constexpr const char* kDataSlotProp = "vendor.radio.cityman.data_slot";
+constexpr const char* kDataAckProp = "vendor.radio.cityman.data_ack";
+constexpr int32_t kInternalSerialBase = 0x7eda0000;
+
 struct RadioResponse : public V1_4::IRadioResponse {
     sp<V1_4::IRadioResponse> mRealRadioResponse;
     V1_0::RadioTechnology mRat = V1_0::RadioTechnology::UNKNOWN;

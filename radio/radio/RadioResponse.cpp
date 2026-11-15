@@ -7,6 +7,8 @@
 #include "RadioResponse.h"
 #include "RadioIndication.h"
 #include "Helpers.h"
+#include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <cutils/properties.h>
 #include <mutex>
 #include <string>
@@ -805,6 +807,15 @@ Return<void> RadioResponse::setUiccSubscriptionResponse(const V1_0::RadioRespons
 }
 
 Return<void> RadioResponse::setDataAllowedResponse(const V1_0::RadioResponseInfo& info) {
+    if (info.serial >= kInternalSerialBase) {
+        // Our own request (dual SIM data slot): odd serial = data allowed here.
+        const bool allowed = info.serial & 1;
+        LOG(INFO) << "slot " << slotId << ": data " << (allowed ? "allowed" : "disallowed")
+                  << ", error " << static_cast<int>(info.error);
+        if (allowed && info.error == V1_0::RadioError::NONE)
+            android::base::SetProperty(kDataAckProp, std::to_string(slotId - 1));
+        return Void();
+    }
     return mRealRadioResponse->setDataAllowedResponse(info);
 }
 

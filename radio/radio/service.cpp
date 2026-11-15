@@ -17,6 +17,8 @@
 #include <map>
 #include <thread>
 
+#include <sys/system_properties.h>
+
 using namespace android::hardware::radio;
 using namespace android::hardware::hidl_utils;
 
@@ -75,8 +77,30 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    slotIdToRadio[slotId] = new Radio(realRadio);
+    sp<Radio> wrapper = new Radio(realRadio);
+    slotIdToRadio[slotId] = wrapper;
     linkDeathToDeath(realRadio);
+
+    // Dual SIM: follow the data slot RadioConfig writes (Radio::applyDataSlot).
+    if (android::base::GetProperty("persist.radio.multisim.config", "") == "dsds") {
+        std::thread([radio = wrapper] {
+            using namespace std::chrono_literals;
+            while (!android::base::WaitForPropertyCreation(
+                    android::hardware::radio::implementation::kDataSlotProp, 24h)) {
+            }
+            const prop_info* pi =
+                    __system_property_find(android::hardware::radio::implementation::kDataSlotProp);
+            uint32_t serial = __system_property_serial(pi);
+            radio->applyDataSlot();
+            for (;;) {
+                uint32_t next;
+                if (__system_property_wait(pi, serial, &next, nullptr)) {
+                    serial = next;
+                    radio->applyDataSlot();
+                }
+            }
+        }).detach();
+    }
 
     configureRpcThreadpool(4, true);
 

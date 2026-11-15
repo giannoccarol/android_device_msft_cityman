@@ -13,6 +13,8 @@
 #include <string>
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
+#include <stdlib.h>
 
 android::sp<android::hardware::radio::implementation::RadioIndication> xxRadioIndication =
         new android::hardware::radio::implementation::RadioIndication();
@@ -60,6 +62,8 @@ int32_t emergency_dial_serial = -1;
         }                                                    \
     } while (0)
 
+extern int slotId;
+
 namespace android::hardware::radio::implementation {
 
 Radio::Radio(sp<V1_0::IRadio> realRadio) : mRealRadio(realRadio) {}
@@ -70,7 +74,38 @@ Return<void> Radio::setResponseFunctions(const sp<V1_0::IRadioResponse>& radioRe
     mRadioResponse->mRealRadioResponse = V1_4::IRadioResponse::castFrom(radioResponse);
     mRadioIndication->mRealRadioIndication = V1_4::IRadioIndication::castFrom(radioIndication);
     xxRadioIndication->mRealRadioIndication = V1_4::IRadioIndication::castFrom(radioIndication);
-    WRAP_V1_0_CALL(setResponseFunctions, mRadioResponse, mRadioIndication);
+    auto realRadio = mRealRadio;
+    if (realRadio == nullptr)
+        return Status::fromExceptionCode(Status::Exception::EX_ILLEGAL_STATE);
+    Return<void> ret = realRadio->setResponseFunctions(mRadioResponse, mRadioIndication);
+    {
+        // A new telephony connection (or a restarted rild): send the data slot again.
+        std::lock_guard<std::mutex> lock(mDataSlotLock);
+        mDataAllowed = -1;
+    }
+    applyDataSlot();
+    return ret;
+}
+
+// Dual SIM data slot: RadioConfig::setPreferredDataModem writes the logical
+// modem (0 or 1) to kDataSlotProp; this sends setDataAllowed(true) to the rild
+// of that slot and setDataAllowed(false) to the other one, the requests qcril
+// handles with a DDS switch (RIL_REQUEST_ALLOW_DATA). Single SIM: nothing.
+void Radio::applyDataSlot() {
+    if (android::base::GetProperty("persist.radio.multisim.config", "") != "dsds") return;
+    const std::string slot = android::base::GetProperty(kDataSlotProp, "");
+    if (slot.empty()) return;
+    const int allow = atoi(slot.c_str()) == slotId - 1 ? 1 : 0;
+
+    std::lock_guard<std::mutex> lock(mDataSlotLock);
+    auto realRadio = mRealRadio;
+    if (realRadio == nullptr || mRadioResponse->mRealRadioResponse == nullptr) return;
+    if (allow == mDataAllowed) return;
+    // Odd serials allow, even ones disallow (read back in the response).
+    mInternalSerial += (mInternalSerial & 1) == allow ? 2 : 1;
+    if (mInternalSerial < kInternalSerialBase) mInternalSerial = kInternalSerialBase + allow;
+    LOG(INFO) << "slot " << slotId << ": data slot " << slot << ", setDataAllowed(" << allow << ")";
+    if (realRadio->setDataAllowed(mInternalSerial, allow).isOk()) mDataAllowed = allow;
 }
 
 Return<void> Radio::getIccCardStatus(int32_t serial) {

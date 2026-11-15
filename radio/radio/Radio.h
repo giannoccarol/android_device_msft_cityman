@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include <android/hardware/radio/1.4/IRadio.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
@@ -259,7 +261,14 @@ struct Radio : public V1_4::IRadio {
     Return<void> getAllowedCarriers_1_4(int32_t serial) override;
     Return<void> getSignalStrength_1_4(int32_t serial) override;
 
+    // Dual SIM: send rild setDataAllowed for this slot from kDataSlotProp.
+    void applyDataSlot();
+
   private:
+    std::mutex mDataSlotLock;
+    int mDataAllowed = -1;  // last value sent to rild, -1 = none yet
+    int32_t mInternalSerial = kInternalSerialBase;
+
     sp<V1_0::IRadio> mRealRadio;
     sp<RadioResponse> mRadioResponse = new RadioResponse();
     sp<RadioIndication> mRadioIndication = new RadioIndication();
