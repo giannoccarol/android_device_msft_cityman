@@ -42,6 +42,14 @@ persist.camera.HAL3.enabled=1
 # directions and the snapshot path does not scale it back: front camera photos
 # came out green except one quarter (6-7/11/2026, ISO above ~1000 in auto).
 persist.camera.CDS=Off
+# Rear autofocus: with the hybrid AF algorithms (laser, phase detect, depth)
+# left on, the continuous AF never leaves its init state ("CAF Init. Use Algo 7
+# to find peak first!" on every frame), the lens stays at the far end of its
+# travel and a tap never starts a search ("AF Inactive. Initialize first!").
+# This module has no hybrid source, so switch them all off (bit mask 1|2|4,
+# read by the 3A library at AF start; measured 15/11/2026: with it off a tap
+# moves the lens and the shot is sharp, with it on the lens stays at 268).
+persist.camera.stats.disablehaf=7
 ro.camera.notify_nfc=1
 
 # Configstore
