@@ -41,7 +41,13 @@ Call audio on SIM 2: the wrapper writes the slot of the call in progress to
 `vendor.radio.cityman.voice_slot` (on dial, answer and from the call list; 0
 when no call is left). The audio HAL patch
 `hardware/qcom-caf/msm8994/audio/0001` of the manifest starts the second voice
-session (`voice2-call`, VSID 0x10DC1000) when it reads 2.
+session (`voice2-call`, VSID 0x10DC1000) when it reads 2. The value is the
+modem stack of the slot's rild plus one, read from
+`persist.radio.msim.stackid_N`: slot 1 and 2 normally, swapped after Android
+moves the LTE capability to SIM 2 (`setRadioCapability`, done when the data
+SIM changes), when the second voice session belongs to SIM 1. After such a
+change the calls are reliable only after a reboot: at runtime qcril rebinds
+the rild instances without always moving the cards between the sessions.
 
 ## Credits
 
