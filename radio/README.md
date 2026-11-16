@@ -45,9 +45,23 @@ session (`voice2-call`, VSID 0x10DC1000) when it reads 2. The value is the
 modem stack of the slot's rild plus one, read from
 `persist.radio.msim.stackid_N`: slot 1 and 2 normally, swapped after Android
 moves the LTE capability to SIM 2 (`setRadioCapability`, done when the data
-SIM changes), when the second voice session belongs to SIM 1. After such a
-change the calls are reliable only after a reboot: at runtime qcril rebinds
-the rild instances without always moving the cards between the sessions.
+SIM changes), when the second voice session belongs to SIM 1. The wrapper
+takes the stack from the logical modem qcril reports in getRadioCapability.
+
+At runtime qcril rebinds the rild instances to the other stacks without
+reliably moving the cards between the sessions, and calls on one SIM stayed in
+DIALING until a reboot. So the wrappers refuse the radio capability switch
+(START phase fails with OPERATION_NOT_ALLOWED, which makes ProxyController
+abort), and RadioConfig saves the order wanted for the data SIM (data SIM on
+stack 0) in `persist.radio.msim.stackid_N` and `persist.radio.stack_id_N`,
+which qcril reads when it starts: after changing the data SIM, data works at
+once on the current stack and the data SIM gets LTE after the next reboot.
+
+During a call Android moves data to the SIM in the call and back afterwards.
+After that round trip the data SIM stayed on 2G/3G without data until airplane
+mode, so RadioConfig keeps the data slot while `voice_slot` is set (at most 3
+hours) and applies a request still pending 3 s after the call. A rejected
+`setDataAllowed` (radio not available) is sent again after 3 s, up to 5 times.
 
 ## Credits
 

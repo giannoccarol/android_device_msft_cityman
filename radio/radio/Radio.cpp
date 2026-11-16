@@ -10,6 +10,8 @@
 #include "Helpers.h"
 #include "RadioIndication.h"
 #include <vector>
+#include <chrono>
+#include <thread>
 #include <string>
 
 #include <android-base/logging.h>
@@ -68,6 +70,23 @@ namespace android::hardware::radio::implementation {
 
 Radio::Radio(sp<V1_0::IRadio> realRadio) : mRealRadio(realRadio) {
     mRadioResponse->mOnCardPresent = [this](int32_t app) { activateUiccSubscription(app); };
+    // rild rejects setDataAllowed while the radio is unavailable: try again
+    // a few times instead of leaving the data SIM unchanged.
+    mRadioResponse->mOnDataAllowedResult = [this](bool ok) {
+        {
+            std::lock_guard<std::mutex> lock(mDataSlotLock);
+            if (ok) {
+                mDataRetries = 0;
+                return;
+            }
+            mDataAllowed = -1;
+            if (++mDataRetries > 5) return;
+        }
+        std::thread([this] {
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            applyDataSlot();
+        }).detach();
+    };
 }
 
 // Methods from ::android::hardware::radio::V1_0::IRadio follow.
@@ -84,8 +103,12 @@ Return<void> Radio::setResponseFunctions(const sp<V1_0::IRadioResponse>& radioRe
         // A new telephony connection (or a restarted rild): send the data slot again.
         std::lock_guard<std::mutex> lock(mDataSlotLock);
         mDataAllowed = -1;
+        mDataRetries = 0;
         mUiccSubscriptionSent = false;
     }
+    // No call survives a new connection: do not leave a stale voice session,
+    // which RadioConfig reads as a call in progress.
+    updateVoiceSlot(false);
     applyDataSlot();
     return ret;
 }
@@ -639,7 +662,28 @@ Return<void> Radio::getRadioCapability(int32_t serial) {
     WRAP_V1_0_CALL(getRadioCapability, serial);
 }
 
+// Dual SIM: Android moves the multimode (LTE) stack to the data SIM with a
+// radio capability switch. At runtime qcril rebinds the rild instances to the
+// other stacks without reliably moving the cards between the GW sessions, and
+// calls on one SIM then stayed in DIALING until a reboot. Refuse it: a failed
+// START phase makes ProxyController abort before anything changes (not
+// REQUEST_NOT_SUPPORTED or GENERIC_FAILURE, which the framework turns into
+// success). RadioConfig saves the stack order for the data SIM, which qcril
+// applies at the next boot.
 Return<void> Radio::setRadioCapability(int32_t serial, const V1_0::RadioCapability& rc) {
+    if (android::base::GetProperty("persist.radio.multisim.config", "") == "dsds") {
+        auto response = mRadioResponse->mRealRadioResponse;
+        LOG(INFO) << "slot " << slotId << ": radio capability switch (phase "
+                  << static_cast<int>(rc.phase) << ") refused, the stacks change at the next boot";
+        if (response != nullptr) {
+            V1_0::RadioResponseInfo info = {};
+            info.type = V1_0::RadioResponseType::SOLICITED;
+            info.serial = serial;
+            info.error = V1_0::RadioError::OPERATION_NOT_ALLOWED;
+            response->setRadioCapabilityResponse(info, rc);
+        }
+        return Void();
+    }
     WRAP_V1_0_CALL(setRadioCapability, serial, rc);
 }
 

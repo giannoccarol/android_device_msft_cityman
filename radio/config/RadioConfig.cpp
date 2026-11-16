@@ -6,7 +6,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+#include <atomic>
+#include <mutex>
+#include <thread>
 #include "RadioConfig.h"
 #include <android/hardware/radio/1.0/types.h>
 #include <cutils/properties.h>
@@ -103,16 +107,97 @@ Return<void> RadioConfig::getPhoneCapability(int32_t serial) {
 // once rild accepted it. Wait up to 5 s for that before answering, so that
 // telephony sets up data on the new slot after the switch. Single SIM: there
 // is nothing to switch.
+//
+// The data SIM should also have the multimode (LTE) stack 0. The radio wrappers
+// refuse Android's runtime radio capability switch, which qcril does not carry
+// out reliably; save the order instead in the properties qcril reads when it
+// starts (persist.radio.msim.stackid_N, persist.radio.stack_id_N), so that the
+// data SIM gets LTE after the next reboot. The bootstrap of the UIM sessions
+// follows the same properties.
+static void saveStackOrder(uint8_t dataSlot) {
+    char key[PROPERTY_KEY_MAX];
+
+    if (dataSlot > 1) return;
+    for (int slot = 0; slot < 2; ++slot) {
+        const char* stack = slot == dataSlot ? "0" : "1";
+        snprintf(key, sizeof(key), "persist.radio.msim.stackid_%d", slot);
+        property_set(key, stack);
+        snprintf(key, sizeof(key), "persist.radio.stack_id_%d", slot);
+        property_set(key, stack);
+    }
+}
+
+static void setDataSlot(uint8_t modemId) {
+    char want[8], ack[PROPERTY_VALUE_MAX];
+
+    saveStackOrder(modemId);
+    snprintf(want, sizeof(want), "%u", modemId);
+    property_set("vendor.radio.cityman.data_slot", want);
+    for (int i = 0; i < 50; ++i) {
+        property_get("vendor.radio.cityman.data_ack", ack, "");
+        if (!strcmp(ack, want)) break;
+        usleep(100 * 1000);
+    }
+}
+
+// A call is in progress when the radio wrappers have written its voice
+// session to vendor.radio.cityman.voice_slot (dual SIM only). A value left
+// there for over 3 hours is taken as stale, so that it cannot hold the data
+// slot for ever.
+static bool callInProgress() {
+    static std::atomic<long> since{0};
+    char session[PROPERTY_VALUE_MAX];
+    struct timespec now;
+
+    property_get("vendor.radio.cityman.voice_slot", session, "0");
+    clock_gettime(CLOCK_BOOTTIME, &now);
+    if (!session[0] || !strcmp(session, "0")) {
+        since = 0;
+        return false;
+    }
+    if (!since) since = now.tv_sec;  // a race here only shifts the start by a poll
+    return now.tv_sec - since < 3 * 3600;
+}
+
+// On this DSDS modem (one radio, the second stack GSM only) Android moves
+// data to the SIM in a call and back when the call ends. After that round
+// trip the data SIM stayed on 2G/3G without data until airplane mode, and
+// data is suspended during a call anyway: while a call is in progress, keep
+// the data slot and remember the request; a request still pending a few
+// seconds after the call (the user changed the data SIM meanwhile) is applied
+// then.
+static std::mutex gPendingLock;
+static int gPendingModem = -1;
+static bool gPendingWatcher = false;
+
+static void watchPendingDataSlot() {
+    for (;;) {
+        while (callInProgress()) usleep(500 * 1000);
+        sleep(3);
+        std::unique_lock<std::mutex> lock(gPendingLock);
+        if (callInProgress()) continue;
+        const int modem = gPendingModem;
+        gPendingModem = -1;
+        gPendingWatcher = false;
+        lock.unlock();
+        if (modem >= 0) setDataSlot(modem);
+        return;
+    }
+}
+
 Return<void> RadioConfig::setPreferredDataModem(int32_t serial, uint8_t modemId) {
     if (simSlotCount() > 1) {
-        char want[8], ack[PROPERTY_VALUE_MAX];
-
-        snprintf(want, sizeof(want), "%u", modemId);
-        property_set("vendor.radio.cityman.data_slot", want);
-        for (int i = 0; i < 50; ++i) {
-            property_get("vendor.radio.cityman.data_ack", ack, "");
-            if (!strcmp(ack, want)) break;
-            usleep(100 * 1000);
+        std::unique_lock<std::mutex> lock(gPendingLock);
+        if (callInProgress()) {
+            gPendingModem = modemId;
+            if (!gPendingWatcher) {
+                gPendingWatcher = true;
+                std::thread(watchPendingDataSlot).detach();
+            }
+        } else {
+            gPendingModem = -1;
+            lock.unlock();
+            setDataSlot(modemId);
         }
     }
     mRadioConfigResponse->setPreferredDataModemResponse(responseInfo(serial));

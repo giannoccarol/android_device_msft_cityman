@@ -10,6 +10,7 @@
 #include <android-base/logging.h>
 #include <android-base/properties.h>
 #include <cutils/properties.h>
+#include <atomic>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -23,15 +24,21 @@ extern int32_t emergency_dial_serial;
 
 namespace android::hardware::radio::implementation {
 
-// The voice session of this slot's calls: the modem stack its rild instance
-// is bound to, plus one. qcril keeps the binding in
-// persist.radio.msim.stackid_<instance>; it is 0 for slot 1 and 1 for slot 2
-// until Android moves the LTE stack to SIM 2 (setRadioCapability), which
-// swaps them.
+// The modem stack this slot's rild instance is bound to, as qcril reports it in
+// the logical modem of getRadioCapability (-1 until telephony asked). The
+// stack order changes only at boot: RadioConfig saves the order wanted for the
+// data SIM in persist.radio.msim.stackid_N, which qcril reads when it starts,
+// so that property can already hold the next boot's order.
+static std::atomic<int> gStack{-1};
+
+// The voice session of this slot's calls: its modem stack plus one.
 static std::string voiceSession() {
-    const std::string stack = android::base::GetProperty(
-            "persist.radio.msim.stackid_" + std::to_string(slotId - 1), std::to_string(slotId - 1));
-    return stack == "1" ? "2" : "1";
+    int stack = gStack.load();
+    if (stack < 0)
+        stack = android::base::GetProperty(
+                        "persist.radio.msim.stackid_" + std::to_string(slotId - 1),
+                        std::to_string(slotId - 1)) == "1";
+    return stack == 1 ? "2" : "1";
 }
 
 void updateVoiceSlot(bool inCall) {
@@ -855,6 +862,7 @@ Return<void> RadioResponse::setDataAllowedResponse(const V1_0::RadioResponseInfo
                   << ", error " << static_cast<int>(info.error);
         if (allowed && info.error == V1_0::RadioError::NONE)
             android::base::SetProperty(kDataAckProp, std::to_string(slotId - 1));
+        if (mOnDataAllowedResult) mOnDataAllowedResult(info.error == V1_0::RadioError::NONE);
         return Void();
     }
     return mRealRadioResponse->setDataAllowedResponse(info);
@@ -880,6 +888,12 @@ Return<void> RadioResponse::requestShutdownResponse(const V1_0::RadioResponseInf
 
 Return<void> RadioResponse::getRadioCapabilityResponse(const V1_0::RadioResponseInfo& info,
                                                        const V1_0::RadioCapability& rc) {
+    const std::string modem = rc.logicalModemUuid;
+    if (info.error == V1_0::RadioError::NONE && (modem == "0" || modem == "1")) {
+        const int stack = modem == "1";
+        if (gStack.exchange(stack) != stack)
+            LOG(INFO) << "slot " << slotId << ": on modem stack " << stack;
+    }
     return mRealRadioResponse->getRadioCapabilityResponse(info, rc);
 }
 

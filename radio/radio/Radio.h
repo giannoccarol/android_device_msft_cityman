@@ -271,6 +271,7 @@ struct Radio : public V1_4::IRadio {
     int mDataAllowed = -1;  // last value sent to rild, -1 = none yet
     int32_t mInternalSerial = kInternalSerialBase;
     bool mUiccSubscriptionSent = false;
+    int mDataRetries = 0;
 
     sp<V1_0::IRadio> mRealRadio;
     sp<RadioResponse> mRadioResponse = new RadioResponse();

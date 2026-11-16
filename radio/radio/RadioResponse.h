@@ -48,6 +48,8 @@ struct RadioResponse : public V1_4::IRadioResponse {
     sp<V1_4::IRadioResponse> mRealRadioResponse;
     // Called with the USIM application index when rild reports the card present.
     std::function<void(int32_t)> mOnCardPresent;
+    // Called with the result of each of the wrapper's setDataAllowed requests.
+    std::function<void(bool)> mOnDataAllowedResult;
     V1_0::RadioTechnology mRat = V1_0::RadioTechnology::UNKNOWN;
     bool mDataRoaming = false;
     // Methods from ::android::hardware::radio::V1_0::IRadioResponse follow.
