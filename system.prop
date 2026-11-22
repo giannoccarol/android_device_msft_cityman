@@ -137,6 +137,13 @@ ro.lmk.swap_free_low_percentage=20
 ro.lmk.kill_heaviest_task=true
 ro.lmk.kill_timeout_ms=100
 ro.lmk.debug=true
+# No kills just for being below the high watermark. On the 3.10 kernel
+# extra_free_kbytes (43200 from ActivityManager) is added to both the low and
+# the high watermark, so they end up less than 2 MB apart and free memory sits
+# below high whenever there is pressure: the LOW_MEM branch then killed a
+# cached app at every PSI event with 700 MB still available. lmkd keeps
+# killing on critical stalls, low swap and thrashing.
+ro.lmk.lowmem_min_oom_score=1001
 
 # HWUI: apps in the background drop all unlocked GPU resources (kgsl
 # memory cannot go to zram)
