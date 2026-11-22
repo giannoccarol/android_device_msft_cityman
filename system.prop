@@ -207,3 +207,9 @@ ro.bpf.kver_override=5.4.300
 # The Adreno blobs preloaded by the zygote clobber x18, the shadow call stack
 # register: Bluetooth and NFC crashed in __init_cpu_features (SEGV_ACCERR).
 ro.zygote.disable_gl_preload=1
+
+# The 3.10 kernel has the arm64 EL0 cache maintenance fix ("arm64: avoid
+# segfault on el0 cache maintenance"), so ART may create the zygote JIT code
+# cache although the kernel is older than 3.12 (manifest patch art/0001).
+# Without it no process has a JIT and no app profile is ever saved.
+ro.dalvik.vm.cache_maintenance_safe=true
