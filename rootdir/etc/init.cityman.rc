@@ -153,9 +153,11 @@ on boot
     # Android 16 copies foreground_window from the boot cpus (0-3) in on init
     write /dev/cpuset/foreground_window/cpus 0-2,4-7
 
-    # shorter writeback bursts on the eMMC (OnePlus 2 uses 15/1)
+    # shorter writeback bursts on the eMMC, as the OnePlus 2: with a 600 MB
+    # writer in the background an fsync waited 91 ms on average with 15/5 and
+    # 64 ms with 15/1 (5/1 throttles the writers too much)
     write /proc/sys/vm/dirty_ratio 15
-    write /proc/sys/vm/dirty_background_ratio 5
+    write /proc/sys/vm/dirty_background_ratio 1
     write /dev/cpuset/restricted/cpus 0-1
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/camera-daemon/cpus 0-7
