@@ -57,4 +57,15 @@
     <!-- Offer the proximity check on wake (against double taps in a pocket). -->
     <bool name="config_proximityCheckOnWake">true</bool>
 
+    <!-- The default LineageParts handler, then the camera button actions
+         (CitymanParts) -->
+    <string-array name="config_deviceKeyHandlerLibs" translatable="false">
+        <item>/system_ext/priv-app/LineageParts/LineageParts.apk</item>
+        <item>/system/system_ext/framework/CitymanKeyHandler.jar</item>
+    </string-array>
+    <string-array name="config_deviceKeyHandlerClasses" translatable="false">
+        <item>org.lineageos.lineageparts.gestures.KeyHandler</item>
+        <item>org.lineageos.cityman.keyhandler.KeyHandler</item>
+    </string-array>
+
 </resources>

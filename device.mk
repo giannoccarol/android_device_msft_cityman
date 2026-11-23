@@ -468,8 +468,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/etc/init.cityman.power.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.cityman.power.sh
 
-# Performance profiles: Settings > Battery and a Quick Settings tile
+# Performance profiles (Settings > Battery, Quick Settings tile) and the
+# camera button actions (Settings > System)
 PRODUCT_PACKAGES += \
+    CitymanKeyHandler \
     CitymanParts
 
 # Qseecomd configuration file

@@ -1,2 +1,6 @@
+# Volume up and the two-stage camera button (PM8994 GPIOs, gpio-keys).
+# Half press is KEY_CAMERA_FOCUS, full press KEY_CAMERA_SNAPSHOT.
 key 115   VOLUME_UP
 key 114   VOLUME_DOWN
+key 528   FOCUS
+key 766   CAMERA
