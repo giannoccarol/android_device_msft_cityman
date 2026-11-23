@@ -1,3 +1,8 @@
+/*
+ * Taken from hraj9258's talkman port (Himanshu Raj):
+ * gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+ * 901b039, camera/sensors/imx230/af/af_tuning_talkman.h
+ */
 /* AF search tuning for talkman (Lumia 950, IMX230 "Hill").
  *
  * WHAT THIS LIBRARY IS

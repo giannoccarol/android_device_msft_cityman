@@ -1,3 +1,8 @@
+/*
+ * Taken from hraj9258's talkman port (Himanshu Raj):
+ * gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+ * 901b039, camera/sensors/imx230/chromatix/chromatix_lib.c
+ */
 /* The talkman chromatix container.
  *
  * Compiled once per tuning name, with -DCHX_TYPE and -DCHX_DATA selecting the

@@ -1,3 +1,8 @@
+/*
+ * Taken from hraj9258's talkman port (Himanshu Raj):
+ * gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+ * 901b039, camera/sensors/imx230/af/af_tuning_lib.c
+ */
 /* The talkman AF search tuning container.
  *
  * Compiled once per mode with -DAF_MODE and -DAF_DATA.  Reproduces the donor's

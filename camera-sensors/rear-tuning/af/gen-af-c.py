@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Taken from hraj9258's talkman port (Himanshu Raj):
+# gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+# 901b039, camera/sensors/imx230/af/gen-af-c.py
 """Emit C source for the talkman AF search tuning libraries.
 
 Runs BY HAND; output is checked in, so the build compiles ordinary C and reads

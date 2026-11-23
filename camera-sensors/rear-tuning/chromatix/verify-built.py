@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Taken from hraj9258's talkman port (Himanshu Raj):
+# gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+# 901b039, camera/sensors/imx230/chromatix/verify-built.py
 """Compare built libchromatix_imx230_*.so payloads against the donor.
 
 The point is not that the bytes came from the donor -- of course they did, the

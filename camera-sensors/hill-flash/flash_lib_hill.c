@@ -1,4 +1,9 @@
 /*
+ * By hraj9258 (Himanshu Raj), from his talkman port:
+ * gitlab.com/hraj9258/android_device_msft_talkman, lineage-18.1-talkman,
+ * 901b039, camera/sensors/imx230/flash_lib_hill.c
+ */
+/*
  * libflash_hill.so -- the userspace flash driver library for the Lumia 950's
  * "Hill" three-channel LED flash IC, written from scratch.
  *

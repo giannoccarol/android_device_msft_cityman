@@ -53,7 +53,7 @@ load the library.
 `flash_lib_hill.c` is by hraj9258 (Himanshu Raj),
 `camera/sensors/imx230/flash_lib_hill.c` in
 gitlab.com/hraj9258/android_device_msft_talkman, branch
-`lineage-18.1-talkman`, copied unchanged: struct layout recovered from the
+`lineage-18.1-talkman`, code unchanged, with this credit added on top: struct layout recovered from the
 angler `libmmcamera2_sensor_modules.so`, Hill's register map from the
 Lumia 950's `qccamflash8992.sys`, operating points measured on the phone.
 The kernel side is his commit bb9466c on
