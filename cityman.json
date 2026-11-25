@@ -1,0 +1,17 @@
+[
+  {
+    "datetime": 1795643818,
+    "type": "UNOFFICIAL",
+    "version": "23.2",
+    "files": [
+      {
+        "filename": "lineage-23.2-20261125-UNOFFICIAL-cityman.zip",
+        "os_patch_level": "2026-10-01",
+        "os_sdk_level": 36,
+        "sha256": "18ed54c08a7d8d5bb1de8fae60dd31f99fa0a2ec39c420892fb87dc8feb5d911",
+        "size": 1070879701,
+        "url": "https://github.com/giannoccarol/android_device_msft_cityman/releases/download/lineage-23.2-20261125-cityman/lineage-23.2-20261125-UNOFFICIAL-cityman.zip"
+      }
+    ]
+  }
+]
