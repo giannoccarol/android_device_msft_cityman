@@ -39,58 +39,7 @@ def OTA_RequireLumia(info):
 
 def FullOTA_InstallEnd(info):
   OTA_UpdateFirmware(info)
-  OTA_UpdateLK(info)
-  return
-
-# The official LK (Android4Lumia950 lk2nd 80dcd67) leaves fastboot black and
-# does not start the recovery partition on a reboot to recovery, which the
-# Updater needs. When aboot holds exactly that LK, lk/cityman-lk.sh keeps it
-# as emmc_appsboot.mbn.official and writes the LK of the zip (lk/README.md).
-# Any other LK is left as it is. Runs last: the ROM is already installed.
-LK_OFFICIAL_SHA256 = (
-    "392cabea0594c0b37f3986527ad95b6b480a554a81b7621587f9c1f11cf2fa6f")
-LK_FILES = ("emmc_appsboot.mbn", "cityman-lk.sh")
-LK_STATUS = "/tmp/cityman-lk.status"
-LK_MESSAGES = (
-    ("updated", "Bootloader (LK) updated. The official one is kept in aboot "
-                "as emmc_appsboot.mbn.official."),
-    ("current", "Bootloader (LK) already up to date."),
-    ("other", "Bootloader (LK) is not the official one: left as it is."),
-    ("skipped", "Bootloader (LK) left as it is (aboot not usable or full)."),
-    ("badfile", "Bootloader (LK) file in the zip is damaged: left as it is."),
-    ("restored", "Bootloader (LK) could not be written: the official one is "
-                 "back in place."),
-    ("broken", "WARNING: the bootloader (LK) could not be written or put "
-               "back. Do not reboot. Copy emmc_appsboot.mbn.official over "
-               "emmc_appsboot.mbn in the aboot partition (vfat) from the "
-               "TWRP shell, then reboot."),
-)
-
-def OTA_UpdateLK(info):
-  names = info.input_zip.namelist()
-  data = {}
-  for f in LK_FILES:
-    if "RADIO/" + f not in names:
-      raise common.ExternalError(
-          "RADIO/%s is missing from the target files (device Android.mk)" % f)
-    data[f] = info.input_zip.read("RADIO/" + f)
-    common.ZipWriteStr(info.output_zip, "install/lk/" + f, data[f])
-  lk_sha = hashlib.sha256(data["emmc_appsboot.mbn"]).hexdigest()
-
-  s = info.script
-  s.Print("Checking the bootloader (LK)...")
-  s.AppendExtra('package_extract_file("install/lk/emmc_appsboot.mbn", '
-                '"/tmp/cityman-lk.mbn");')
-  s.AppendExtra('package_extract_file("install/lk/cityman-lk.sh", '
-                '"/tmp/cityman-lk.sh");')
-  s.AppendExtra('run_program("/sbin/sh", "/tmp/cityman-lk.sh", '
-                '"/tmp/cityman-lk.mbn", "%s", "%s", "%s");'
-                % (LK_OFFICIAL_SHA256, lk_sha, LK_STATUS))
-  for word, msg in LK_MESSAGES:
-    s.AppendExtra('ifelse(run_program("/sbin/sh", "-c", "grep -qx %s %s") == 0, '
-                  'ui_print("%s"));' % (word, LK_STATUS, msg))
-  s.AppendExtra('ifelse(run_program("/sbin/sh", "-c", "test -s %s") == 0, "", '
-                'ui_print("Bootloader (LK) not checked."));' % LK_STATUS)
+  OTA_UpdateBootchain(info)
   return
 
 # The cache partition is mounted as /metadata, ext4 only. A phone coming from
@@ -112,6 +61,90 @@ def OTA_RequireExt4Metadata(info):
          "System > Change File System > EXT4), then flash this zip again. "
          "Nothing was written."))
   return
+
+# The Updater reboots to the recovery partition with the install command in
+# misc. The official installer left two things that cannot do that: its LK
+# (Android4Lumia950 lk2nd 80dcd67) does not start the recovery partition on a
+# reboot to recovery, and its TWRP cannot run Android 16 zips (old kernel, A16
+# vendor libraries in its shell). bootchain/cityman-bootchain.sh replaces
+# them, only when it finds exactly those files: the LK in aboot (keeping the
+# official one as emmc_appsboot.mbn.official) and the recovery partition when
+# it is empty or holds the old TWRP. Anything else is left as it is. Runs
+# last: the ROM is already installed. See bootchain/README.md.
+LK_OFFICIAL_SHA256 = (
+    "392cabea0594c0b37f3986527ad95b6b480a554a81b7621587f9c1f11cf2fa6f")
+# twrp.img of the official installer: sha256 of its 35651584 bytes
+TWRP_OLD_SHA256 = (
+    "02a9c3105f50033dbb72b9948befe9be74299ee2ca1b09ea594e40ad168b9704")
+TWRP_OLD_SIZE = 35651584
+BOOTCHAIN_FILES = ("emmc_appsboot.mbn", "twrp-cityman-a16.img",
+                   "cityman-bootchain.sh")
+LK_STATUS = "/tmp/cityman-lk.status"
+RECOVERY_STATUS = "/tmp/cityman-recovery.status"
+LK_MESSAGES = (
+    ("updated", "Bootloader (LK) updated. The official one is kept in aboot "
+                "as emmc_appsboot.mbn.official."),
+    ("current", "Bootloader (LK) already up to date."),
+    ("other", "Bootloader (LK) is not the official one: left as it is."),
+    ("skipped", "Bootloader (LK) left as it is (aboot not usable or full)."),
+    ("badfile", "Bootloader (LK) file in the zip is damaged: left as it is."),
+    ("restored", "Bootloader (LK) could not be written: the official one is "
+                 "back in place."),
+    ("broken", "WARNING: the bootloader (LK) could not be written or put "
+               "back. Do not reboot. Copy emmc_appsboot.mbn.official over "
+               "emmc_appsboot.mbn in the aboot partition (vfat) from the "
+               "TWRP shell, then reboot."),
+)
+RECOVERY_MESSAGES = (
+    ("updated", "Recovery: Android 16 TWRP written."),
+    ("current", "Recovery: Android 16 TWRP already there."),
+    ("other", "Recovery: not the installer TWRP, left as it is."),
+    ("skipped", "Recovery: partition not usable, left as it is."),
+    ("badfile", "Recovery: TWRP image in the zip is damaged, left as it is."),
+    ("failed", "Recovery: writing the Android 16 TWRP failed. The ROM is "
+               "installed; flash twrp-cityman-a16.img to recovery from "
+               "fastboot."),
+)
+
+def OTA_UpdateBootchain(info):
+  names = info.input_zip.namelist()
+  data = {}
+  for f in BOOTCHAIN_FILES:
+    if "RADIO/" + f not in names:
+      raise common.ExternalError(
+          "RADIO/%s is missing from the target files (device Android.mk)" % f)
+    data[f] = info.input_zip.read("RADIO/" + f)
+    common.ZipWriteStr(info.output_zip, "install/bootchain/" + f, data[f])
+  lk_sha = hashlib.sha256(data["emmc_appsboot.mbn"]).hexdigest()
+  twrp_sha = hashlib.sha256(data["twrp-cityman-a16.img"]).hexdigest()
+
+  s = info.script
+  for f in BOOTCHAIN_FILES:
+    s.AppendExtra('package_extract_file("install/bootchain/%s", "/tmp/%s");'
+                  % (f, f))
+  sh = '"/sbin/sh", "/tmp/cityman-bootchain.sh"'
+
+  s.Print("Checking the recovery partition...")
+  s.AppendExtra('run_program(%s, "recovery", "/tmp/twrp-cityman-a16.img", '
+                '"%s", "%s", "%d", "%s");'
+                % (sh, twrp_sha, TWRP_OLD_SHA256, TWRP_OLD_SIZE,
+                   RECOVERY_STATUS))
+  AddStatusMessages(s, RECOVERY_STATUS, RECOVERY_MESSAGES, "Recovery")
+
+  s.Print("Checking the bootloader (LK)...")
+  s.AppendExtra('run_program(%s, "lk", "/tmp/emmc_appsboot.mbn", "%s", '
+                '"%s", "%s");' % (sh, LK_OFFICIAL_SHA256, lk_sha, LK_STATUS))
+  AddStatusMessages(s, LK_STATUS, LK_MESSAGES, "Bootloader (LK)")
+  return
+
+def AddStatusMessages(script, status, messages, name):
+  for word, msg in messages:
+    script.AppendExtra(
+        'ifelse(run_program("/sbin/sh", "-c", "grep -qx %s %s") == 0, '
+        'ui_print("%s"));' % (word, status, msg))
+  script.AppendExtra(
+      'ifelse(run_program("/sbin/sh", "-c", "test -s %s") == 0, "", '
+      'ui_print("%s not checked."));' % (status, name))
 
 def IncrementalOTA_InstallEnd(info):
   OTA_UpdateFirmware(info)

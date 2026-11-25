@@ -191,13 +191,16 @@ What the install needs on the phone:
   `init.cityman.rc` puts a tmpfs on `/cache` and binds `/metadata/recovery` on
   `/cache/recovery`, where RecoverySystem and uncrypt write the block map and
   the recovery reads it from the cache partition;
-- a recovery in the `recovery` partition that installs from the block map: the
-  installer writes the Android 16 TWRP there;
+- a recovery in the `recovery` partition that installs Android 16 zips from the
+  block map: the Android 16 TWRP. The current installer writes it there; the
+  official installer wrote an older TWRP that cannot run A16 zips;
 - an LK that starts the recovery on a reboot to recovery. The official LK does
-  not: the zip replaces it with the LK in `lk/` (see `lk/README.md`) when it
-  finds exactly the official one, so a phone gets the new LK with the first
-  zip that has this, flashed from TWRP. Updates from the app work from the
-  next build on.
+  not.
+
+The zip replaces the official LK and the old TWRP with the ones in
+`bootchain/` when it finds exactly those files (see `bootchain/README.md`), so
+a phone gets them with the first zip that has this, flashed from TWRP. Updates
+from the app work from the next build on.
 
 Release steps, after the zip and `SHA256SUMS` are attached to the release:
 
@@ -220,7 +223,7 @@ This ROM builds on the work of others:
   talkman device, vendor and kernel trees, the installer, TWRP and the
   `firmware-microsoft-cityman` files this ROM ships.
 - **lk2nd** (`msm8916-mainline/lk2nd`, Stephan Gerhold and contributors)
-  and the **Android4Lumia950 lk2nd fork**: the LK in `lk/`, built from
+  and the **Android4Lumia950 lk2nd fork**: the LK in `bootchain/`, built from
   `giannoccarol/lk2nd-cityman` (`cityman`, `3394d965`) with a driver for the
   950 XL panel. The Updater part follows the LineageOS Updater
   (`packages/apps/Updater`) and its API v2 list format.
