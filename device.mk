@@ -561,7 +561,8 @@ PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
 # odrefresh would recompile the boot image on the phone.
 PRODUCT_ENABLE_UFFD_GC := false
 
-# Drop Updater and Gallery2 (see removepackages/Android.mk)
+# Drop Gallery2 (see removepackages/Android.mk). The Updater stays: it
+# takes the builds from lineage.updater.uri (product.prop).
 PRODUCT_PACKAGES += \
     RemovePackages
 

@@ -102,6 +102,17 @@ on fs
     mkdir /mnt/vendor/dpp 0500 root root
     mount_all /vendor/etc/fstab.cityman --early
 
+    # The cache partition is /metadata here, but the Updater (RecoverySystem
+    # and uncrypt) writes the update command files and the block map in
+    # /cache/recovery, and the recovery reads them from the recovery folder
+    # of the cache partition. /cache is an empty folder of the read-only
+    # system root: put a tmpfs on it and bind that folder there. init.rc
+    # then fixes owner, mode and labels in post-fs.
+    mount tmpfs tmpfs /cache nosuid nodev noexec mode=0770,uid=1000,gid=2001
+    mkdir /metadata/recovery 0770 system cache
+    mkdir /cache/recovery 0770 system cache
+    mount none /metadata/recovery /cache/recovery bind
+
     setprop sys.usb.ffs.aio_compat 1
     setprop persist.adb.nonblocking_ffs 0
     setprop ro.adb.nonblocking_ffs 0

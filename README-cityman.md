@@ -176,6 +176,42 @@ registered. Not verified yet: incoming calls, other carriers, long calls, LTE
 to 3G/2G handover. No video calling, no Wi-Fi calling (the 3.10 kernel lacks
 XFRM interfaces and IPv6 VTI).
 
+## Updates from the Updater app (LineageOS 23, branch lineage-23-cityman)
+
+The LineageOS Updater (Settings > System > Updater) takes the builds from
+`lineage.updater.uri` in `product.prop`: `cityman.json` in the `ota` branch of
+this repository, read through `raw.githubusercontent.com`. The LineageOS 23
+Updater does not follow redirects for this list, so the
+`releases/latest/download/...` address used on the 930 and 1520 cannot work
+here. The download of the zip follows the release asset redirect.
+
+What the install needs on the phone:
+
+- `/cache/recovery`: the cache partition is `/metadata` on this ROM, so
+  `init.cityman.rc` puts a tmpfs on `/cache` and binds `/metadata/recovery` on
+  `/cache/recovery`, where RecoverySystem and uncrypt write the block map and
+  the recovery reads it from the cache partition;
+- a recovery in the `recovery` partition that installs from the block map: the
+  installer writes the Android 16 TWRP there;
+- an LK that starts the recovery on a reboot to recovery. The official LK does
+  not: the zip replaces it with the LK in `lk/` (see `lk/README.md`) when it
+  finds exactly the official one, so a phone gets the new LK with the first
+  zip that has this, flashed from TWRP. Updates from the app work from the
+  next build on.
+
+Release steps, after the zip and `SHA256SUMS` are attached to the release:
+
+```bash
+tools/updater-json.py lineage-23.2-<date>-UNOFFICIAL-cityman.zip \
+    --tag lineage-23.2-<date>-cityman -o cityman.json
+git switch ota            # orphan branch that holds only cityman.json
+cp /path/to/cityman.json . && git commit -am "ota: <date>" && git push
+```
+
+The Updater offers a build whose `datetime` (`ro.build.date.utc` of the build
+in the zip) is newer than the running one, with `type` UNOFFICIAL and
+`os_sdk_level` 36. `raw.githubusercontent.com` caches the file for 5 minutes.
+
 ## Credits
 
 This ROM builds on the work of others:
@@ -183,6 +219,11 @@ This ROM builds on the work of others:
 - **Android4Lumia950** (djokcho, EpicLPer, j0sh1x and the community): the
   talkman device, vendor and kernel trees, the installer, TWRP and the
   `firmware-microsoft-cityman` files this ROM ships.
+- **lk2nd** (`msm8916-mainline/lk2nd`, Stephan Gerhold and contributors)
+  and the **Android4Lumia950 lk2nd fork**: the LK in `lk/`, built from
+  `giannoccarol/lk2nd-cityman` (`cityman`, `3394d965`) with a driver for the
+  950 XL panel. The Updater part follows the LineageOS Updater
+  (`packages/apps/Updater`) and its API v2 list format.
 - **archienz** (`archienz/android_device_msft_talkman`,
   `archienz/android_kernel_mmo_msm8994`): rear camera measurements on the
   Lumia 950 (CSI lane map `0x0423`, 24 MHz MCLK, CCI layout), used on the

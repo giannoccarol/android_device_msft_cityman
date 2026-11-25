@@ -22,3 +22,10 @@ bluetooth.profile.sap.server.enabled?=true
 # NetBpfLoad on Android 16 checks the kernel version; the 3.10 kernel carries
 # the BPF ABI it needs (BTF, ringbuf, sk_storage, LRU, clsact) as backports.
 ro.bpf.kver_override=5.4.300
+
+# LineageOS Updater: list of builds in the API v2 format of the LineageOS 23
+# Updater, one file in the ota branch of the device repository, written by
+# tools/updater-json.py at every release (README-cityman.md). The Updater does
+# not follow redirects for this list, so not releases/latest/download/... of
+# GitHub. A writable property holds at most 91 bytes: this one is 91.
+lineage.updater.uri=https://raw.githubusercontent.com/giannoccarol/android_device_msft_cityman/ota/cityman.json

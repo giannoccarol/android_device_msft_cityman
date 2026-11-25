@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import common
+import hashlib
 import re
 
 def FullOTA_InstallBegin(info):
@@ -38,6 +39,58 @@ def OTA_RequireLumia(info):
 
 def FullOTA_InstallEnd(info):
   OTA_UpdateFirmware(info)
+  OTA_UpdateLK(info)
+  return
+
+# The official LK (Android4Lumia950 lk2nd 80dcd67) leaves fastboot black and
+# does not start the recovery partition on a reboot to recovery, which the
+# Updater needs. When aboot holds exactly that LK, lk/cityman-lk.sh keeps it
+# as emmc_appsboot.mbn.official and writes the LK of the zip (lk/README.md).
+# Any other LK is left as it is. Runs last: the ROM is already installed.
+LK_OFFICIAL_SHA256 = (
+    "392cabea0594c0b37f3986527ad95b6b480a554a81b7621587f9c1f11cf2fa6f")
+LK_FILES = ("emmc_appsboot.mbn", "cityman-lk.sh")
+LK_STATUS = "/tmp/cityman-lk.status"
+LK_MESSAGES = (
+    ("updated", "Bootloader (LK) updated. The official one is kept in aboot "
+                "as emmc_appsboot.mbn.official."),
+    ("current", "Bootloader (LK) already up to date."),
+    ("other", "Bootloader (LK) is not the official one: left as it is."),
+    ("skipped", "Bootloader (LK) left as it is (aboot not usable or full)."),
+    ("badfile", "Bootloader (LK) file in the zip is damaged: left as it is."),
+    ("restored", "Bootloader (LK) could not be written: the official one is "
+                 "back in place."),
+    ("broken", "WARNING: the bootloader (LK) could not be written or put "
+               "back. Do not reboot. Copy emmc_appsboot.mbn.official over "
+               "emmc_appsboot.mbn in the aboot partition (vfat) from the "
+               "TWRP shell, then reboot."),
+)
+
+def OTA_UpdateLK(info):
+  names = info.input_zip.namelist()
+  data = {}
+  for f in LK_FILES:
+    if "RADIO/" + f not in names:
+      raise common.ExternalError(
+          "RADIO/%s is missing from the target files (device Android.mk)" % f)
+    data[f] = info.input_zip.read("RADIO/" + f)
+    common.ZipWriteStr(info.output_zip, "install/lk/" + f, data[f])
+  lk_sha = hashlib.sha256(data["emmc_appsboot.mbn"]).hexdigest()
+
+  s = info.script
+  s.Print("Checking the bootloader (LK)...")
+  s.AppendExtra('package_extract_file("install/lk/emmc_appsboot.mbn", '
+                '"/tmp/cityman-lk.mbn");')
+  s.AppendExtra('package_extract_file("install/lk/cityman-lk.sh", '
+                '"/tmp/cityman-lk.sh");')
+  s.AppendExtra('run_program("/sbin/sh", "/tmp/cityman-lk.sh", '
+                '"/tmp/cityman-lk.mbn", "%s", "%s", "%s");'
+                % (LK_OFFICIAL_SHA256, lk_sha, LK_STATUS))
+  for word, msg in LK_MESSAGES:
+    s.AppendExtra('ifelse(run_program("/sbin/sh", "-c", "grep -qx %s %s") == 0, '
+                  'ui_print("%s"));' % (word, LK_STATUS, msg))
+  s.AppendExtra('ifelse(run_program("/sbin/sh", "-c", "test -s %s") == 0, "", '
+                'ui_print("Bootloader (LK) not checked."));' % LK_STATUS)
   return
 
 # The cache partition is mounted as /metadata, ext4 only. A phone coming from

@@ -54,6 +54,13 @@ ALL_DEFAULT_INSTALLED_MODULES += $(BT_FW_DIR)/btfw32.tlv $(BT_FW_DIR)/btnv32.bin
 
 ifneq ($(filter cityman, $(TARGET_DEVICE)),)
 
+# Bootloader for the ROM zip: RADIO/emmc_appsboot.mbn and the script that
+# installs it in the target files, used by releasetools.py to replace the
+# official LK (see lk/README.md).
+# Before the includes below, which change LOCAL_PATH.
+$(call add-radio-file,lk/emmc_appsboot.mbn)
+$(call add-radio-file,lk/cityman-lk.sh)
+
 include $(call all-makefiles-under,$(LOCAL_PATH))
 
 # GPS HAL: BOARD_USES_QCOM_HARDWARE hides hardware/qcom/gps and there is no
