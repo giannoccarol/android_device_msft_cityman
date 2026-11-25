@@ -694,8 +694,28 @@ extern "C" int power_hint_override(power_hint_t hint, void* data) {
     return HINT_NONE;
 }
 
+/*
+ * Touch driver: keep the double tap gesture armed while Android is not
+ * interactive. With the always-on display the display stays on at zero
+ * brightness for about 4 s after the screen is turned off (doze transition)
+ * and the driver would leave the gesture mode for that time. Older kernels
+ * have no such node: nothing is written.
+ */
+constexpr const char* kTouchInteractive =
+        "/sys/devices/soc.0/f9923000.i2c/i2c-1/1-004b/interactive";
+
+static void write_touch_interactive(int on) {
+    int fd = open(kTouchInteractive, O_WRONLY | O_CLOEXEC);
+    if (fd < 0) return;
+    if (write(fd, on ? "1" : "0", 1) != 1) {
+        ALOGW("touch interactive %d: %s", on, strerror(errno));
+    }
+    close(fd);
+}
+
 extern "C" int set_interactive_override(int on) {
     start_profile_watcher();
+    write_touch_interactive(on);
     std::lock_guard<std::mutex> guard(g_lock);
 
     if (!on) {
