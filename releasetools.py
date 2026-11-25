@@ -21,6 +21,24 @@ import re
 def FullOTA_InstallBegin(info):
   OTA_RequireLumia(info)
   OTA_RequireExt4Metadata(info)
+  OTA_ProductLink(info)
+  return
+
+# backuptool.sh (GApps and other addon.d scripts) looks for ro.lineage.version
+# in /product/etc/build.prop unless /product is a symlink, in which case it
+# uses $S/product. Here product is a folder of the system image and the
+# Android 16 TWRP has no /product at all, so backup and restore were skipped
+# ("Incompatible ROM version: 23") and GApps broke after an update. Give the
+# recovery a /product link to the folder backuptool.sh mounts, before it runs.
+PRODUCT_LINK = (
+    "[ -e /product ] || [ -L /product ] || { "
+    "if [ -d /mnt/system ]; then m=/mnt/system; "
+    "elif [ -d /system_root ]; then m=/system_root; else m=/system; fi; "
+    "ln -s $m/system/product /product; }")
+
+def OTA_ProductLink(info):
+  info.script.AppendExtra('run_program("/sbin/sh", "-c", "%s");'
+                          % PRODUCT_LINK.replace('"', '\\"'))
   return
 
 # The device names accepted above include angler and bullhead, because the
